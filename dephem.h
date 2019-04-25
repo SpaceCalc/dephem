@@ -83,10 +83,10 @@ public:
 
 	void get_coeff(double* coeff, double JED) const;
 
-	void throw_error(const char* message) const;
-
 private:
 
+	void throw_error(const char* message) const;
+	
 	void copy(const dephem& other);
 
 	void move_swap(dephem& other);

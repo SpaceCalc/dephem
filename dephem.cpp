@@ -270,7 +270,7 @@ bool dephem::read()
 
 	if (Info.const_count > 400)
 	{
-		fread_s(Info.const_name, (Info.const_count - 400) * 6, 1, (Info.const_count - 400) * 6, eph);
+		fread_s(Info.const_name[400], (Info.const_count - 400) * 6, 1, (Info.const_count - 400) * 6, eph);
 	}		
 
 	fread(Info.key[13], sizeof(uint32_t), 3, eph);

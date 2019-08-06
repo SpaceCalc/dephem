@@ -74,8 +74,6 @@ namespace dph
 
 		double get_const(const char* const_name) const;
 
-		void available_items(bool* items, bool derived = false) const;
-
 		void get_coeff(double* coeff, double JED) const;
 
 	private:

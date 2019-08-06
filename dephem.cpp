@@ -122,21 +122,6 @@ double dph::EphemerisRelease::get_const(const char* const_name) const
 	return 0;
 }
 
-void dph::EphemerisRelease::available_items(bool* items, bool derived) const
-{
-	if (this->m_ready == false)
-	{
-		return;
-	}
-			
-	memset(items, 0, (derived ? 17 : 15) * sizeof(bool));
-
-	for (int i = 0; i < (derived ? 17 : 15); i++)
-	{
-		items[i] = (derived ? Info.derived_items : Info.items) & (1 << i);
-	}
-}
-
 void dph::EphemerisRelease::get_coeff(double * coeff, double JED) const
 {
 	if (this->m_ready == false)

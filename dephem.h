@@ -113,9 +113,6 @@ namespace dph
 		// Копирования объекта по ссылке.
 		void copy(const EphemerisRelease& other);
 
-		// Перемещение объекта по ссылке.
-		void move_swap(EphemerisRelease& other);
-
 		//  Чтение файла.
 		bool read();
 

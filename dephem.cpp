@@ -167,28 +167,6 @@ void dph::EphemerisRelease::copy(const EphemerisRelease& other)
 	memcpy_s((void*)this->m_dpoly, sizeof(double) * Info.m_maxCheby, other.m_dpoly, sizeof(double) * other.Info.m_maxCheby);
 }
 
-void dph::EphemerisRelease::move_swap(EphemerisRelease& other)
-{
-	// Копирование:
-	this->m_ready  = other.m_ready;
-	this->Info   = other.Info; // (Некоторые элементы структуры копируются по указателю - перемещаются).
-
-	// Перемещение:
-	m_binaryFilePath.swap(other.m_binaryFilePath);
-	this->m_binaryFileStream    = other.m_binaryFileStream;
-	this->m_buffer = other.m_buffer;
-	this->m_poly   = other.m_poly;
-	this->m_dpoly  = other.m_dpoly;
-
-	// Очистка объекта копирования:
-	other.m_ready            = false;
-	other.m_binaryFileStream              = nullptr;
-	other.Info.m_constantsValues = nullptr;
-	other.m_buffer           = nullptr;
-	other.m_poly             = nullptr;
-	other.m_dpoly            = nullptr;
-}
-
 bool dph::EphemerisRelease::read()
 {
 	for (int i = 0; i < 3; i++)

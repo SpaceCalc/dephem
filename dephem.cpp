@@ -43,6 +43,11 @@ double dph::EphemerisRelease::startDate() const
 	return m_startDate;
 }
 
+double dph::EphemerisRelease::endDate() const
+{
+	return m_endDate;
+}
+
 double dph::EphemerisRelease::get_const(const char* const_name) const
 {
 	size_t len = strlen(const_name);

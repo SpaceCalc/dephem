@@ -46,6 +46,9 @@ namespace dph
 		// Первая доступная дата для рассчёта.
 		double startDate() const;
 
+		// Последняя доступная дата для рассчёта:
+		double endDate() const;
+
 		// Получить значение хранимой константы по её имени.
 		double get_const(const char* const_name) const;
 

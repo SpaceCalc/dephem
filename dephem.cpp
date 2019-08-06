@@ -53,7 +53,7 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 	// Очистка существующей информации:
 	if (m_binaryFileStream != nullptr) std::fclose(m_binaryFileStream);
 	delete[] m_buffer;
-	delete[] Info.const_value;
+	delete[] Info.m_constantsValues;
 	delete[] m_poly;
 	delete[] m_dpoly;
 
@@ -88,7 +88,7 @@ dph::EphemerisRelease::~EphemerisRelease()
 
 	// Освобождение выделенной памяти:
 	delete[] m_buffer;
-	delete[] Info.const_value;
+	delete[] Info.m_constantsValues;
 	delete[] m_poly;
 	delete[] m_dpoly;
 }
@@ -116,7 +116,7 @@ double dph::EphemerisRelease::get_const(const char* const_name) const
 			break;
 		}
 
-		if (correct) return Info.const_value[i];
+		if (correct) return Info.m_constantsValues[i];
 	}
 
 	return 0;
@@ -169,8 +169,8 @@ void dph::EphemerisRelease::copy(const EphemerisRelease& other)
 {
 	this->Info = other.Info;
 
-	Info.const_value = new double[Info.m_constantsCount];
-	memcpy_s(Info.const_value, sizeof(double) * Info.m_constantsCount, other.Info.const_value, sizeof(double) * other.Info.m_constantsCount);
+	Info.m_constantsValues = new double[Info.m_constantsCount];
+	memcpy_s(Info.m_constantsValues, sizeof(double) * Info.m_constantsCount, other.Info.m_constantsValues, sizeof(double) * other.Info.m_constantsCount);
 
 	m_buffer = new double[Info.m_ncoeff];
 	memcpy_s((void*)this->m_buffer, sizeof(double) * Info.m_ncoeff, other.m_buffer, sizeof(double) * Info.m_ncoeff);
@@ -198,7 +198,7 @@ void dph::EphemerisRelease::move_swap(EphemerisRelease& other)
 	// Очистка объекта копирования:
 	other.m_ready            = false;
 	other.m_binaryFileStream              = nullptr;
-	other.Info.const_value = nullptr;
+	other.Info.m_constantsValues = nullptr;
 	other.m_buffer           = nullptr;
 	other.m_poly             = nullptr;
 	other.m_dpoly            = nullptr;
@@ -223,7 +223,7 @@ bool dph::EphemerisRelease::read()
 	std::fread(&Info.m_releaseIndex,       4,       1, m_binaryFileStream);
 	std::fread(Info.m_keys[12],      4,       3, m_binaryFileStream);		
 	
-	Info.const_value = new double[Info.m_constantsCount];
+	Info.m_constantsValues = new double[Info.m_constantsCount];
 
 	if (Info.m_constantsCount > 400)
 	{
@@ -242,7 +242,7 @@ bool dph::EphemerisRelease::read()
 	}
 
 	std::fseek(m_binaryFileStream, Info.m_ncoeff * 8, 0);
-	std::fread(Info.const_value, 8, Info.m_constantsCount, m_binaryFileStream);
+	std::fread(Info.m_constantsValues, 8, Info.m_constantsCount, m_binaryFileStream);
 
 	post_read_calc();
 

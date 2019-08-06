@@ -44,7 +44,7 @@ namespace dph
 			friend class EphemerisRelease;
 
 			char	m_constantsNames[1000][6]{};
-			double* const_value = nullptr;
+			double* m_constantsValues = nullptr;
 
 			double   co_em = 0;
 			double   co_span = 0;

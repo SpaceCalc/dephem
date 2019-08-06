@@ -253,7 +253,7 @@ void dph::EphemerisRelease::post_read_calc()
 {
 	// Определение доп. коэффициентов для работы с ежегодником:
 	Info.m_emrat2 = 1 / (1 + Info.m_emrat);
-	Info.co_span = 1 / (43200 * Info.m_blockTimeSpan);
+	Info.m_dimensionFit = 1 / (43200 * Info.m_blockTimeSpan);
 
 	// Определение количества блоков в ежегоднике:
 	Info.m_blocksCount = size_t((Info.m_endDate - Info.m_startDate) / Info.m_blockTimeSpan);
@@ -378,7 +378,7 @@ void dph::EphemerisRelease::interpolate_derivative(const double* set, unsigned i
 	memset(res, 0, sizeof(double) * comp_count * 2);
 
 	// Определение переменной для соблюдения размерности:
-	double derivative_units = Info.m_keys[item][2] * Info.co_span;
+	double derivative_units = Info.m_keys[item][2] * Info.m_dimensionFit;
 
 	// Вычисление координат:
 	for (unsigned i = 0; i < comp_count; ++i)

@@ -47,7 +47,7 @@ namespace dph
 			double* m_constantsValues = nullptr;
 
 			double   m_emrat2 = 0;
-			double   co_span = 0;
+			double   m_dimensionFit = 0;
 			uint32_t max_cheby = 0;
 			int      items = 0;
 			int	     derived_items = 0;

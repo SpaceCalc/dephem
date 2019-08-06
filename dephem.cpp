@@ -251,15 +251,6 @@ void dph::EphemerisRelease::post_read_calc()
 	}
 	m_poly  = new double[Info.m_maxCheby] {1};
 	m_dpoly = new double[Info.m_maxCheby] {0, 1};
-
-	// Определение списка производных элементов:
-	for (int i = 0; i < 17; ++i)
-	{		
-		if (Info.items & (i == 2 ? 0x204 : i == 11 ? 0x5FF : i == 12 ? 0x4 : i > 12 ? (1 << (i - 2)) : 1 << i))
-		{
-			Info.derived_items |= 1 << i;
-		}
-	}
 }
 
 bool dph::EphemerisRelease::authentic() const

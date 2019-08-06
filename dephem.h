@@ -50,7 +50,6 @@ namespace dph
 			double   m_dimensionFit = 0;
 			uint32_t m_maxCheby = 0;
 			int      items = 0;
-			int	     derived_items = 0;
 
 		} Info;
 

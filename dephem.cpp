@@ -219,9 +219,9 @@ bool dph::EphemerisRelease::read()
 	std::fread(&Info.m_constantsCount, 4,       1, m_binaryFileStream);
 	std::fread(&Info.au,          8,       1, m_binaryFileStream);
 	std::fread(&Info.emrat,       8,       1, m_binaryFileStream);
-	std::fread(Info.key,          4,  12 * 3, m_binaryFileStream);
+	std::fread(Info.m_keys,          4,  12 * 3, m_binaryFileStream);
 	std::fread(&Info.m_releaseIndex,       4,       1, m_binaryFileStream);
-	std::fread(Info.key[12],      4,       3, m_binaryFileStream);		
+	std::fread(Info.m_keys[12],      4,       3, m_binaryFileStream);		
 	
 	Info.const_value = new double[Info.m_constantsCount];
 
@@ -230,15 +230,15 @@ bool dph::EphemerisRelease::read()
 		std::fread(Info.const_name[400], 6, Info.m_constantsCount - 400, m_binaryFileStream);
 	}		
 
-	std::fread(Info.key[13], sizeof(uint32_t), 3, m_binaryFileStream);
-	std::fread(Info.key[14], sizeof(uint32_t), 3, m_binaryFileStream);
+	std::fread(Info.m_keys[13], sizeof(uint32_t), 3, m_binaryFileStream);
+	std::fread(Info.m_keys[14], sizeof(uint32_t), 3, m_binaryFileStream);
 	
 	// Подсчёт ncoeff + max_cheby + items:
 	Info.m_ncoeff = 2;
 	for (int i = 0; i < 15; ++i)
 	{
 		int comp = i == 11 ? 2 : i == 14 ? 1 : 3;
-		Info.m_ncoeff += comp * Info.key[i][1] * Info.key[i][2];
+		Info.m_ncoeff += comp * Info.m_keys[i][1] * Info.m_keys[i][2];
 	}
 
 	std::fseek(m_binaryFileStream, Info.m_ncoeff * 8, 0);
@@ -261,8 +261,8 @@ void dph::EphemerisRelease::post_read_calc()
 	// Подсчёт max_cheby и items:
 	for (int i = 0; i < 15; ++i)
 	{
-		if (Info.key[i][1] > Info.max_cheby) Info.max_cheby = Info.key[i][1];
-		if (Info.key[i][1] != 0) Info.items |= 1 << i;
+		if (Info.m_keys[i][1] > Info.max_cheby) Info.max_cheby = Info.m_keys[i][1];
+		if (Info.m_keys[i][1] != 0) Info.items |= 1 << i;
 	}
 	m_poly  = new double[Info.max_cheby] {1};
 	m_dpoly = new double[Info.max_cheby] {0, 1};
@@ -333,7 +333,7 @@ void dph::EphemerisRelease::fill_buffer(size_t block_num) const
 void dph::EphemerisRelease::interpolate(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const
 {
 	// Копирование значения количества коэффициентов на компоненту:
-	uint32_t cpec = Info.key[item][1];
+	uint32_t cpec = Info.m_keys[item][1];
 	
 	// Предварительное заполнение полиномов (вычисление их сумм):
 	m_poly[1] = norm_time;
@@ -360,7 +360,7 @@ void dph::EphemerisRelease::interpolate(const double* set, unsigned item, double
 void dph::EphemerisRelease::interpolate_derivative(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const
 {
 	// Копирование значения количества коэффициентов на компоненту:
-	uint32_t cpec = Info.key[item][1];
+	uint32_t cpec = Info.m_keys[item][1];
 
 	// Предварительное заполнение полиномов (вычисление их сумм):
 	m_poly[1]  = norm_time;
@@ -378,7 +378,7 @@ void dph::EphemerisRelease::interpolate_derivative(const double* set, unsigned i
 	memset(res, 0, sizeof(double) * comp_count * 2);
 
 	// Определение переменной для соблюдения размерности:
-	double derivative_units = Info.key[item][2] * Info.co_span;
+	double derivative_units = Info.m_keys[item][2] * Info.co_span;
 
 	// Вычисление координат:
 	for (unsigned i = 0; i < comp_count; ++i)
@@ -421,19 +421,19 @@ void dph::EphemerisRelease::get_origin_item(unsigned item, double JED, double *S
 		fill_buffer(offset - (JED == Info.end ? 1 : 0));
 	}
 
-	norm_time = (norm_time - offset) * Info.key[item][2];	
+	norm_time = (norm_time - offset) * Info.m_keys[item][2];	
 	offset    = size_t(norm_time);									
 	norm_time = 2 * (norm_time - offset) - 1;	
 	
 	if (JED == Info.end)
 	{
-		offset    = Info.key[item][2] - 1;
+		offset    = Info.m_keys[item][2] - 1;
 		norm_time = 1;
 	}
 	
 	// Порядковый номер первого коэффициента для выбранного подпромежутка:
 	int comp_count = item == 11 ? 2 : item == 14 ? 1 : 3;
-	int coeff_pos  = Info.key[item][0] - 1 + comp_count * offset * Info.key[item][1];
+	int coeff_pos  = Info.m_keys[item][0] - 1 + comp_count * offset * Info.m_keys[item][1];
 
 	// В зависимости от того, что требуется вычислить (радиус-вектор
 	// или радиус-вектор и вектор скорости) выбирается соответствующий

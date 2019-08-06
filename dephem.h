@@ -43,7 +43,7 @@ namespace dph
 		private:
 			friend class EphemerisRelease;
 
-			char	const_name[1000][6]{};
+			char	m_constantsNames[1000][6]{};
 			double* const_value = nullptr;
 
 			double   co_em = 0;

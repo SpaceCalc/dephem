@@ -110,7 +110,7 @@ double dph::EphemerisRelease::get_const(const char* const_name) const
 	{
 		bool correct = true;
 
-		for (size_t j = 0; j < len; j++) if (const_name[j] != Info.const_name[i][j])
+		for (size_t j = 0; j < len; j++) if (const_name[j] != Info.m_constantsNames[i][j])
 		{
 			correct = false;
 			break;
@@ -212,7 +212,7 @@ bool dph::EphemerisRelease::read()
 		Info.releaseLabel[i][84] = '\0';
 	}
 
-	std::fread(Info.const_name,   1, 400 * 6, m_binaryFileStream);
+	std::fread(Info.m_constantsNames,   1, 400 * 6, m_binaryFileStream);
 	std::fread(&Info.m_startDate,       8,       1, m_binaryFileStream);
 	std::fread(&Info.m_endDate,         8,       1, m_binaryFileStream);
 	std::fread(&Info.m_blockTimeSpan, 8, 1, m_binaryFileStream);
@@ -227,7 +227,7 @@ bool dph::EphemerisRelease::read()
 
 	if (Info.m_constantsCount > 400)
 	{
-		std::fread(Info.const_name[400], 6, Info.m_constantsCount - 400, m_binaryFileStream);
+		std::fread(Info.m_constantsNames[400], 6, Info.m_constantsCount - 400, m_binaryFileStream);
 	}		
 
 	std::fread(Info.m_keys[13], sizeof(uint32_t), 3, m_binaryFileStream);

@@ -1,9 +1,9 @@
 #include "dephem.h"
 
-dph::EphemerisRelease::EphemerisRelease(const char * file_path) : file_path(file_path)
+dph::EphemerisRelease::EphemerisRelease(const char * binaryFilePath) : m_binaryFilePath(binaryFilePath)
 {			
 	// Попытка открыть файл:
-	eph = std::fopen(this->file_path.c_str(), "rb");
+	eph = std::fopen(this->m_binaryFilePath.c_str(), "rb");
 	
 	if (eph == nullptr)	// Ошибка открытия файла.
 	{
@@ -23,14 +23,14 @@ dph::EphemerisRelease::EphemerisRelease(const char * file_path) : file_path(file
 dph::EphemerisRelease::EphemerisRelease(const EphemerisRelease& other)
 {
 	// Предварительное копирование:	
-	this->file_path = other.file_path;
+	this->m_binaryFilePath = other.m_binaryFilePath;
 	this->ready     = other.ready;
 	
 	// Копирование при готовности:
 	if (ready)
 	{
 		// Попытка открыть файл:
-		eph = std::fopen(this->file_path.c_str(), "rb");
+		eph = std::fopen(this->m_binaryFilePath.c_str(), "rb");
 
 		// Завершение копирования при ошибке открытия файла:
 		if (eph == nullptr)
@@ -57,14 +57,14 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 	delete[] dpoly;
 
 	// Предварительное копирование:
-	this->file_path = other.file_path;
+	this->m_binaryFilePath = other.m_binaryFilePath;
 	this->ready     = other.ready;
 
 	// Копирование при готовности:
 	if (ready)
 	{
 		// Попытка открыть файл:
-		eph = std::fopen(this->file_path.c_str(), "rb");
+		eph = std::fopen(this->m_binaryFilePath.c_str(), "rb");
 
 		// Завершение копирования при ошибке открытия файла:
 		if (eph == nullptr)
@@ -188,7 +188,7 @@ void dph::EphemerisRelease::move_swap(EphemerisRelease& other)
 	this->Info   = other.Info; // (Некоторые элементы структуры копируются по указателю - перемещаются).
 
 	// Перемещение:
-	file_path.swap(other.file_path);
+	m_binaryFilePath.swap(other.m_binaryFilePath);
 	this->eph    = other.eph;
 	this->buffer = other.buffer;
 	this->poly   = other.poly;

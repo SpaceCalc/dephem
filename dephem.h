@@ -19,7 +19,7 @@ namespace dph
 		static constexpr size_t MAX_LONG = std::numeric_limits<long>::max();
 
 	private:
-		std::string file_path;
+		std::string m_binaryFilePath;
 
 		FILE* eph = nullptr;
 
@@ -60,7 +60,7 @@ namespace dph
 		double* dpoly = nullptr;
 
 	public:
-		explicit EphemerisRelease(const char* file_path);
+		explicit EphemerisRelease(const char* binaryFilePath);
 
 		EphemerisRelease(const EphemerisRelease& other);
 

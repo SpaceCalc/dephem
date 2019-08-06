@@ -220,7 +220,7 @@ bool dph::EphemerisRelease::read()
 	std::fread(&Info.au,          8,       1, m_binaryFileStream);
 	std::fread(&Info.emrat,       8,       1, m_binaryFileStream);
 	std::fread(Info.key,          4,  12 * 3, m_binaryFileStream);
-	std::fread(&Info.denum,       4,       1, m_binaryFileStream);
+	std::fread(&Info.m_releaseIndex,       4,       1, m_binaryFileStream);
 	std::fread(Info.key[12],      4,       3, m_binaryFileStream);		
 	
 	Info.const_value = new double[Info.m_constantsCount];

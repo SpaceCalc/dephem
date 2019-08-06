@@ -217,7 +217,7 @@ bool dph::EphemerisRelease::read()
 	std::fread(&Info.m_endDate,         8,       1, m_binaryFileStream);
 	std::fread(&Info.m_blockTimeSpan, 8, 1, m_binaryFileStream);
 	std::fread(&Info.m_constantsCount, 4,       1, m_binaryFileStream);
-	std::fread(&Info.au,          8,       1, m_binaryFileStream);
+	std::fread(&Info.m_au,          8,       1, m_binaryFileStream);
 	std::fread(&Info.emrat,       8,       1, m_binaryFileStream);
 	std::fread(Info.m_keys,          4,  12 * 3, m_binaryFileStream);
 	std::fread(&Info.m_releaseIndex,       4,       1, m_binaryFileStream);
@@ -285,7 +285,7 @@ bool dph::EphemerisRelease::authentic() const
 	if (Info.max_cheby == 0)				return false;
 	if (Info.items == 0)					return false;
 	if (Info.emrat == 0)					return false;
-	if (Info.au == 0)						return false;
+	if (Info.m_au == 0)						return false;
 
 	double time[2];
 	std::fseek(m_binaryFileStream, 16 * Info.m_ncoeff, 0);

@@ -35,7 +35,7 @@ namespace dph
 			double		m_startDate = 0;
 			double		m_endDate = 0;
 			double		m_blockTimeSpan = 0;
-			double		au = 0;
+			double		m_au = 0;
 			double		emrat = 0;
 
 			char releaseLabel[3][85]{};

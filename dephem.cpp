@@ -1,6 +1,6 @@
 #include "dephem.h"
 
-dph::dephem::dephem(const char * file_path) : file_path(file_path)
+dph::EphemerisRelease::EphemerisRelease(const char * file_path) : file_path(file_path)
 {			
 	// Попытка открыть файл:
 	eph = std::fopen(this->file_path.c_str(), "rb");
@@ -20,7 +20,7 @@ dph::dephem::dephem(const char * file_path) : file_path(file_path)
 	}
 }
 
-dph::dephem::dephem(const dephem& other)
+dph::EphemerisRelease::EphemerisRelease(const EphemerisRelease& other)
 {
 	// Предварительное копирование:	
 	this->file_path = other.file_path;
@@ -44,13 +44,13 @@ dph::dephem::dephem(const dephem& other)
 	}
 }
 
-dph::dephem::dephem(dephem&& other) noexcept 
+dph::EphemerisRelease::EphemerisRelease(EphemerisRelease&& other) noexcept 
 {
 	// Копирование и перемещение объекта:
 	move_swap(other);
 }
 
-dph::dephem& dph::dephem::operator=(const dephem& other)
+dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& other)
 {	
 	// Проверка на равенство самому себе:
 	if (&other == this) return *this;
@@ -86,7 +86,7 @@ dph::dephem& dph::dephem::operator=(const dephem& other)
 	return *this;
 }
 
-dph::dephem& dph::dephem::operator=(dephem&& other) noexcept
+dph::EphemerisRelease& dph::EphemerisRelease::operator=(EphemerisRelease&& other) noexcept
 {
 	// Проверка на равенство самому себе:
 	if (&other == this) return *this;
@@ -104,7 +104,7 @@ dph::dephem& dph::dephem::operator=(dephem&& other) noexcept
 	return *this;
 }
 
-dph::dephem::~dephem()
+dph::EphemerisRelease::~EphemerisRelease()
 {
 	// Закрытие файла ежегодника:
 	if (eph != nullptr) std::fclose(eph);
@@ -116,7 +116,7 @@ dph::dephem::~dephem()
 	delete[] dpoly;
 }
 
-double dph::dephem::get_const(const char* const_name) const
+double dph::EphemerisRelease::get_const(const char* const_name) const
 {
 	size_t len = strlen(const_name);
 	
@@ -145,7 +145,7 @@ double dph::dephem::get_const(const char* const_name) const
 	return 0;
 }
 
-void dph::dephem::available_items(bool* items, bool derived) const
+void dph::EphemerisRelease::available_items(bool* items, bool derived) const
 {
 	if (this->ready == false)
 	{
@@ -160,7 +160,7 @@ void dph::dephem::available_items(bool* items, bool derived) const
 	}
 }
 
-void dph::dephem::get_coeff(double * coeff, double JED) const
+void dph::EphemerisRelease::get_coeff(double * coeff, double JED) const
 {
 	if (this->ready == false)
 	{
@@ -188,7 +188,7 @@ void dph::dephem::get_coeff(double * coeff, double JED) const
 	}		
 }
 
-void dph::dephem::copy(const dephem& other)
+void dph::EphemerisRelease::copy(const EphemerisRelease& other)
 {
 	this->Info = other.Info;
 
@@ -205,7 +205,7 @@ void dph::dephem::copy(const dephem& other)
 	memcpy_s((void*)this->dpoly, sizeof(double) * Info.max_cheby, other.dpoly, sizeof(double) * other.Info.max_cheby);
 }
 
-void dph::dephem::move_swap(dephem& other)
+void dph::EphemerisRelease::move_swap(EphemerisRelease& other)
 {
 	// Копирование:
 	this->ready  = other.ready;
@@ -227,7 +227,7 @@ void dph::dephem::move_swap(dephem& other)
 	other.dpoly            = nullptr;
 }
 
-bool dph::dephem::read()
+bool dph::EphemerisRelease::read()
 {
 	for (int i = 0; i < 3; i++)
 	{
@@ -272,7 +272,7 @@ bool dph::dephem::read()
 	return authentic();
 }
 
-void dph::dephem::post_read_calc()
+void dph::EphemerisRelease::post_read_calc()
 {
 	// Определение доп. коэффициентов для работы с ежегодником:
 	Info.co_em = 1 / (1 + Info.emrat);
@@ -300,7 +300,7 @@ void dph::dephem::post_read_calc()
 	}
 }
 
-bool dph::dephem::authentic() const
+bool dph::EphemerisRelease::authentic() const
 {
 	if (Info.ncoeff == 0)					return false;
 	if (Info.start >= Info.end)				return false;
@@ -336,7 +336,7 @@ bool dph::dephem::authentic() const
 	return true;
 }
 
-void dph::dephem::fill_buffer(size_t block_num) const
+void dph::EphemerisRelease::fill_buffer(size_t block_num) const
 {
 	size_t adress = (2 + block_num) * Info.ncoeff * 8;
 
@@ -353,7 +353,7 @@ void dph::dephem::fill_buffer(size_t block_num) const
 	std::fread((void*)buffer, sizeof(double), Info.ncoeff, eph);
 }
 
-void dph::dephem::interpolate(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const
+void dph::EphemerisRelease::interpolate(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const
 {
 	// Копирование значения количества коэффициентов на компоненту:
 	uint32_t cpec = Info.key[item][1];
@@ -380,7 +380,7 @@ void dph::dephem::interpolate(const double* set, unsigned item, double norm_time
 	}
 }
 
-void dph::dephem::interpolate_derivative(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const
+void dph::EphemerisRelease::interpolate_derivative(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const
 {
 	// Копирование значения количества коэффициентов на компоненту:
 	uint32_t cpec = Info.key[item][1];
@@ -416,7 +416,7 @@ void dph::dephem::interpolate_derivative(const double* set, unsigned item, doubl
 	}
 }
 
-void dph::dephem::get_origin_item(unsigned item, double JED, double *S, bool state) const
+void dph::EphemerisRelease::get_origin_item(unsigned item, double JED, double *S, bool state) const
 {
 	/*
 	0	Mercury
@@ -465,7 +465,7 @@ void dph::dephem::get_origin_item(unsigned item, double JED, double *S, bool sta
 	else	    interpolate           (&buffer[coeff_pos], item, norm_time, S, comp_count);
 }
 
-void dph::dephem::get_origin_earth(double JED, double* S, bool state) const
+void dph::EphemerisRelease::get_origin_earth(double JED, double* S, bool state) const
 {
 	// Получение ВС барицентра З-Л:
 	get_origin_item(2, JED, S, state);
@@ -481,7 +481,7 @@ void dph::dephem::get_origin_earth(double JED, double* S, bool state) const
 	}
 }
 
-void dph::dephem::get_origin_moon(double JED, double* S, bool state) const
+void dph::EphemerisRelease::get_origin_moon(double JED, double* S, bool state) const
 {
 	// Получение ВС барицентра З-Л:
 	get_origin_item(2, JED, S, state);
@@ -497,7 +497,7 @@ void dph::dephem::get_origin_moon(double JED, double* S, bool state) const
 	}	
 }
 
-void dph::dephem::get_body(unsigned target, unsigned center, double JED, double* S, bool state) const
+void dph::EphemerisRelease::get_body(unsigned target, unsigned center, double JED, double* S, bool state) const
 {
 	/*
 	0   Mercury
@@ -575,7 +575,7 @@ void dph::dephem::get_body(unsigned target, unsigned center, double JED, double*
 	}
 }
 
-void dph::dephem::get_other(unsigned item, double JED, double* res, bool state) const
+void dph::EphemerisRelease::get_other(unsigned item, double JED, double* res, bool state) const
 {
 	/*
 	13	Earth Nutations in longitudeand obliquity(IAU 1980 model)

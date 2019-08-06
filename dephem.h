@@ -14,7 +14,7 @@
 
 namespace dph
 {
-	class dephem
+	class EphemerisRelease
 	{
 		static constexpr size_t MAX_LONG = std::numeric_limits<long>::max();
 
@@ -41,7 +41,7 @@ namespace dph
 			char label[3][85]{};
 
 		private:
-			friend class dephem;
+			friend class EphemerisRelease;
 
 			char	const_name[1000][6]{};
 			double* const_value = nullptr;
@@ -60,17 +60,17 @@ namespace dph
 		double* dpoly = nullptr;
 
 	public:
-		explicit dephem(const char* file_path);
+		explicit EphemerisRelease(const char* file_path);
 
-		dephem(const dephem& other);
+		EphemerisRelease(const EphemerisRelease& other);
 
-		dephem(dephem&& other) noexcept;
+		EphemerisRelease(EphemerisRelease&& other) noexcept;
 
-		dephem& operator = (const dephem& other);
+		EphemerisRelease& operator = (const EphemerisRelease& other);
 
-		dephem& operator = (dephem&& other) noexcept;
+		EphemerisRelease& operator = (EphemerisRelease&& other) noexcept;
 
-		~dephem();
+		~EphemerisRelease();
 
 		bool is_ready() const { return ready; }
 
@@ -84,9 +84,9 @@ namespace dph
 
 	private:
 
-		void copy(const dephem& other);
+		void copy(const EphemerisRelease& other);
 
-		void move_swap(dephem& other);
+		void move_swap(EphemerisRelease& other);
 
 		bool read();
 

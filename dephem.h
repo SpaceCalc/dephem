@@ -49,6 +49,9 @@ namespace dph
 		// Последняя доступная дата для рассчёта:
 		double endDate() const;
 
+		// Получить номер выпуска:
+		uint32_t releaseIndex() const;
+
 		// Получить имя константы по её индексу:
 		const std::string& constantName(size_t constantIndex) const;
 

@@ -48,6 +48,18 @@ double dph::EphemerisRelease::endDate() const
 	return m_endDate;
 }
 
+uint32_t dph::EphemerisRelease::releaseIndex() const
+{
+	if (m_ready == false)
+	{
+		return 0;
+	}
+	else
+	{
+		return m_releaseIndex;
+	}
+}
+
 const std::string& dph::EphemerisRelease::constantName(size_t constantIndex) const
 {
 	if (m_ready == false)

@@ -3,7 +3,7 @@
 dephem::dephem(const char * file_path, unsigned int option) : file_path(file_path), option(option)
 {			
 	// Попытка открыть файл:
-	fopen_s(&eph, this->file_path.c_str(), "rb");
+	eph = std::fopen(this->file_path.c_str(), "rb");
 	
 	if (eph == nullptr)	// Ошибка открытия файла.
 	{
@@ -33,7 +33,7 @@ dephem::dephem(const dephem& other)
 	if (ready)
 	{
 		// Попытка открыть файл:
-		fopen_s(&eph, this->file_path.c_str(), "rb");
+		eph = std::fopen(this->file_path.c_str(), "rb");
 
 		// Завершение копирования при ошибке открытия файла:
 		if (eph == nullptr)
@@ -60,7 +60,7 @@ dephem& dephem::operator=(const dephem& other)
 	if (&other == this) return *this;
 
 	// Очистка существующей информации:
-	if (eph != nullptr) fclose(eph);
+	if (eph != nullptr) std::fclose(eph);
 	delete[] buffer;
 	delete[] Info.const_value;
 	delete[] poly;
@@ -75,7 +75,7 @@ dephem& dephem::operator=(const dephem& other)
 	if (ready)
 	{
 		// Попытка открыть файл:
-		fopen_s(&eph, this->file_path.c_str(), "rb");
+		eph = std::fopen(this->file_path.c_str(), "rb");
 
 		// Завершение копирования при ошибке открытия файла:
 		if (eph == nullptr)
@@ -98,7 +98,7 @@ dephem& dephem::operator=(dephem&& other) noexcept
 	if (&other == this) return *this;
 
 	// Очистка существующей информации:
-	if (eph != nullptr) fclose(eph);
+	if (eph != nullptr) std::fclose(eph);
 	delete[] buffer;
 	delete[] Info.const_value;
 	delete[] poly;
@@ -113,7 +113,7 @@ dephem& dephem::operator=(dephem&& other) noexcept
 dephem::~dephem()
 {
 	// Закрытие файла ежегодника:
-	if (eph != nullptr) fclose(eph);
+	if (eph != nullptr) std::fclose(eph);
 
 	// Освобождение выделенной памяти:
 	delete[] buffer;
@@ -251,30 +251,30 @@ bool dephem::read()
 {
 	for (int i = 0; i < 3; i++)
 	{
-		fread(Info.label[i], 1, 84, eph);
+		std::fread(Info.label[i], 1, 84, eph);
 		Info.label[i][84] = '\0';
 	}
 
-	fread(Info.const_name,   1, 400 * 6, eph);
-	fread(&Info.start,       8,       1, eph);
-	fread(&Info.end,         8,       1, eph);
-	fread(&Info.span,        8,       1, eph);
-	fread(&Info.const_count, 4,       1, eph);
-	fread(&Info.au,          8,       1, eph);
-	fread(&Info.emrat,       8,       1, eph);
-	fread(Info.key,          4,  12 * 3, eph);
-	fread(&Info.denum,       4,       1, eph);
-	fread(Info.key[12],      4,       3, eph);		
+	std::fread(Info.const_name,   1, 400 * 6, eph);
+	std::fread(&Info.start,       8,       1, eph);
+	std::fread(&Info.end,         8,       1, eph);
+	std::fread(&Info.span, 8, 1, eph);
+	std::fread(&Info.const_count, 4,       1, eph);
+	std::fread(&Info.au,          8,       1, eph);
+	std::fread(&Info.emrat,       8,       1, eph);
+	std::fread(Info.key,          4,  12 * 3, eph);
+	std::fread(&Info.denum,       4,       1, eph);
+	std::fread(Info.key[12],      4,       3, eph);		
 	
 	Info.const_value = new double[Info.const_count];
 
 	if (Info.const_count > 400)
 	{
-		fread_s(Info.const_name[400], (Info.const_count - 400) * 6, 1, (Info.const_count - 400) * 6, eph);
+		std::fread(Info.const_name[400], 6, Info.const_count - 400, eph);
 	}		
 
-	fread(Info.key[13], sizeof(uint32_t), 3, eph);
-	fread(Info.key[14], sizeof(uint32_t), 3, eph);
+	std::fread(Info.key[13], sizeof(uint32_t), 3, eph);
+	std::fread(Info.key[14], sizeof(uint32_t), 3, eph);
 	
 	// Подсчёт ncoeff + max_cheby + items:
 	Info.ncoeff = 2;
@@ -284,8 +284,8 @@ bool dephem::read()
 		Info.ncoeff += comp * Info.key[i][1] * Info.key[i][2];
 	}
 
-	fseek(eph, Info.ncoeff * 8, 0);
-	fread_s(Info.const_value, Info.const_count * sizeof(double), sizeof(double), Info.const_count, eph);
+	std::fseek(eph, Info.ncoeff * 8, 0);
+	std::fread(Info.const_value, 8, Info.const_count, eph);
 
 	post_read_calc();
 
@@ -331,8 +331,8 @@ bool dephem::authentic() const
 	if (Info.au == 0)						return false;
 
 	double time[2];
-	fseek(eph, 16 * Info.ncoeff, 0);
-	fread(time, 2, 8, eph);
+	std::fseek(eph, 16 * Info.ncoeff, 0);
+	std::fread(time, 2, 8, eph);
 
 	if (time[0] != Info.start)				return false;
 	if (time[1] != Info.start + Info.span)	return false;
@@ -341,15 +341,15 @@ bool dephem::authentic() const
 
 	if (end_pos > MAX_LONG)
 	{
-		fseek(eph, MAX_LONG, 0);
-		fseek(eph, end_pos - MAX_LONG, 1); 
+		std::fseek(eph, MAX_LONG, 0);
+		std::fseek(eph, end_pos - MAX_LONG, 1); 
 	}
 	else
 	{
-		fseek(eph, end_pos, 0);
+		std::fseek(eph, end_pos, 0);
 	}
 	
-	fread(time, 2, 8, eph);
+	std::fread(time, 2, 8, eph);
 	if (time[0] != Info.end - Info.span)	return false;
 	if (time[1] != Info.end)				return false;
 
@@ -362,15 +362,15 @@ void dephem::fill_buffer(size_t block_num) const
 
 	if (adress > MAX_LONG)
 	{
-		fseek(eph, MAX_LONG, 0);
-		fseek(eph, adress - MAX_LONG, 1);
+		std::fseek(eph, MAX_LONG, 0);
+		std::fseek(eph, adress - MAX_LONG, 1);
 	}
 	else
 	{
-		fseek(eph, adress, 0);
+		std::fseek(eph, adress, 0);
 	}
 
-	if (fread((void*)buffer, sizeof(double), Info.ncoeff, eph) != Info.ncoeff) 
+	if (std::fread((void*)buffer, sizeof(double), Info.ncoeff, eph) != Info.ncoeff) 
 		throw_error("File reading error.");	
 }
 

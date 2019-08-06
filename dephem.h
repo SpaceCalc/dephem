@@ -16,9 +16,32 @@ namespace dph
 {
 	class EphemerisRelease
 	{
-		static constexpr size_t FSEEK_MAX_OFFSET = std::numeric_limits<long>::max();
+	public:
+		explicit EphemerisRelease(const std::string& binaryFilePath);
+
+		EphemerisRelease(const EphemerisRelease& other);
+
+		EphemerisRelease& operator = (const EphemerisRelease& other);
+
+		~EphemerisRelease();
+
+		bool is_ready() const { return m_ready; }
+
+		struct header_info;
+		const header_info* const info = &Info;
+
+		double get_const(const char* const_name) const;
+
+		void get_coeff(double* coeff, double JED) const;
+
+		void get_body(unsigned target, unsigned center, double JED, double* S, bool state) const;
+
+		void get_other(unsigned item, double JED, double* res, bool state) const;
 
 	private:
+		
+		static constexpr size_t FSEEK_MAX_OFFSET = std::numeric_limits<long>::max();
+
 		std::string m_binaryFilePath;
 
 		FILE* m_binaryFileStream = nullptr;
@@ -57,25 +80,6 @@ namespace dph
 		double* m_poly = nullptr;
 		double* m_dpoly = nullptr;
 
-	public:
-		explicit EphemerisRelease(const std::string& binaryFilePath);
-
-		EphemerisRelease(const EphemerisRelease& other);
-
-		EphemerisRelease& operator = (const EphemerisRelease& other);
-
-		~EphemerisRelease();
-
-		bool is_ready() const { return m_ready; }
-
-		const header_info* const info = &Info;
-
-		double get_const(const char* const_name) const;
-
-		void get_coeff(double* coeff, double JED) const;
-
-	private:
-
 		void copy(const EphemerisRelease& other);
 
 		void move_swap(EphemerisRelease& other);
@@ -97,12 +101,6 @@ namespace dph
 		void get_origin_earth(double JED, double* S, bool state) const;
 
 		void get_origin_moon(double JED, double* S, bool state) const;
-
-	public:
-
-		void get_body(unsigned target, unsigned center, double JED, double* S, bool state) const;
-
-		void get_other(unsigned item, double JED, double* res, bool state) const;
 	};
 }
 

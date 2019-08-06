@@ -175,11 +175,11 @@ void dph::EphemerisRelease::copy(const EphemerisRelease& other)
 	m_buffer = new double[Info.m_ncoeff];
 	memcpy_s((void*)this->m_buffer, sizeof(double) * Info.m_ncoeff, other.m_buffer, sizeof(double) * Info.m_ncoeff);
 
-	m_poly = new double[Info.max_cheby];
-	memcpy_s((void*)this->m_poly, sizeof(double) * Info.max_cheby, other.m_poly, sizeof(double) * other.Info.max_cheby);
+	m_poly = new double[Info.m_maxCheby];
+	memcpy_s((void*)this->m_poly, sizeof(double) * Info.m_maxCheby, other.m_poly, sizeof(double) * other.Info.m_maxCheby);
 
-	m_dpoly = new double[Info.max_cheby];
-	memcpy_s((void*)this->m_dpoly, sizeof(double) * Info.max_cheby, other.m_dpoly, sizeof(double) * other.Info.max_cheby);
+	m_dpoly = new double[Info.m_maxCheby];
+	memcpy_s((void*)this->m_dpoly, sizeof(double) * Info.m_maxCheby, other.m_dpoly, sizeof(double) * other.Info.m_maxCheby);
 }
 
 void dph::EphemerisRelease::move_swap(EphemerisRelease& other)
@@ -261,11 +261,11 @@ void dph::EphemerisRelease::post_read_calc()
 	// Подсчёт max_cheby и items:
 	for (int i = 0; i < 15; ++i)
 	{
-		if (Info.m_keys[i][1] > Info.max_cheby) Info.max_cheby = Info.m_keys[i][1];
+		if (Info.m_keys[i][1] > Info.m_maxCheby) Info.m_maxCheby = Info.m_keys[i][1];
 		if (Info.m_keys[i][1] != 0) Info.items |= 1 << i;
 	}
-	m_poly  = new double[Info.max_cheby] {1};
-	m_dpoly = new double[Info.max_cheby] {0, 1};
+	m_poly  = new double[Info.m_maxCheby] {1};
+	m_dpoly = new double[Info.m_maxCheby] {0, 1};
 
 	// Определение списка производных элементов:
 	for (int i = 0; i < 17; ++i)
@@ -282,7 +282,7 @@ bool dph::EphemerisRelease::authentic() const
 	if (Info.m_ncoeff == 0)					return false;
 	if (Info.m_startDate >= Info.m_endDate)				return false;
 	if (Info.m_blockTimeSpan == 0)						return false;
-	if (Info.max_cheby == 0)				return false;
+	if (Info.m_maxCheby == 0)				return false;
 	if (Info.items == 0)					return false;
 	if (Info.m_emrat == 0)					return false;
 	if (Info.m_au == 0)						return false;

@@ -16,101 +16,128 @@ namespace dph
 {
 	class EphemerisRelease
 	{
-		static constexpr size_t MAX_LONG = std::numeric_limits<long>::max();
-
-	private:
-		std::string file_path;
-
-		FILE* eph = nullptr;
-
-		bool ready = false;
-
-		struct header_info
-		{
-			size_t		block_count = 0;
-			size_t		ncoeff = 0;
-			uint32_t	const_count = 0;
-			int			denum = 0;
-			uint32_t	key[15][3]{};
-			double		start = 0;
-			double		end = 0;
-			double		span = 0;
-			double		au = 0;
-			double		emrat = 0;
-
-			char label[3][85]{};
-
-		private:
-			friend class EphemerisRelease;
-
-			char	const_name[1000][6]{};
-			double* const_value = nullptr;
-
-			double   co_em = 0;
-			double   co_span = 0;
-			uint32_t max_cheby = 0;
-			int      items = 0;
-			int	     derived_items = 0;
-
-		} Info;
-
-		mutable const double* buffer = nullptr;
-
-		double* poly = nullptr;
-		double* dpoly = nullptr;
-
+		friend class more_info;
 	public:
-		explicit EphemerisRelease(const char* file_path);
+		
+		// -------------------------------- Общие методы класса -------------------------------- //
 
-		EphemerisRelease(const EphemerisRelease& other);
+		// Конструктор по пути к бинарному файлу эфемерид.
+		explicit EphemerisRelease(const std::string& binaryFilePath);
 
-		EphemerisRelease(EphemerisRelease&& other) noexcept;
-
-		EphemerisRelease& operator = (const EphemerisRelease& other);
-
-		EphemerisRelease& operator = (EphemerisRelease&& other) noexcept;
-
+		// Деструктор.
 		~EphemerisRelease();
 
-		bool is_ready() const { return ready; }
 
-		const header_info* const info = &Info;
+		// ------------------------------- Основные методы класса -------------------------------//
 
+		// Получить значение радиус-вектора (или вектора состояния) выбранного тела относительно 
+		// другого на заданный момент времени.
+		void get_body(unsigned target, unsigned center, double JED, double* S, bool state) const;
+
+		// Получить значение(-я) прочих элементов, хранящихся в выпуске эфемерид.
+		void get_other(unsigned item, double JED, double* res, bool state) const;
+
+
+		// -------------------------------------- ГЕТТЕРЫ -------------------------------------- //
+
+		// Готов ли объект к работе.
+		bool is_ready() const;
+
+		// Первая доступная дата для рассчёта.
+		double startDate() const;
+
+		// Последняя доступная дата для рассчёта:
+		double endDate() const;
+
+		// Получить значение хранимой константы по её имени.
 		double get_const(const char* const_name) const;
 
-		void available_items(bool* items, bool derived = false) const;
-
+		// Заполнить массив коэффициентами блока, соответствующего моменту времени JED.
 		void get_coeff(double* coeff, double JED) const;
 
 	private:
+		
+		// ------------------------------ Внутренние значения ---------------------------------- //
+		
+		// Максимальное значение, хранимое в переменной типа "long". 
+		// Требуется для передачи в функцию std::fseek (<cstdio>) в качестве параметра смещения,
+		// при размерах файла превышающих данное значение.
+		static constexpr size_t FSEEK_MAX_OFFSET = std::numeric_limits<long>::max();
 
-		void copy(const EphemerisRelease& other);
+		// Готовность объекта к работе.
+		bool m_ready = false;
+		
+		// Работа с файлом //
+		std::string	m_binaryFilePath;				// Путь к бинарному файлу выпуска эфемерид.
+		FILE*		m_binaryFileStream = nullptr;	// Поток чтения файла.
 
-		void move_swap(EphemerisRelease& other);
+		// Значения, считанные из файла //
+		char		releaseLabel[3][85]{};			// Строковая информация о выпуске. 
+		int			m_releaseIndex{};				// Номерная часть индекса выпуска. 
+		double		m_startDate{};					// Дата начала выпуска (JED).         
+		double		m_endDate{};					// Дата окончания выпуска (JED).      
+		double		m_blockTimeSpan{};				// Временная протяжённость блока.     
+		uint32_t	m_keys[15][3]{};				// Ключи поиска коэффициентов.      	
+		double		m_au{};							// Астрономическая единица (км).      
+		double		m_emrat{};						// Отношение массы Земли к массе Луны.
+		uint32_t	m_constantsCount{};				// Количество констант в файле.       
+		char		m_constantsNames[1000][6]{};	// Массив с именами констант.         
+		double*		m_constantsValues{ nullptr };	// Массив со значениями констант.     
 
+		// Значения, дополнительно определённные внутри объекта //
+		size_t		m_blocksCount{};	// Количество блоков в файле.                
+		size_t		m_ncoeff{};			// Количество коэффициентов в блоке.         
+		uint32_t	m_maxCheby{};		// Наибольшее количество сумм полиномов.     
+		double		m_emrat2{};			// Отношение массы Луны к массе Земли и Луны.
+		double		m_dimensionFit{};	// Значение для соблюдения размерности.      
+
+		// Динамическик массивы для работы с выпуском //
+		mutable const double* m_buffer{ nullptr };	// Коэффициенты блока, читаемые из файла.
+		double* m_poly{ nullptr };					// Значения полиномов.
+		double* m_dpoly{ nullptr };					// Значения производных полиномов.
+
+
+		// ------------------------- Внутренние методы работы объекта -------------------------- //
+
+		//  Чтение файла.
 		bool read();
 
+		// Дополнительные вычисления после чтения файла.
 		void post_read_calc();
 
+		// Проверка значений, хранящихся в объекте и проверка файла.
 		bool authentic() const;
 
+		// Заполнение буффера "m_buffer" коэффициентами требуемого блока.
 		void fill_buffer(size_t block_num) const;
 
+		// Интерполяция компонент выбранного базового элемента.
 		void interpolate(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const;
 
+		// Интерполяция компонент и их производных выбранного базового элемента.
 		void interpolate_derivative(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const;
 
+		// Получить значения требуемых компонент базового элемента на выбранный момент времени.
 		void get_origin_item(unsigned item, double JED, double* S, bool state) const;
 
+		// Получить значение радиус-вектора (или вектора состояния) Земли относительно
+		// барицентра Солнечной Системы.
 		void get_origin_earth(double JED, double* S, bool state) const;
 
+		// Получить значение радиу-вектора (или вектора состояния) Луны относительно
+		// барицентра Солнечной Системы.
 		void get_origin_moon(double JED, double* S, bool state) const;
+	};
 
+	class more_info
+	{
 	public:
-
-		void get_body(unsigned target, unsigned center, double JED, double* S, bool state) const;
-
-		void get_other(unsigned item, double JED, double* res, bool state) const;
+		
+		// Получить значение астрономической единицы, хранящейся в выпуске.
+		static double au(const EphemerisRelease& ephemerisRelease)
+		{
+			return ephemerisRelease.m_au;
+		}
 	};
 }
 

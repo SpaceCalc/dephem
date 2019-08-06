@@ -256,7 +256,7 @@ void dph::EphemerisRelease::post_read_calc()
 	Info.co_span = 1 / (43200 * Info.span);
 
 	// Определение количества блоков в ежегоднике:
-	Info.block_count = size_t((Info.end - Info.start) / Info.span);
+	Info.m_blocksCount = size_t((Info.end - Info.start) / Info.span);
 
 	// Подсчёт max_cheby и items:
 	for (int i = 0; i < 15; ++i)
@@ -294,7 +294,7 @@ bool dph::EphemerisRelease::authentic() const
 	if (time[0] != Info.start)				return false;
 	if (time[1] != Info.start + Info.span)	return false;
 	
-	unsigned int end_pos = (1 + Info.block_count) * 8 * Info.ncoeff;
+	unsigned int end_pos = (1 + Info.m_blocksCount) * 8 * Info.ncoeff;
 
 	if (end_pos > FSEEK_MAX_OFFSET)
 	{

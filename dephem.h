@@ -52,6 +52,9 @@ namespace dph
 		// Получить имя константы по её индексу:
 		const std::string& constantName(size_t constantIndex) const;
 
+		// Получить значение константы по её индексу:
+		double constantValue(size_t constantIndex) const;
+
 	private:
 		
 		// ------------------------------ Внутренние значения ---------------------------------- //

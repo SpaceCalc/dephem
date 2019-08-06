@@ -72,6 +72,30 @@ const std::string& dph::EphemerisRelease::constantName(size_t constantIndex) con
 	}
 }
 
+double dph::EphemerisRelease::constantValue(size_t constantIndex) const
+{
+	if (m_ready == false)
+	{
+		return 0.0;
+	}
+	else if (m_constantsCount == 0)
+	{
+		return 0.0;
+	}
+	else if (m_constantsValues == nullptr)
+	{
+		return 0.0;
+	}
+	else if (constantIndex > m_constantsCount)
+	{
+		return 0.0;
+	}
+	else
+	{
+		return m_constantsValues[constantIndex];
+	}
+}
+
 std::string dph::EphemerisRelease::cutBackSymbols(const char* charArray, size_t arraySize, char symbolToCut)
 {
 	for (size_t i = arraySize - 1; i > 0; --i)

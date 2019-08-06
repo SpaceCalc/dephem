@@ -295,10 +295,10 @@ bool dph::EphemerisRelease::authentic() const
 	
 	unsigned int end_pos = (1 + Info.block_count) * 8 * Info.ncoeff;
 
-	if (end_pos > MAX_LONG)
+	if (end_pos > FSEEK_MAX_OFFSET)
 	{
-		std::fseek(m_binaryFileStream, MAX_LONG, 0);
-		std::fseek(m_binaryFileStream, end_pos - MAX_LONG, 1); 
+		std::fseek(m_binaryFileStream, FSEEK_MAX_OFFSET, 0);
+		std::fseek(m_binaryFileStream, end_pos - FSEEK_MAX_OFFSET, 1); 
 	}
 	else
 	{
@@ -316,10 +316,10 @@ void dph::EphemerisRelease::fill_buffer(size_t block_num) const
 {
 	size_t adress = (2 + block_num) * Info.ncoeff * 8;
 
-	if (adress > MAX_LONG)
+	if (adress > FSEEK_MAX_OFFSET)
 	{
-		std::fseek(m_binaryFileStream, MAX_LONG, 0);
-		std::fseek(m_binaryFileStream, adress - MAX_LONG, 1);
+		std::fseek(m_binaryFileStream, FSEEK_MAX_OFFSET, 0);
+		std::fseek(m_binaryFileStream, adress - FSEEK_MAX_OFFSET, 1);
 	}
 	else
 	{

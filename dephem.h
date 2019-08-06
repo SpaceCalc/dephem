@@ -16,7 +16,7 @@ namespace dph
 {
 	class EphemerisRelease
 	{
-		static constexpr size_t MAX_LONG = std::numeric_limits<long>::max();
+		static constexpr size_t FSEEK_MAX_OFFSET = std::numeric_limits<long>::max();
 
 	private:
 		std::string m_binaryFilePath;

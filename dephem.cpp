@@ -17,7 +17,7 @@ dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) :
 	else // Подготовка объекта прошла успешно.
 	{
 		m_ready  = true;
-		m_buffer = new double[Info.ncoeff]{};
+		m_buffer = new double[Info.m_ncoeff]{};
 	}
 }
 
@@ -159,7 +159,7 @@ void dph::EphemerisRelease::get_coeff(double * coeff, double JED) const
 		fill_buffer(block_num - (JED == Info.end ? 1 : 0));
 	}
 
-	for (size_t i = 0; i < Info.ncoeff; ++i)
+	for (size_t i = 0; i < Info.m_ncoeff; ++i)
 	{
 		coeff[i] = m_buffer[i];
 	}		
@@ -172,8 +172,8 @@ void dph::EphemerisRelease::copy(const EphemerisRelease& other)
 	Info.const_value = new double[Info.const_count];
 	memcpy_s(Info.const_value, sizeof(double) * Info.const_count, other.Info.const_value, sizeof(double) * other.Info.const_count);
 
-	m_buffer = new double[Info.ncoeff];
-	memcpy_s((void*)this->m_buffer, sizeof(double) * Info.ncoeff, other.m_buffer, sizeof(double) * Info.ncoeff);
+	m_buffer = new double[Info.m_ncoeff];
+	memcpy_s((void*)this->m_buffer, sizeof(double) * Info.m_ncoeff, other.m_buffer, sizeof(double) * Info.m_ncoeff);
 
 	m_poly = new double[Info.max_cheby];
 	memcpy_s((void*)this->m_poly, sizeof(double) * Info.max_cheby, other.m_poly, sizeof(double) * other.Info.max_cheby);
@@ -234,14 +234,14 @@ bool dph::EphemerisRelease::read()
 	std::fread(Info.key[14], sizeof(uint32_t), 3, m_binaryFileStream);
 	
 	// Подсчёт ncoeff + max_cheby + items:
-	Info.ncoeff = 2;
+	Info.m_ncoeff = 2;
 	for (int i = 0; i < 15; ++i)
 	{
 		int comp = i == 11 ? 2 : i == 14 ? 1 : 3;
-		Info.ncoeff += comp * Info.key[i][1] * Info.key[i][2];
+		Info.m_ncoeff += comp * Info.key[i][1] * Info.key[i][2];
 	}
 
-	std::fseek(m_binaryFileStream, Info.ncoeff * 8, 0);
+	std::fseek(m_binaryFileStream, Info.m_ncoeff * 8, 0);
 	std::fread(Info.const_value, 8, Info.const_count, m_binaryFileStream);
 
 	post_read_calc();
@@ -279,7 +279,7 @@ void dph::EphemerisRelease::post_read_calc()
 
 bool dph::EphemerisRelease::authentic() const
 {
-	if (Info.ncoeff == 0)					return false;
+	if (Info.m_ncoeff == 0)					return false;
 	if (Info.start >= Info.end)				return false;
 	if (Info.span == 0)						return false;
 	if (Info.max_cheby == 0)				return false;
@@ -288,13 +288,13 @@ bool dph::EphemerisRelease::authentic() const
 	if (Info.au == 0)						return false;
 
 	double time[2];
-	std::fseek(m_binaryFileStream, 16 * Info.ncoeff, 0);
+	std::fseek(m_binaryFileStream, 16 * Info.m_ncoeff, 0);
 	std::fread(time, 2, 8, m_binaryFileStream);
 
 	if (time[0] != Info.start)				return false;
 	if (time[1] != Info.start + Info.span)	return false;
 	
-	unsigned int end_pos = (1 + Info.m_blocksCount) * 8 * Info.ncoeff;
+	unsigned int end_pos = (1 + Info.m_blocksCount) * 8 * Info.m_ncoeff;
 
 	if (end_pos > FSEEK_MAX_OFFSET)
 	{
@@ -315,7 +315,7 @@ bool dph::EphemerisRelease::authentic() const
 
 void dph::EphemerisRelease::fill_buffer(size_t block_num) const
 {
-	size_t adress = (2 + block_num) * Info.ncoeff * 8;
+	size_t adress = (2 + block_num) * Info.m_ncoeff * 8;
 
 	if (adress > FSEEK_MAX_OFFSET)
 	{
@@ -327,7 +327,7 @@ void dph::EphemerisRelease::fill_buffer(size_t block_num) const
 		std::fseek(m_binaryFileStream, adress, 0);
 	}
 
-	std::fread((void*)m_buffer, sizeof(double), Info.ncoeff, m_binaryFileStream);
+	std::fread((void*)m_buffer, sizeof(double), Info.m_ncoeff, m_binaryFileStream);
 }
 
 void dph::EphemerisRelease::interpolate(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const

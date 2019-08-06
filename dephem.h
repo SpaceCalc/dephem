@@ -2,6 +2,10 @@
 #ifndef dephemH
 #define dephemH
 
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif 
+
 #include <cstdio>
 #include <cstring>
 #include <cstdint>

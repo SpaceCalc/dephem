@@ -64,11 +64,7 @@ namespace dph
 
 		EphemerisRelease(const EphemerisRelease& other);
 
-		EphemerisRelease(EphemerisRelease&& other) noexcept;
-
 		EphemerisRelease& operator = (const EphemerisRelease& other);
-
-		EphemerisRelease& operator = (EphemerisRelease&& other) noexcept;
 
 		~EphemerisRelease();
 

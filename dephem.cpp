@@ -44,12 +44,6 @@ dph::EphemerisRelease::EphemerisRelease(const EphemerisRelease& other)
 	}
 }
 
-dph::EphemerisRelease::EphemerisRelease(EphemerisRelease&& other) noexcept 
-{
-	// Копирование и перемещение объекта:
-	move_swap(other);
-}
-
 dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& other)
 {	
 	// Проверка на равенство самому себе:
@@ -83,24 +77,6 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 		copy(other);
 	}
 	
-	return *this;
-}
-
-dph::EphemerisRelease& dph::EphemerisRelease::operator=(EphemerisRelease&& other) noexcept
-{
-	// Проверка на равенство самому себе:
-	if (&other == this) return *this;
-
-	// Очистка существующей информации:
-	if (eph != nullptr) std::fclose(eph);
-	delete[] buffer;
-	delete[] Info.const_value;
-	delete[] poly;
-	delete[] dpoly;
-
-	// Копирование и перемещение объекта:
-	move_swap(other);
-
 	return *this;
 }
 

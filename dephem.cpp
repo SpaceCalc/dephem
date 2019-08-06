@@ -152,7 +152,7 @@ void dph::EphemerisRelease::get_coeff(double * coeff, double JED) const
 		return;
 	}		
 	
-	size_t block_num = size_t((JED - Info.m_startDate) / Info.span);
+	size_t block_num = size_t((JED - Info.m_startDate) / Info.m_blockTimeSpan);
 
 	if (JED < m_buffer[0] || JED >= m_buffer[1])
 	{
@@ -215,7 +215,7 @@ bool dph::EphemerisRelease::read()
 	std::fread(Info.const_name,   1, 400 * 6, m_binaryFileStream);
 	std::fread(&Info.m_startDate,       8,       1, m_binaryFileStream);
 	std::fread(&Info.m_endDate,         8,       1, m_binaryFileStream);
-	std::fread(&Info.span, 8, 1, m_binaryFileStream);
+	std::fread(&Info.m_blockTimeSpan, 8, 1, m_binaryFileStream);
 	std::fread(&Info.m_constantsCount, 4,       1, m_binaryFileStream);
 	std::fread(&Info.au,          8,       1, m_binaryFileStream);
 	std::fread(&Info.emrat,       8,       1, m_binaryFileStream);
@@ -253,10 +253,10 @@ void dph::EphemerisRelease::post_read_calc()
 {
 	// Определение доп. коэффициентов для работы с ежегодником:
 	Info.co_em = 1 / (1 + Info.emrat);
-	Info.co_span = 1 / (43200 * Info.span);
+	Info.co_span = 1 / (43200 * Info.m_blockTimeSpan);
 
 	// Определение количества блоков в ежегоднике:
-	Info.m_blocksCount = size_t((Info.m_endDate - Info.m_startDate) / Info.span);
+	Info.m_blocksCount = size_t((Info.m_endDate - Info.m_startDate) / Info.m_blockTimeSpan);
 
 	// Подсчёт max_cheby и items:
 	for (int i = 0; i < 15; ++i)
@@ -281,7 +281,7 @@ bool dph::EphemerisRelease::authentic() const
 {
 	if (Info.m_ncoeff == 0)					return false;
 	if (Info.m_startDate >= Info.m_endDate)				return false;
-	if (Info.span == 0)						return false;
+	if (Info.m_blockTimeSpan == 0)						return false;
 	if (Info.max_cheby == 0)				return false;
 	if (Info.items == 0)					return false;
 	if (Info.emrat == 0)					return false;
@@ -292,7 +292,7 @@ bool dph::EphemerisRelease::authentic() const
 	std::fread(time, 2, 8, m_binaryFileStream);
 
 	if (time[0] != Info.m_startDate)				return false;
-	if (time[1] != Info.m_startDate + Info.span)	return false;
+	if (time[1] != Info.m_startDate + Info.m_blockTimeSpan)	return false;
 	
 	unsigned int end_pos = (1 + Info.m_blocksCount) * 8 * Info.m_ncoeff;
 
@@ -307,7 +307,7 @@ bool dph::EphemerisRelease::authentic() const
 	}
 	
 	std::fread(time, 2, 8, m_binaryFileStream);
-	if (time[0] != Info.m_endDate - Info.span)	return false;
+	if (time[0] != Info.m_endDate - Info.m_blockTimeSpan)	return false;
 	if (time[1] != Info.m_endDate)				return false;
 
 	return true;
@@ -413,7 +413,7 @@ void dph::EphemerisRelease::get_origin_item(unsigned item, double JED, double *S
 	14	TT-TDB (at geocenter)
 	*/
 	
-	double norm_time = (JED - Info.m_startDate) / Info.span;	// Норм. время отн. всех блоков.
+	double norm_time = (JED - Info.m_startDate) / Info.m_blockTimeSpan;	// Норм. время отн. всех блоков.
 	size_t offset    = size_t(norm_time);				// Номер треб. блока.
 
 	if (JED < m_buffer[0] || JED >= m_buffer[1])

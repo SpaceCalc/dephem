@@ -105,6 +105,19 @@ void dph::EphemerisRelease::get_coeff(double * coeff, double JED) const
 	}		
 }
 
+std::string dph::EphemerisRelease::cutBackSymbols(const char* charArray, size_t arraySize, char symbolToCut)
+{
+	for (size_t i = arraySize - 1; i > 0; --i)
+	{
+		if (charArray[i] == symbolToCut && charArray[i - 1] != symbolToCut)
+		{
+			return std::string(charArray, i);
+		}
+	}
+
+	return std::string(charArray, arraySize);
+}
+
 bool dph::EphemerisRelease::read()
 {
 	for (int i = 0; i < 3; i++)

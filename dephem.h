@@ -99,6 +99,11 @@ namespace dph
 
 		// ------------------------- Внутренние методы работы объекта -------------------------- //
 
+		// Обрезать повторяющиеся символы "symbolToCut" с конца массива символов "charArray" 
+		// размера "arraySize".
+		static std::string cutBackSymbols(const char* charArray, size_t arraySize,
+			char symbolToCut);
+
 		//  Чтение файла.
 		bool read();
 

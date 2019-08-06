@@ -58,6 +58,13 @@ namespace dph
 		// при размерах файла превышающих данное значение.
 		static constexpr size_t FSEEK_MAX_OFFSET = std::numeric_limits<long>::max();
 
+		// Формат DE-эфемерид //
+		static constexpr size_t RLS_LABELS_COUNT{ 3 };	// Кол-во строк Общей Информации (ОИ).
+		static constexpr size_t RLS_LABEL_SIZE{ 84 };	// Кол-во символов в строке ОИ.
+		static constexpr size_t CNAME_SIZE{ 6 };		// Кол-во символов в имени константы.
+		static constexpr size_t CCOUNT_MAX_OLD{ 400 };	// Кол-во констант (стар. формат).
+		static constexpr size_t CCOUNT_MAX_NEW{ 1000 };	// Кол-во констант (нов. формат).  
+
 		// Готовность объекта к работе.
 		bool m_ready{ false };
 		
@@ -66,17 +73,17 @@ namespace dph
 		FILE*		m_binaryFileStream{ nullptr };	// Поток чтения файла.
 
 		// Значения, считанные из файла //
-		char		releaseLabel[3][85]{};			// Строковая информация о выпуске. 
-		uint32_t	m_releaseIndex{};				// Номерная часть индекса выпуска. 
-		double		m_startDate{};					// Дата начала выпуска (JED).         
-		double		m_endDate{};					// Дата окончания выпуска (JED).      
-		double		m_blockTimeSpan{};				// Временная протяжённость блока.     
-		uint32_t	m_keys[15][3]{};				// Ключи поиска коэффициентов.      	
-		double		m_au{};							// Астрономическая единица (км).      
-		double		m_emrat{};						// Отношение массы Земли к массе Луны.
-		uint32_t	m_constantsCount{};				// Количество констант в файле.       
-		char		m_constantsNames[1000][6]{};	// Массив с именами констант.         
-		double*		m_constantsValues{ nullptr };	// Массив со значениями констант.     
+		std::string		m_releaseLabel;					// Строковая информация о выпуске. 
+		uint32_t		m_releaseIndex{};				// Номерная часть индекса выпуска. 
+		double			m_startDate{};					// Дата начала выпуска (JED).         
+		double			m_endDate{};					// Дата окончания выпуска (JED).      
+		double			m_blockTimeSpan{};				// Временная протяжённость блока.     
+		uint32_t		m_keys[15][3]{};				// Ключи поиска коэффициентов.      	
+		double			m_au{};							// Астрономическая единица (км).      
+		double			m_emrat{};						// Отношение массы Земли к массе Луны.
+		uint32_t		m_constantsCount{};				// Количество констант в файле.       
+		std::string*	m_constantsNames{ nullptr };	// Массив с именами констант.         
+		double*			m_constantsValues{ nullptr };	// Массив со значениями констант.     
 
 		// Значения, дополнительно определённные внутри объекта //
 		size_t		m_blocksCount{};	// Количество блоков в файле.                

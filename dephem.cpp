@@ -63,46 +63,87 @@ std::string dph::EphemerisRelease::cutBackSymbols(const char* charArray, size_t 
 
 bool dph::EphemerisRelease::read()
 {
-	for (int i = 0; i < 3; i++)
-	{
-		std::fread(releaseLabel[i], 1, 84, m_binaryFileStream);
-		releaseLabel[i][84] = '\0';
-	}
-
-	std::fread(m_constantsNames,   1, 400 * 6, m_binaryFileStream);
-	std::fread(&m_startDate,       8,       1, m_binaryFileStream);
-	std::fread(&m_endDate,         8,       1, m_binaryFileStream);
-	std::fread(&m_blockTimeSpan, 8, 1, m_binaryFileStream);
-	std::fread(&m_constantsCount, 4,       1, m_binaryFileStream);
-	std::fread(&m_au,          8,       1, m_binaryFileStream);
-	std::fread(&m_emrat,       8,       1, m_binaryFileStream);
-	std::fread(m_keys,          4,  12 * 3, m_binaryFileStream);
-	std::fread(&m_releaseIndex,       4,       1, m_binaryFileStream);
-	std::fread(m_keys[12],      4,       3, m_binaryFileStream);		
+	// Буфферы для чтения информации из файла:
+	char	releaseLabel_buffer[RLS_LABELS_COUNT][RLS_LABEL_SIZE]{};	// Строк. инф. о выпуске.
+	char	constantsNames_buffer[CCOUNT_MAX_NEW][CNAME_SIZE]{};		// Имена констант.
+	double	constantsValues_buffer[CCOUNT_MAX_NEW]{};					// Значения констант.
 	
-	m_constantsValues = new double[m_constantsCount];
+	// ------------------------------------- Чтение файла ------------------------------------- //
 
+	std::fread(&releaseLabel_buffer,	RLS_LABEL_SIZE,	RLS_LABELS_COUNT,	m_binaryFileStream);
+	std::fread(&constantsNames_buffer,	CNAME_SIZE,		CCOUNT_MAX_OLD,		m_binaryFileStream);
+	std::fread(&m_startDate,			8,				1,					m_binaryFileStream);
+	std::fread(&m_endDate,				8,				1,					m_binaryFileStream);
+	std::fread(&m_blockTimeSpan,		8,				1,					m_binaryFileStream);
+	std::fread(&m_constantsCount,		4,				1,					m_binaryFileStream);
+	std::fread(&m_au,					8,				1,					m_binaryFileStream);
+	std::fread(&m_emrat,				8,				1,					m_binaryFileStream);
+	std::fread(&m_keys,					4,				12 * 3,				m_binaryFileStream);
+	std::fread(&m_releaseIndex,			4,				1,					m_binaryFileStream);
+	std::fread(&m_keys[12],				4,				3,					m_binaryFileStream);		
+
+	// Чтение дополнительных констант:
 	if (m_constantsCount > 400)
 	{
-		std::fread(m_constantsNames[400], 6, m_constantsCount - 400, m_binaryFileStream);
+		// Количество дополнительных констант:
+		size_t extraConstantsCount = m_constantsCount - CCOUNT_MAX_OLD;
+
+		std::fread(constantsNames_buffer[400], CNAME_SIZE, extraConstantsCount, 
+			m_binaryFileStream);
 	}		
 
-	std::fread(m_keys[13], sizeof(uint32_t), 3, m_binaryFileStream);
-	std::fread(m_keys[14], sizeof(uint32_t), 3, m_binaryFileStream);
-	
-	// Подсчёт ncoeff + max_cheby + items:
+	// Чтение дополнительных ключей:
+	std::fread(&m_keys[13], sizeof(uint32_t), 3 * 2, m_binaryFileStream);
+
+
+	// Подсчёт ncoeff (количество коэффициентов в блоке):
 	m_ncoeff = 2;
 	for (int i = 0; i < 15; ++i)
 	{
+		// Количество компонент для выбранного элемента:
 		int comp = i == 11 ? 2 : i == 14 ? 1 : 3;
 		m_ncoeff += comp * m_keys[i][1] * m_keys[i][2];
 	}
 
-	std::fseek(m_binaryFileStream, m_ncoeff * 8, 0);
-	std::fread(m_constantsValues, 8, m_constantsCount, m_binaryFileStream);
+	// Переход к блоку с константами и их чтение:	
+	if (m_constantsCount <= CCOUNT_MAX_NEW)
+	{
+		std::fseek(m_binaryFileStream, m_ncoeff * 8, 0);
+		std::fread(constantsValues_buffer, sizeof(double), m_constantsCount, m_binaryFileStream);
+	}
+	
 
+	// -------------------- Форматирование и упаковка считанной информации --------------------- // 
+	
+	// Формирование строк общей информации о выпуске:
+	for (size_t i = 0; i < RLS_LABELS_COUNT; ++i)
+	{
+		m_releaseLabel += cutBackSymbols(releaseLabel_buffer[i], RLS_LABEL_SIZE, ' ');
+		m_releaseLabel += '\n';
+	}
+	m_releaseLabel.shrink_to_fit();
+
+	// Формирование массивов с именами констант и их значениями:
+	if (m_constantsCount > 0 && m_constantsCount <= CCOUNT_MAX_NEW)
+	{
+		// Выделение памяти:
+		m_constantsNames  = new std::string[m_constantsCount];
+		m_constantsValues = new double[m_constantsCount];
+
+		// Форматирование имён констант:
+		for (uint32_t i = 0; i < m_constantsCount; ++i)
+		{
+			m_constantsNames[i] = cutBackSymbols(constantsNames_buffer[i], CNAME_SIZE, ' ');
+		}
+
+		// Копирование значений констант:
+		std::memcpy(m_constantsValues, constantsValues_buffer, m_constantsCount);
+	}
+
+	// Дополнительные вычисления:
 	post_read_calc();
 
+	// Вернуть результат проверки считанной информации:
 	return authentic();
 }
 

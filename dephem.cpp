@@ -243,11 +243,10 @@ void dph::EphemerisRelease::post_read_calc()
 	// Определение количества блоков в ежегоднике:
 	Info.m_blocksCount = size_t((Info.m_endDate - Info.m_startDate) / Info.m_blockTimeSpan);
 
-	// Подсчёт max_cheby и items:
+	// Подсчёт max_cheby:
 	for (int i = 0; i < 15; ++i)
 	{
 		if (Info.m_keys[i][1] > Info.m_maxCheby) Info.m_maxCheby = Info.m_keys[i][1];
-		if (Info.m_keys[i][1] != 0) Info.items |= 1 << i;
 	}
 	m_poly  = new double[Info.m_maxCheby] {1};
 	m_dpoly = new double[Info.m_maxCheby] {0, 1};
@@ -259,7 +258,6 @@ bool dph::EphemerisRelease::authentic() const
 	if (Info.m_startDate >= Info.m_endDate)				return false;
 	if (Info.m_blockTimeSpan == 0)						return false;
 	if (Info.m_maxCheby == 0)				return false;
-	if (Info.items == 0)					return false;
 	if (Info.m_emrat == 0)					return false;
 	if (Info.m_au == 0)						return false;
 
@@ -550,10 +548,6 @@ void dph::EphemerisRelease::get_other(unsigned item, double JED, double* res, bo
 		return;
 	}
 	else if (JED < Info.m_startDate || JED > Info.m_endDate)
-	{
-		return;
-	}
-	else if ( (1 << (item - 2) & Info.items) == 0)
 	{
 		return;
 	}

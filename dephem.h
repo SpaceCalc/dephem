@@ -49,7 +49,6 @@ namespace dph
 			double   m_emrat2 = 0;
 			double   m_dimensionFit = 0;
 			uint32_t m_maxCheby = 0;
-			int      items = 0;
 
 		} Info;
 

@@ -17,7 +17,7 @@ dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) :
 	else // Подготовка объекта прошла успешно.
 	{
 		m_ready  = true;
-		m_buffer = new double[Info.m_ncoeff]{};
+		m_buffer = new double[m_ncoeff]{};
 	}
 }
 
@@ -28,9 +28,14 @@ dph::EphemerisRelease::~EphemerisRelease()
 
 	// Освобождение выделенной памяти:
 	delete[] m_buffer;
-	delete[] Info.m_constantsValues;
+	delete[] m_constantsValues;
 	delete[] m_poly;
 	delete[] m_dpoly;
+}
+
+bool dph::EphemerisRelease::is_ready() const
+{
+	return m_ready;
 }
 
 double dph::EphemerisRelease::get_const(const char* const_name) const
@@ -46,17 +51,17 @@ double dph::EphemerisRelease::get_const(const char* const_name) const
 		return 0;
 	}
 
-	for (uint32_t i = 0; i < Info.m_constantsCount; i++)
+	for (uint32_t i = 0; i < m_constantsCount; i++)
 	{
 		bool correct = true;
 
-		for (size_t j = 0; j < len; j++) if (const_name[j] != Info.m_constantsNames[i][j])
+		for (size_t j = 0; j < len; j++) if (const_name[j] != m_constantsNames[i][j])
 		{
 			correct = false;
 			break;
 		}
 
-		if (correct) return Info.m_constantsValues[i];
+		if (correct) return m_constantsValues[i];
 	}
 
 	return 0;
@@ -68,7 +73,7 @@ void dph::EphemerisRelease::get_coeff(double * coeff, double JED) const
 	{
 		return;
 	}
-	else if (JED < Info.m_startDate || JED > Info.m_endDate)
+	else if (JED < m_startDate || JED > m_endDate)
 	{
 		return;
 	}
@@ -77,14 +82,14 @@ void dph::EphemerisRelease::get_coeff(double * coeff, double JED) const
 		return;
 	}		
 	
-	size_t block_num = size_t((JED - Info.m_startDate) / Info.m_blockTimeSpan);
+	size_t block_num = size_t((JED - m_startDate) / m_blockTimeSpan);
 
 	if (JED < m_buffer[0] || JED >= m_buffer[1])
 	{
-		fill_buffer(block_num - (JED == Info.m_endDate ? 1 : 0));
+		fill_buffer(block_num - (JED == m_endDate ? 1 : 0));
 	}
 
-	for (size_t i = 0; i < Info.m_ncoeff; ++i)
+	for (size_t i = 0; i < m_ncoeff; ++i)
 	{
 		coeff[i] = m_buffer[i];
 	}		
@@ -94,41 +99,41 @@ bool dph::EphemerisRelease::read()
 {
 	for (int i = 0; i < 3; i++)
 	{
-		std::fread(Info.releaseLabel[i], 1, 84, m_binaryFileStream);
-		Info.releaseLabel[i][84] = '\0';
+		std::fread(releaseLabel[i], 1, 84, m_binaryFileStream);
+		releaseLabel[i][84] = '\0';
 	}
 
-	std::fread(Info.m_constantsNames,   1, 400 * 6, m_binaryFileStream);
-	std::fread(&Info.m_startDate,       8,       1, m_binaryFileStream);
-	std::fread(&Info.m_endDate,         8,       1, m_binaryFileStream);
-	std::fread(&Info.m_blockTimeSpan, 8, 1, m_binaryFileStream);
-	std::fread(&Info.m_constantsCount, 4,       1, m_binaryFileStream);
-	std::fread(&Info.m_au,          8,       1, m_binaryFileStream);
-	std::fread(&Info.m_emrat,       8,       1, m_binaryFileStream);
-	std::fread(Info.m_keys,          4,  12 * 3, m_binaryFileStream);
-	std::fread(&Info.m_releaseIndex,       4,       1, m_binaryFileStream);
-	std::fread(Info.m_keys[12],      4,       3, m_binaryFileStream);		
+	std::fread(m_constantsNames,   1, 400 * 6, m_binaryFileStream);
+	std::fread(&m_startDate,       8,       1, m_binaryFileStream);
+	std::fread(&m_endDate,         8,       1, m_binaryFileStream);
+	std::fread(&m_blockTimeSpan, 8, 1, m_binaryFileStream);
+	std::fread(&m_constantsCount, 4,       1, m_binaryFileStream);
+	std::fread(&m_au,          8,       1, m_binaryFileStream);
+	std::fread(&m_emrat,       8,       1, m_binaryFileStream);
+	std::fread(m_keys,          4,  12 * 3, m_binaryFileStream);
+	std::fread(&m_releaseIndex,       4,       1, m_binaryFileStream);
+	std::fread(m_keys[12],      4,       3, m_binaryFileStream);		
 	
-	Info.m_constantsValues = new double[Info.m_constantsCount];
+	m_constantsValues = new double[m_constantsCount];
 
-	if (Info.m_constantsCount > 400)
+	if (m_constantsCount > 400)
 	{
-		std::fread(Info.m_constantsNames[400], 6, Info.m_constantsCount - 400, m_binaryFileStream);
+		std::fread(m_constantsNames[400], 6, m_constantsCount - 400, m_binaryFileStream);
 	}		
 
-	std::fread(Info.m_keys[13], sizeof(uint32_t), 3, m_binaryFileStream);
-	std::fread(Info.m_keys[14], sizeof(uint32_t), 3, m_binaryFileStream);
+	std::fread(m_keys[13], sizeof(uint32_t), 3, m_binaryFileStream);
+	std::fread(m_keys[14], sizeof(uint32_t), 3, m_binaryFileStream);
 	
 	// Подсчёт ncoeff + max_cheby + items:
-	Info.m_ncoeff = 2;
+	m_ncoeff = 2;
 	for (int i = 0; i < 15; ++i)
 	{
 		int comp = i == 11 ? 2 : i == 14 ? 1 : 3;
-		Info.m_ncoeff += comp * Info.m_keys[i][1] * Info.m_keys[i][2];
+		m_ncoeff += comp * m_keys[i][1] * m_keys[i][2];
 	}
 
-	std::fseek(m_binaryFileStream, Info.m_ncoeff * 8, 0);
-	std::fread(Info.m_constantsValues, 8, Info.m_constantsCount, m_binaryFileStream);
+	std::fseek(m_binaryFileStream, m_ncoeff * 8, 0);
+	std::fread(m_constantsValues, 8, m_constantsCount, m_binaryFileStream);
 
 	post_read_calc();
 
@@ -138,38 +143,38 @@ bool dph::EphemerisRelease::read()
 void dph::EphemerisRelease::post_read_calc()
 {
 	// Определение доп. коэффициентов для работы с ежегодником:
-	Info.m_emrat2 = 1 / (1 + Info.m_emrat);
-	Info.m_dimensionFit = 1 / (43200 * Info.m_blockTimeSpan);
+	m_emrat2 = 1 / (1 + m_emrat);
+	m_dimensionFit = 1 / (43200 * m_blockTimeSpan);
 
 	// Определение количества блоков в ежегоднике:
-	Info.m_blocksCount = size_t((Info.m_endDate - Info.m_startDate) / Info.m_blockTimeSpan);
+	m_blocksCount = size_t((m_endDate - m_startDate) / m_blockTimeSpan);
 
 	// Подсчёт max_cheby:
 	for (int i = 0; i < 15; ++i)
 	{
-		if (Info.m_keys[i][1] > Info.m_maxCheby) Info.m_maxCheby = Info.m_keys[i][1];
+		if (m_keys[i][1] > m_maxCheby) m_maxCheby = m_keys[i][1];
 	}
-	m_poly  = new double[Info.m_maxCheby] {1};
-	m_dpoly = new double[Info.m_maxCheby] {0, 1};
+	m_poly  = new double[m_maxCheby] {1};
+	m_dpoly = new double[m_maxCheby] {0, 1};
 }
 
 bool dph::EphemerisRelease::authentic() const
 {
-	if (Info.m_ncoeff == 0)					return false;
-	if (Info.m_startDate >= Info.m_endDate)				return false;
-	if (Info.m_blockTimeSpan == 0)						return false;
-	if (Info.m_maxCheby == 0)				return false;
-	if (Info.m_emrat == 0)					return false;
-	if (Info.m_au == 0)						return false;
+	if (m_ncoeff == 0)					return false;
+	if (m_startDate >= m_endDate)				return false;
+	if (m_blockTimeSpan == 0)						return false;
+	if (m_maxCheby == 0)				return false;
+	if (m_emrat == 0)					return false;
+	if (m_au == 0)						return false;
 
 	double time[2];
-	std::fseek(m_binaryFileStream, 16 * Info.m_ncoeff, 0);
+	std::fseek(m_binaryFileStream, 16 * m_ncoeff, 0);
 	std::fread(time, 2, 8, m_binaryFileStream);
 
-	if (time[0] != Info.m_startDate)				return false;
-	if (time[1] != Info.m_startDate + Info.m_blockTimeSpan)	return false;
+	if (time[0] != m_startDate)				return false;
+	if (time[1] != m_startDate + m_blockTimeSpan)	return false;
 	
-	unsigned int end_pos = (1 + Info.m_blocksCount) * 8 * Info.m_ncoeff;
+	unsigned int end_pos = (1 + m_blocksCount) * 8 * m_ncoeff;
 
 	if (end_pos > FSEEK_MAX_OFFSET)
 	{
@@ -182,15 +187,15 @@ bool dph::EphemerisRelease::authentic() const
 	}
 	
 	std::fread(time, 2, 8, m_binaryFileStream);
-	if (time[0] != Info.m_endDate - Info.m_blockTimeSpan)	return false;
-	if (time[1] != Info.m_endDate)				return false;
+	if (time[0] != m_endDate - m_blockTimeSpan)	return false;
+	if (time[1] != m_endDate)				return false;
 
 	return true;
 }
 
 void dph::EphemerisRelease::fill_buffer(size_t block_num) const
 {
-	size_t adress = (2 + block_num) * Info.m_ncoeff * 8;
+	size_t adress = (2 + block_num) * m_ncoeff * 8;
 
 	if (adress > FSEEK_MAX_OFFSET)
 	{
@@ -202,13 +207,13 @@ void dph::EphemerisRelease::fill_buffer(size_t block_num) const
 		std::fseek(m_binaryFileStream, adress, 0);
 	}
 
-	std::fread((void*)m_buffer, sizeof(double), Info.m_ncoeff, m_binaryFileStream);
+	std::fread((void*)m_buffer, sizeof(double), m_ncoeff, m_binaryFileStream);
 }
 
 void dph::EphemerisRelease::interpolate(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const
 {
 	// Копирование значения количества коэффициентов на компоненту:
-	uint32_t cpec = Info.m_keys[item][1];
+	uint32_t cpec = m_keys[item][1];
 	
 	// Предварительное заполнение полиномов (вычисление их сумм):
 	m_poly[1] = norm_time;
@@ -235,7 +240,7 @@ void dph::EphemerisRelease::interpolate(const double* set, unsigned item, double
 void dph::EphemerisRelease::interpolate_derivative(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const
 {
 	// Копирование значения количества коэффициентов на компоненту:
-	uint32_t cpec = Info.m_keys[item][1];
+	uint32_t cpec = m_keys[item][1];
 
 	// Предварительное заполнение полиномов (вычисление их сумм):
 	m_poly[1]  = norm_time;
@@ -253,7 +258,7 @@ void dph::EphemerisRelease::interpolate_derivative(const double* set, unsigned i
 	memset(res, 0, sizeof(double) * comp_count * 2);
 
 	// Определение переменной для соблюдения размерности:
-	double derivative_units = Info.m_keys[item][2] * Info.m_dimensionFit;
+	double derivative_units = m_keys[item][2] * m_dimensionFit;
 
 	// Вычисление координат:
 	for (unsigned i = 0; i < comp_count; ++i)
@@ -288,27 +293,27 @@ void dph::EphemerisRelease::get_origin_item(unsigned item, double JED, double *S
 	14	TT-TDB (at geocenter)
 	*/
 	
-	double norm_time = (JED - Info.m_startDate) / Info.m_blockTimeSpan;	// Норм. время отн. всех блоков.
+	double norm_time = (JED - m_startDate) / m_blockTimeSpan;	// Норм. время отн. всех блоков.
 	size_t offset    = size_t(norm_time);				// Номер треб. блока.
 
 	if (JED < m_buffer[0] || JED >= m_buffer[1])
 	{
-		fill_buffer(offset - (JED == Info.m_endDate ? 1 : 0));
+		fill_buffer(offset - (JED == m_endDate ? 1 : 0));
 	}
 
-	norm_time = (norm_time - offset) * Info.m_keys[item][2];	
+	norm_time = (norm_time - offset) * m_keys[item][2];	
 	offset    = size_t(norm_time);									
 	norm_time = 2 * (norm_time - offset) - 1;	
 	
-	if (JED == Info.m_endDate)
+	if (JED == m_endDate)
 	{
-		offset    = Info.m_keys[item][2] - 1;
+		offset    = m_keys[item][2] - 1;
 		norm_time = 1;
 	}
 	
 	// Порядковый номер первого коэффициента для выбранного подпромежутка:
 	int comp_count = item == 11 ? 2 : item == 14 ? 1 : 3;
-	int coeff_pos  = Info.m_keys[item][0] - 1 + comp_count * offset * Info.m_keys[item][1];
+	int coeff_pos  = m_keys[item][0] - 1 + comp_count * offset * m_keys[item][1];
 
 	// В зависимости от того, что требуется вычислить (радиус-вектор
 	// или радиус-вектор и вектор скорости) выбирается соответствующий
@@ -329,7 +334,7 @@ void dph::EphemerisRelease::get_origin_earth(double JED, double* S, bool state) 
 	// Определение относительного положения:
 	for (int i = 0; i < int(state ? 6 : 3); ++i)
 	{
-		S[i] -= E_M[i] * Info.m_emrat2;
+		S[i] -= E_M[i] * m_emrat2;
 	}
 }
 
@@ -345,7 +350,7 @@ void dph::EphemerisRelease::get_origin_moon(double JED, double* S, bool state) c
 	// Определение относительного положения:
 	for (int i = 0; i < int(state ? 6 : 3); ++i)
 	{
-		S[i] += E_M[i] * (1 - Info.m_emrat2);
+		S[i] += E_M[i] * (1 - m_emrat2);
 	}	
 }
 
@@ -380,7 +385,7 @@ void dph::EphemerisRelease::get_body(unsigned target, unsigned center, double JE
 	{
 		return;
 	}
-	else if (JED < Info.m_startDate || JED > Info.m_endDate)
+	else if (JED < m_startDate || JED > m_endDate)
 	{
 		return;
 	}
@@ -448,7 +453,7 @@ void dph::EphemerisRelease::get_other(unsigned item, double JED, double* res, bo
 	{
 		return;
 	}
-	else if (JED < Info.m_startDate || JED > Info.m_endDate)
+	else if (JED < m_startDate || JED > m_endDate)
 	{
 		return;
 	}

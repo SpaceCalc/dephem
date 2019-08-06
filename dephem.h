@@ -17,7 +17,6 @@ namespace dph
 	class EphemerisRelease
 	{
 		friend class more_info;
-		struct header_info;
 	public:
 		
 		// -------------------------------- Общие методы класса -------------------------------- //
@@ -42,10 +41,7 @@ namespace dph
 		// -------------------------------------- ГЕТТЕРЫ -------------------------------------- //
 
 		// Готов ли объект к работе.
-		bool is_ready() const { return m_ready; }
-
-		// Указатель на структуру с параметрами объекта (выпуска).
-		const header_info* const info = &Info;
+		bool is_ready() const;
 
 		// Получить значение хранимой константы по её имени.
 		double get_const(const char* const_name) const;
@@ -69,38 +65,30 @@ namespace dph
 		std::string	m_binaryFilePath;				// Путь к бинарному файлу выпуска эфемерид.
 		FILE*		m_binaryFileStream = nullptr;	// Поток чтения файла.
 
-		// Структура с параметрами выпуска и прочими //
-		struct header_info
-		{
-			size_t		m_blocksCount = 0;
-			size_t		m_ncoeff = 0;
-			uint32_t	m_constantsCount = 0;
-			int			m_releaseIndex = 0;
-			uint32_t	m_keys[15][3]{};
-			double		m_startDate = 0;
-			double		m_endDate = 0;
-			double		m_blockTimeSpan = 0;
-			double		m_au = 0;
-			double		m_emrat = 0;
+		// Значения, считанные из файла //
+		char		releaseLabel[3][85]{};			// Строковая информация о выпуске. 
+		int			m_releaseIndex{};				// Номерная часть индекса выпуска. 
+		double		m_startDate{};					// Дата начала выпуска (JED).         
+		double		m_endDate{};					// Дата окончания выпуска (JED).      
+		double		m_blockTimeSpan{};				// Временная протяжённость блока.     
+		uint32_t	m_keys[15][3]{};				// Ключи поиска коэффициентов.      	
+		double		m_au{};							// Астрономическая единица (км).      
+		double		m_emrat{};						// Отношение массы Земли к массе Луны.
+		uint32_t	m_constantsCount{};				// Количество констант в файле.       
+		char		m_constantsNames[1000][6]{};	// Массив с именами констант.         
+		double*		m_constantsValues{ nullptr };	// Массив со значениями констант.     
 
-			char releaseLabel[3][85]{};
-
-		private:
-			friend class EphemerisRelease;
-
-			char	m_constantsNames[1000][6]{};
-			double* m_constantsValues = nullptr;
-
-			double   m_emrat2 = 0;
-			double   m_dimensionFit = 0;
-			uint32_t m_maxCheby = 0;
-
-		} Info;
+		// Значения, дополнительно определённные внутри объекта //
+		size_t		m_blocksCount{};	// Количество блоков в файле.                
+		size_t		m_ncoeff{};			// Количество коэффициентов в блоке.         
+		uint32_t	m_maxCheby{};		// Наибольшее количество сумм полиномов.     
+		double		m_emrat2{};			// Отношение массы Луны к массе Земли и Луны.
+		double		m_dimensionFit{};	// Значение для соблюдения размерности.      
 
 		// Динамическик массивы для работы с выпуском //
-		mutable const double* m_buffer = nullptr;	// Коэффициенты блока, читаемые из файла.
-		double* m_poly = nullptr;					// Значения полиномов.
-		double* m_dpoly = nullptr;					// Значения производных полиномов.
+		mutable const double* m_buffer{ nullptr };	// Коэффициенты блока, читаемые из файла.
+		double* m_poly{ nullptr };					// Значения полиномов.
+		double* m_dpoly{ nullptr };					// Значения производных полиномов.
 
 
 		// ------------------------- Внутренние методы работы объекта -------------------------- //
@@ -142,7 +130,7 @@ namespace dph
 		// Получить значение астрономической единицы, хранящейся в выпуске.
 		static double au(const EphemerisRelease& ephemerisRelease)
 		{
-			return ephemerisRelease.info->m_au;
+			return ephemerisRelease.m_au;
 		}
 	};
 }

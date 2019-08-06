@@ -106,7 +106,7 @@ double dph::EphemerisRelease::get_const(const char* const_name) const
 		return 0;
 	}
 
-	for (uint32_t i = 0; i < Info.const_count; i++)
+	for (uint32_t i = 0; i < Info.m_constantsCount; i++)
 	{
 		bool correct = true;
 
@@ -169,8 +169,8 @@ void dph::EphemerisRelease::copy(const EphemerisRelease& other)
 {
 	this->Info = other.Info;
 
-	Info.const_value = new double[Info.const_count];
-	memcpy_s(Info.const_value, sizeof(double) * Info.const_count, other.Info.const_value, sizeof(double) * other.Info.const_count);
+	Info.const_value = new double[Info.m_constantsCount];
+	memcpy_s(Info.const_value, sizeof(double) * Info.m_constantsCount, other.Info.const_value, sizeof(double) * other.Info.m_constantsCount);
 
 	m_buffer = new double[Info.m_ncoeff];
 	memcpy_s((void*)this->m_buffer, sizeof(double) * Info.m_ncoeff, other.m_buffer, sizeof(double) * Info.m_ncoeff);
@@ -216,18 +216,18 @@ bool dph::EphemerisRelease::read()
 	std::fread(&Info.start,       8,       1, m_binaryFileStream);
 	std::fread(&Info.end,         8,       1, m_binaryFileStream);
 	std::fread(&Info.span, 8, 1, m_binaryFileStream);
-	std::fread(&Info.const_count, 4,       1, m_binaryFileStream);
+	std::fread(&Info.m_constantsCount, 4,       1, m_binaryFileStream);
 	std::fread(&Info.au,          8,       1, m_binaryFileStream);
 	std::fread(&Info.emrat,       8,       1, m_binaryFileStream);
 	std::fread(Info.key,          4,  12 * 3, m_binaryFileStream);
 	std::fread(&Info.denum,       4,       1, m_binaryFileStream);
 	std::fread(Info.key[12],      4,       3, m_binaryFileStream);		
 	
-	Info.const_value = new double[Info.const_count];
+	Info.const_value = new double[Info.m_constantsCount];
 
-	if (Info.const_count > 400)
+	if (Info.m_constantsCount > 400)
 	{
-		std::fread(Info.const_name[400], 6, Info.const_count - 400, m_binaryFileStream);
+		std::fread(Info.const_name[400], 6, Info.m_constantsCount - 400, m_binaryFileStream);
 	}		
 
 	std::fread(Info.key[13], sizeof(uint32_t), 3, m_binaryFileStream);
@@ -242,7 +242,7 @@ bool dph::EphemerisRelease::read()
 	}
 
 	std::fseek(m_binaryFileStream, Info.m_ncoeff * 8, 0);
-	std::fread(Info.const_value, 8, Info.const_count, m_binaryFileStream);
+	std::fread(Info.const_value, 8, Info.m_constantsCount, m_binaryFileStream);
 
 	post_read_calc();
 

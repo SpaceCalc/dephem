@@ -29,7 +29,7 @@ namespace dph
 		{
 			size_t		m_blocksCount = 0;
 			size_t		m_ncoeff = 0;
-			uint32_t	const_count = 0;
+			uint32_t	m_constantsCount = 0;
 			int			denum = 0;
 			uint32_t	key[15][3]{};
 			double		start = 0;

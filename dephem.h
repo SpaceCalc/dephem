@@ -61,6 +61,9 @@ namespace dph
 		// Получить значение константы по её индексу:
 		double constantValue(size_t constantIndex) const;
 
+		// Получить значение константы по её имени:
+		double constant(const std::string constantName) const;
+
 	private:
 		
 		// ------------------------------ Внутренние значения ---------------------------------- //
@@ -145,17 +148,6 @@ namespace dph
 		// Получить значение радиу-вектора (или вектора состояния) Луны относительно
 		// барицентра Солнечной Системы.
 		void get_origin_moon(double JED, double* S, bool state) const;
-	};
-
-	class more_info
-	{
-	public:
-		
-		// Получить значение астрономической единицы, хранящейся в выпуске.
-		static double au(const EphemerisRelease& ephemerisRelease)
-		{
-			return ephemerisRelease.m_au;
-		}
 	};
 }
 

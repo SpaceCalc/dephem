@@ -56,8 +56,8 @@ namespace dph
 
 		mutable const double* m_buffer = nullptr;
 
-		double* poly = nullptr;
-		double* dpoly = nullptr;
+		double* m_poly = nullptr;
+		double* m_dpoly = nullptr;
 
 	public:
 		explicit EphemerisRelease(const char* binaryFilePath);

@@ -53,8 +53,8 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 	if (m_binaryFileStream != nullptr) std::fclose(m_binaryFileStream);
 	delete[] m_buffer;
 	delete[] Info.const_value;
-	delete[] poly;
-	delete[] dpoly;
+	delete[] m_poly;
+	delete[] m_dpoly;
 
 	// Предварительное копирование:
 	this->m_binaryFilePath = other.m_binaryFilePath;
@@ -88,8 +88,8 @@ dph::EphemerisRelease::~EphemerisRelease()
 	// Освобождение выделенной памяти:
 	delete[] m_buffer;
 	delete[] Info.const_value;
-	delete[] poly;
-	delete[] dpoly;
+	delete[] m_poly;
+	delete[] m_dpoly;
 }
 
 double dph::EphemerisRelease::get_const(const char* const_name) const
@@ -174,11 +174,11 @@ void dph::EphemerisRelease::copy(const EphemerisRelease& other)
 	m_buffer = new double[Info.ncoeff];
 	memcpy_s((void*)this->m_buffer, sizeof(double) * Info.ncoeff, other.m_buffer, sizeof(double) * Info.ncoeff);
 
-	poly = new double[Info.max_cheby];
-	memcpy_s((void*)this->poly, sizeof(double) * Info.max_cheby, other.poly, sizeof(double) * other.Info.max_cheby);
+	m_poly = new double[Info.max_cheby];
+	memcpy_s((void*)this->m_poly, sizeof(double) * Info.max_cheby, other.m_poly, sizeof(double) * other.Info.max_cheby);
 
-	dpoly = new double[Info.max_cheby];
-	memcpy_s((void*)this->dpoly, sizeof(double) * Info.max_cheby, other.dpoly, sizeof(double) * other.Info.max_cheby);
+	m_dpoly = new double[Info.max_cheby];
+	memcpy_s((void*)this->m_dpoly, sizeof(double) * Info.max_cheby, other.m_dpoly, sizeof(double) * other.Info.max_cheby);
 }
 
 void dph::EphemerisRelease::move_swap(EphemerisRelease& other)
@@ -191,16 +191,16 @@ void dph::EphemerisRelease::move_swap(EphemerisRelease& other)
 	m_binaryFilePath.swap(other.m_binaryFilePath);
 	this->m_binaryFileStream    = other.m_binaryFileStream;
 	this->m_buffer = other.m_buffer;
-	this->poly   = other.poly;
-	this->dpoly  = other.dpoly;
+	this->m_poly   = other.m_poly;
+	this->m_dpoly  = other.m_dpoly;
 
 	// Очистка объекта копирования:
 	other.m_ready            = false;
 	other.m_binaryFileStream              = nullptr;
 	other.Info.const_value = nullptr;
 	other.m_buffer           = nullptr;
-	other.poly             = nullptr;
-	other.dpoly            = nullptr;
+	other.m_poly             = nullptr;
+	other.m_dpoly            = nullptr;
 }
 
 bool dph::EphemerisRelease::read()
@@ -263,8 +263,8 @@ void dph::EphemerisRelease::post_read_calc()
 		if (Info.key[i][1] > Info.max_cheby) Info.max_cheby = Info.key[i][1];
 		if (Info.key[i][1] != 0) Info.items |= 1 << i;
 	}
-	poly  = new double[Info.max_cheby] {1};
-	dpoly = new double[Info.max_cheby] {0, 1};
+	m_poly  = new double[Info.max_cheby] {1};
+	m_dpoly = new double[Info.max_cheby] {0, 1};
 
 	// Определение списка производных элементов:
 	for (int i = 0; i < 17; ++i)
@@ -335,12 +335,12 @@ void dph::EphemerisRelease::interpolate(const double* set, unsigned item, double
 	uint32_t cpec = Info.key[item][1];
 	
 	// Предварительное заполнение полиномов (вычисление их сумм):
-	poly[1] = norm_time;
+	m_poly[1] = norm_time;
 
 	// Заполнение полиномов (вычисление их сумм):
 	for (uint32_t i = 2; i < cpec; ++i)
 	{
-		poly[i] = 2 * norm_time * poly[i - 1] - poly[i - 2];
+		m_poly[i] = 2 * norm_time * m_poly[i - 1] - m_poly[i - 2];
 	}
 
 	// Обнуление массива результата вычислений:
@@ -351,7 +351,7 @@ void dph::EphemerisRelease::interpolate(const double* set, unsigned item, double
 	{
 		for (uint32_t j = 0; j < cpec; ++j)
 		{
-			res[i] += poly[j] * set[i * cpec + j];
+			res[i] += m_poly[j] * set[i * cpec + j];
 		}
 	}
 }
@@ -362,15 +362,15 @@ void dph::EphemerisRelease::interpolate_derivative(const double* set, unsigned i
 	uint32_t cpec = Info.key[item][1];
 
 	// Предварительное заполнение полиномов (вычисление их сумм):
-	poly[1]  = norm_time;
-	poly[2]  = 2 * norm_time * norm_time - 1;
-	dpoly[2] = 4 * norm_time;
+	m_poly[1]  = norm_time;
+	m_poly[2]  = 2 * norm_time * norm_time - 1;
+	m_dpoly[2] = 4 * norm_time;
 
 	// Заполнение полиномов (вычисление их сумм):
 	for (uint32_t i = 3; i < cpec; ++i)
 	{
-		 poly[i] =                   2 * norm_time *  poly[i - 1] -  poly[i - 2];
-		dpoly[i] = 2 * poly[i - 1] + 2 * norm_time * dpoly[i - 1] - dpoly[i - 2];
+		 m_poly[i] =                   2 * norm_time *  m_poly[i - 1] -  m_poly[i - 2];
+		m_dpoly[i] = 2 * m_poly[i - 1] + 2 * norm_time * m_dpoly[i - 1] - m_dpoly[i - 2];
 	}
 
 	// Обнуление массива результата вычислений:
@@ -384,8 +384,8 @@ void dph::EphemerisRelease::interpolate_derivative(const double* set, unsigned i
 	{
 		for (uint32_t j = 0; j < cpec; ++j, ++set)
 		{
-			res[i]              +=  poly[j] * *set;
-			res[i + comp_count] += dpoly[j] * *set;
+			res[i]              +=  m_poly[j] * *set;
+			res[i + comp_count] += m_dpoly[j] * *set;
 		}
 
 		res[i + comp_count] *= derivative_units;

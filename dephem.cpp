@@ -218,7 +218,7 @@ bool dph::EphemerisRelease::read()
 	std::fread(&Info.m_blockTimeSpan, 8, 1, m_binaryFileStream);
 	std::fread(&Info.m_constantsCount, 4,       1, m_binaryFileStream);
 	std::fread(&Info.m_au,          8,       1, m_binaryFileStream);
-	std::fread(&Info.emrat,       8,       1, m_binaryFileStream);
+	std::fread(&Info.m_emrat,       8,       1, m_binaryFileStream);
 	std::fread(Info.m_keys,          4,  12 * 3, m_binaryFileStream);
 	std::fread(&Info.m_releaseIndex,       4,       1, m_binaryFileStream);
 	std::fread(Info.m_keys[12],      4,       3, m_binaryFileStream);		
@@ -252,7 +252,7 @@ bool dph::EphemerisRelease::read()
 void dph::EphemerisRelease::post_read_calc()
 {
 	// Определение доп. коэффициентов для работы с ежегодником:
-	Info.co_em = 1 / (1 + Info.emrat);
+	Info.co_em = 1 / (1 + Info.m_emrat);
 	Info.co_span = 1 / (43200 * Info.m_blockTimeSpan);
 
 	// Определение количества блоков в ежегоднике:
@@ -284,7 +284,7 @@ bool dph::EphemerisRelease::authentic() const
 	if (Info.m_blockTimeSpan == 0)						return false;
 	if (Info.max_cheby == 0)				return false;
 	if (Info.items == 0)					return false;
-	if (Info.emrat == 0)					return false;
+	if (Info.m_emrat == 0)					return false;
 	if (Info.m_au == 0)						return false;
 
 	double time[2];

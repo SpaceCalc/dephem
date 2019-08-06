@@ -21,66 +21,6 @@ dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) :
 	}
 }
 
-dph::EphemerisRelease::EphemerisRelease(const EphemerisRelease& other)
-{
-	// Предварительное копирование:	
-	this->m_binaryFilePath = other.m_binaryFilePath;
-	this->m_ready     = other.m_ready;
-	
-	// Копирование при готовности:
-	if (m_ready)
-	{
-		// Попытка открыть файл:
-		m_binaryFileStream = std::fopen(this->m_binaryFilePath.c_str(), "rb");
-
-		// Завершение копирования при ошибке открытия файла:
-		if (m_binaryFileStream == nullptr)
-		{
-			m_ready = false;
-			return;
-		}
-
-		// Копирование основных переменных:
-		copy(other);
-	}
-}
-
-dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& other)
-{	
-	// Проверка на равенство самому себе:
-	if (&other == this) return *this;
-
-	// Очистка существующей информации:
-	if (m_binaryFileStream != nullptr) std::fclose(m_binaryFileStream);
-	delete[] m_buffer;
-	delete[] Info.m_constantsValues;
-	delete[] m_poly;
-	delete[] m_dpoly;
-
-	// Предварительное копирование:
-	this->m_binaryFilePath = other.m_binaryFilePath;
-	this->m_ready     = other.m_ready;
-
-	// Копирование при готовности:
-	if (m_ready)
-	{
-		// Попытка открыть файл:
-		m_binaryFileStream = std::fopen(this->m_binaryFilePath.c_str(), "rb");
-
-		// Завершение копирования при ошибке открытия файла:
-		if (m_binaryFileStream == nullptr)
-		{
-			m_ready = false;
-			return *this;
-		}
-		
-		// Копирование основных переменных:
-		copy(other);
-	}
-	
-	return *this;
-}
-
 dph::EphemerisRelease::~EphemerisRelease()
 {
 	// Закрытие файла ежегодника:
@@ -148,23 +88,6 @@ void dph::EphemerisRelease::get_coeff(double * coeff, double JED) const
 	{
 		coeff[i] = m_buffer[i];
 	}		
-}
-
-void dph::EphemerisRelease::copy(const EphemerisRelease& other)
-{
-	this->Info = other.Info;
-
-	Info.m_constantsValues = new double[Info.m_constantsCount];
-	memcpy_s(Info.m_constantsValues, sizeof(double) * Info.m_constantsCount, other.Info.m_constantsValues, sizeof(double) * other.Info.m_constantsCount);
-
-	m_buffer = new double[Info.m_ncoeff];
-	memcpy_s((void*)this->m_buffer, sizeof(double) * Info.m_ncoeff, other.m_buffer, sizeof(double) * Info.m_ncoeff);
-
-	m_poly = new double[Info.m_maxCheby];
-	memcpy_s((void*)this->m_poly, sizeof(double) * Info.m_maxCheby, other.m_poly, sizeof(double) * other.Info.m_maxCheby);
-
-	m_dpoly = new double[Info.m_maxCheby];
-	memcpy_s((void*)this->m_dpoly, sizeof(double) * Info.m_maxCheby, other.m_dpoly, sizeof(double) * other.Info.m_maxCheby);
 }
 
 bool dph::EphemerisRelease::read()

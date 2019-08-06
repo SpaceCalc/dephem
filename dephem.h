@@ -46,7 +46,7 @@ namespace dph
 			char	m_constantsNames[1000][6]{};
 			double* m_constantsValues = nullptr;
 
-			double   co_em = 0;
+			double   m_emrat2 = 0;
 			double   co_span = 0;
 			uint32_t max_cheby = 0;
 			int      items = 0;

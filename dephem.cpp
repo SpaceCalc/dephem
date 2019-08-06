@@ -252,7 +252,7 @@ bool dph::EphemerisRelease::read()
 void dph::EphemerisRelease::post_read_calc()
 {
 	// Определение доп. коэффициентов для работы с ежегодником:
-	Info.co_em = 1 / (1 + Info.m_emrat);
+	Info.m_emrat2 = 1 / (1 + Info.m_emrat);
 	Info.co_span = 1 / (43200 * Info.m_blockTimeSpan);
 
 	// Определение количества блоков в ежегоднике:
@@ -454,7 +454,7 @@ void dph::EphemerisRelease::get_origin_earth(double JED, double* S, bool state) 
 	// Определение относительного положения:
 	for (int i = 0; i < int(state ? 6 : 3); ++i)
 	{
-		S[i] -= E_M[i] * Info.co_em;
+		S[i] -= E_M[i] * Info.m_emrat2;
 	}
 }
 
@@ -470,7 +470,7 @@ void dph::EphemerisRelease::get_origin_moon(double JED, double* S, bool state) c
 	// Определение относительного положения:
 	for (int i = 0; i < int(state ? 6 : 3); ++i)
 	{
-		S[i] += E_M[i] * (1 - Info.co_em);
+		S[i] += E_M[i] * (1 - Info.m_emrat2);
 	}	
 }
 

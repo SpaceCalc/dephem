@@ -33,7 +33,7 @@ namespace dph
 			int			m_releaseIndex = 0;
 			uint32_t	m_keys[15][3]{};
 			double		m_startDate = 0;
-			double		end = 0;
+			double		m_endDate = 0;
 			double		span = 0;
 			double		au = 0;
 			double		emrat = 0;

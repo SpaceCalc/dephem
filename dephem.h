@@ -23,7 +23,7 @@ namespace dph
 
 		FILE* m_binaryFileStream = nullptr;
 
-		bool ready = false;
+		bool m_ready = false;
 
 		struct header_info
 		{
@@ -68,7 +68,7 @@ namespace dph
 
 		~EphemerisRelease();
 
-		bool is_ready() const { return ready; }
+		bool is_ready() const { return m_ready; }
 
 		const header_info* const info = &Info;
 

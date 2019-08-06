@@ -15,7 +15,7 @@ dph::EphemerisRelease::EphemerisRelease(const char * binaryFilePath) : m_binaryF
 	}
 	else // Подготовка объекта прошла успешно.
 	{
-		ready  = true;
+		m_ready  = true;
 		buffer = new double[Info.ncoeff]{};
 	}
 }
@@ -24,10 +24,10 @@ dph::EphemerisRelease::EphemerisRelease(const EphemerisRelease& other)
 {
 	// Предварительное копирование:	
 	this->m_binaryFilePath = other.m_binaryFilePath;
-	this->ready     = other.ready;
+	this->m_ready     = other.m_ready;
 	
 	// Копирование при готовности:
-	if (ready)
+	if (m_ready)
 	{
 		// Попытка открыть файл:
 		m_binaryFileStream = std::fopen(this->m_binaryFilePath.c_str(), "rb");
@@ -35,7 +35,7 @@ dph::EphemerisRelease::EphemerisRelease(const EphemerisRelease& other)
 		// Завершение копирования при ошибке открытия файла:
 		if (m_binaryFileStream == nullptr)
 		{
-			ready = false;
+			m_ready = false;
 			return;
 		}
 
@@ -58,10 +58,10 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 
 	// Предварительное копирование:
 	this->m_binaryFilePath = other.m_binaryFilePath;
-	this->ready     = other.ready;
+	this->m_ready     = other.m_ready;
 
 	// Копирование при готовности:
-	if (ready)
+	if (m_ready)
 	{
 		// Попытка открыть файл:
 		m_binaryFileStream = std::fopen(this->m_binaryFilePath.c_str(), "rb");
@@ -69,7 +69,7 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 		// Завершение копирования при ошибке открытия файла:
 		if (m_binaryFileStream == nullptr)
 		{
-			ready = false;
+			m_ready = false;
 			return *this;
 		}
 		
@@ -96,7 +96,7 @@ double dph::EphemerisRelease::get_const(const char* const_name) const
 {
 	size_t len = strlen(const_name);
 	
-	if (this->ready == false)
+	if (this->m_ready == false)
 	{
 		return 0;
 	}
@@ -123,7 +123,7 @@ double dph::EphemerisRelease::get_const(const char* const_name) const
 
 void dph::EphemerisRelease::available_items(bool* items, bool derived) const
 {
-	if (this->ready == false)
+	if (this->m_ready == false)
 	{
 		return;
 	}
@@ -138,7 +138,7 @@ void dph::EphemerisRelease::available_items(bool* items, bool derived) const
 
 void dph::EphemerisRelease::get_coeff(double * coeff, double JED) const
 {
-	if (this->ready == false)
+	if (this->m_ready == false)
 	{
 		return;
 	}
@@ -184,7 +184,7 @@ void dph::EphemerisRelease::copy(const EphemerisRelease& other)
 void dph::EphemerisRelease::move_swap(EphemerisRelease& other)
 {
 	// Копирование:
-	this->ready  = other.ready;
+	this->m_ready  = other.m_ready;
 	this->Info   = other.Info; // (Некоторые элементы структуры копируются по указателю - перемещаются).
 
 	// Перемещение:
@@ -195,7 +195,7 @@ void dph::EphemerisRelease::move_swap(EphemerisRelease& other)
 	this->dpoly  = other.dpoly;
 
 	// Очистка объекта копирования:
-	other.ready            = false;
+	other.m_ready            = false;
 	other.m_binaryFileStream              = nullptr;
 	other.Info.const_value = nullptr;
 	other.buffer           = nullptr;
@@ -496,7 +496,7 @@ void dph::EphemerisRelease::get_body(unsigned target, unsigned center, double JE
 	--center;
 
 	//Условия недопустимые для данного метода:
-	if (this->ready == false)
+	if (this->m_ready == false)
 	{
 		return;
 	}
@@ -564,7 +564,7 @@ void dph::EphemerisRelease::get_other(unsigned item, double JED, double* res, bo
 	--item;
 
 	//Условия недопустимые для данного метода:
-	if (this->ready == false)
+	if (this->m_ready == false)
 	{
 		return;
 	}

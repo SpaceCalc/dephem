@@ -12,103 +12,106 @@
 #include <limits>
 #include <string>
 
-class dephem
+namespace dph
 {
-	static constexpr size_t MAX_LONG = std::numeric_limits<long>::max();
-
-private:
-	std::string file_path;
-	
-	FILE* eph = nullptr;
-
-	bool ready = false;			
-
-	struct header_info
-	{				
-		size_t		block_count = 0;
-		size_t		ncoeff      = 0;
-		uint32_t	const_count = 0;
-		int			denum       = 0;
-		uint32_t	key[15][3]{};
-		double		start       = 0;
-		double		end         = 0;
-		double		span        = 0;
-		double		au          = 0;
-		double		emrat       = 0;
-		
-		char label[3][85]{};
+	class dephem
+	{
+		static constexpr size_t MAX_LONG = std::numeric_limits<long>::max();
 
 	private:
-		friend class dephem;
+		std::string file_path;
 
-		char	const_name[1000][6]{};
-		double*	const_value = nullptr;
+		FILE* eph = nullptr;
 
-		double   co_em         = 0;
-		double   co_span       = 0;
-		uint32_t max_cheby     = 0;
-		int      items         = 0;
-		int	     derived_items = 0;
+		bool ready = false;
 
-	} Info;
+		struct header_info
+		{
+			size_t		block_count = 0;
+			size_t		ncoeff = 0;
+			uint32_t	const_count = 0;
+			int			denum = 0;
+			uint32_t	key[15][3]{};
+			double		start = 0;
+			double		end = 0;
+			double		span = 0;
+			double		au = 0;
+			double		emrat = 0;
 
-	mutable const double* buffer = nullptr;
+			char label[3][85]{};
 
-	double* poly  = nullptr;
-	double* dpoly = nullptr;
+		private:
+			friend class dephem;
 
-public:
-	explicit dephem(const char* file_path);
+			char	const_name[1000][6]{};
+			double* const_value = nullptr;
 
-	dephem(const dephem& other);
+			double   co_em = 0;
+			double   co_span = 0;
+			uint32_t max_cheby = 0;
+			int      items = 0;
+			int	     derived_items = 0;
 
-	dephem(dephem&& other) noexcept;
-	
-	dephem& operator = (const dephem& other);
+		} Info;
 
-	dephem& operator = (dephem&& other) noexcept;
+		mutable const double* buffer = nullptr;
 
-	~dephem();
-	
-	bool is_ready() const { return ready; }
+		double* poly = nullptr;
+		double* dpoly = nullptr;
 
-	const header_info* const info = &Info;
+	public:
+		explicit dephem(const char* file_path);
 
-	double get_const(const char* const_name) const;
+		dephem(const dephem& other);
 
-	void available_items(bool* items, bool derived = false) const;
+		dephem(dephem&& other) noexcept;
 
-	void get_coeff(double* coeff, double JED) const;
+		dephem& operator = (const dephem& other);
 
-private:
-	
-	void copy(const dephem& other);
+		dephem& operator = (dephem&& other) noexcept;
 
-	void move_swap(dephem& other);
-	
-	bool read();
+		~dephem();
 
-	void post_read_calc();
+		bool is_ready() const { return ready; }
 
-	bool authentic() const;	
+		const header_info* const info = &Info;
 
-	void fill_buffer(size_t block_num) const;
-	
-	void interpolate(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const;
+		double get_const(const char* const_name) const;
 
-	void interpolate_derivative(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const;
+		void available_items(bool* items, bool derived = false) const;
 
-	void get_origin_item(unsigned item, double JED, double* S, bool state) const;
+		void get_coeff(double* coeff, double JED) const;
 
-	void get_origin_earth(double JED, double* S, bool state) const;
-	
-	void get_origin_moon (double JED, double* S, bool state) const;
+	private:
 
-public:
+		void copy(const dephem& other);
 
-	void get_body(unsigned target, unsigned center, double JED, double* S, bool state) const;
+		void move_swap(dephem& other);
 
-	void get_other(unsigned item, double JED, double* res, bool state) const;
-};
+		bool read();
+
+		void post_read_calc();
+
+		bool authentic() const;
+
+		void fill_buffer(size_t block_num) const;
+
+		void interpolate(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const;
+
+		void interpolate_derivative(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const;
+
+		void get_origin_item(unsigned item, double JED, double* S, bool state) const;
+
+		void get_origin_earth(double JED, double* S, bool state) const;
+
+		void get_origin_moon(double JED, double* S, bool state) const;
+
+	public:
+
+		void get_body(unsigned target, unsigned center, double JED, double* S, bool state) const;
+
+		void get_other(unsigned item, double JED, double* res, bool state) const;
+	};
+}
 
 #endif

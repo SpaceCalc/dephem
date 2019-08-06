@@ -54,7 +54,7 @@ namespace dph
 
 		} Info;
 
-		mutable const double* buffer = nullptr;
+		mutable const double* m_buffer = nullptr;
 
 		double* poly = nullptr;
 		double* dpoly = nullptr;

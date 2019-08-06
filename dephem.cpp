@@ -16,7 +16,7 @@ dph::EphemerisRelease::EphemerisRelease(const char * binaryFilePath) : m_binaryF
 	else // Подготовка объекта прошла успешно.
 	{
 		m_ready  = true;
-		buffer = new double[Info.ncoeff]{};
+		m_buffer = new double[Info.ncoeff]{};
 	}
 }
 
@@ -51,7 +51,7 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 
 	// Очистка существующей информации:
 	if (m_binaryFileStream != nullptr) std::fclose(m_binaryFileStream);
-	delete[] buffer;
+	delete[] m_buffer;
 	delete[] Info.const_value;
 	delete[] poly;
 	delete[] dpoly;
@@ -86,7 +86,7 @@ dph::EphemerisRelease::~EphemerisRelease()
 	if (m_binaryFileStream != nullptr) std::fclose(m_binaryFileStream);
 
 	// Освобождение выделенной памяти:
-	delete[] buffer;
+	delete[] m_buffer;
 	delete[] Info.const_value;
 	delete[] poly;
 	delete[] dpoly;
@@ -153,14 +153,14 @@ void dph::EphemerisRelease::get_coeff(double * coeff, double JED) const
 	
 	size_t block_num = size_t((JED - Info.start) / Info.span);
 
-	if (JED < buffer[0] || JED >= buffer[1])
+	if (JED < m_buffer[0] || JED >= m_buffer[1])
 	{
 		fill_buffer(block_num - (JED == Info.end ? 1 : 0));
 	}
 
 	for (size_t i = 0; i < Info.ncoeff; ++i)
 	{
-		coeff[i] = buffer[i];
+		coeff[i] = m_buffer[i];
 	}		
 }
 
@@ -171,8 +171,8 @@ void dph::EphemerisRelease::copy(const EphemerisRelease& other)
 	Info.const_value = new double[Info.const_count];
 	memcpy_s(Info.const_value, sizeof(double) * Info.const_count, other.Info.const_value, sizeof(double) * other.Info.const_count);
 
-	buffer = new double[Info.ncoeff];
-	memcpy_s((void*)this->buffer, sizeof(double) * Info.ncoeff, other.buffer, sizeof(double) * Info.ncoeff);
+	m_buffer = new double[Info.ncoeff];
+	memcpy_s((void*)this->m_buffer, sizeof(double) * Info.ncoeff, other.m_buffer, sizeof(double) * Info.ncoeff);
 
 	poly = new double[Info.max_cheby];
 	memcpy_s((void*)this->poly, sizeof(double) * Info.max_cheby, other.poly, sizeof(double) * other.Info.max_cheby);
@@ -190,7 +190,7 @@ void dph::EphemerisRelease::move_swap(EphemerisRelease& other)
 	// Перемещение:
 	m_binaryFilePath.swap(other.m_binaryFilePath);
 	this->m_binaryFileStream    = other.m_binaryFileStream;
-	this->buffer = other.buffer;
+	this->m_buffer = other.m_buffer;
 	this->poly   = other.poly;
 	this->dpoly  = other.dpoly;
 
@@ -198,7 +198,7 @@ void dph::EphemerisRelease::move_swap(EphemerisRelease& other)
 	other.m_ready            = false;
 	other.m_binaryFileStream              = nullptr;
 	other.Info.const_value = nullptr;
-	other.buffer           = nullptr;
+	other.m_buffer           = nullptr;
 	other.poly             = nullptr;
 	other.dpoly            = nullptr;
 }
@@ -326,7 +326,7 @@ void dph::EphemerisRelease::fill_buffer(size_t block_num) const
 		std::fseek(m_binaryFileStream, adress, 0);
 	}
 
-	std::fread((void*)buffer, sizeof(double), Info.ncoeff, m_binaryFileStream);
+	std::fread((void*)m_buffer, sizeof(double), Info.ncoeff, m_binaryFileStream);
 }
 
 void dph::EphemerisRelease::interpolate(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const
@@ -415,7 +415,7 @@ void dph::EphemerisRelease::get_origin_item(unsigned item, double JED, double *S
 	double norm_time = (JED - Info.start) / Info.span;	// Норм. время отн. всех блоков.
 	size_t offset    = size_t(norm_time);				// Номер треб. блока.
 
-	if (JED < buffer[0] || JED >= buffer[1])
+	if (JED < m_buffer[0] || JED >= m_buffer[1])
 	{
 		fill_buffer(offset - (JED == Info.end ? 1 : 0));
 	}
@@ -437,8 +437,8 @@ void dph::EphemerisRelease::get_origin_item(unsigned item, double JED, double *S
 	// В зависимости от того, что требуется вычислить (радиус-вектор
 	// или радиус-вектор и вектор скорости) выбирается соответствующий
 	// метод:
-	if (state)	interpolate_derivative(&buffer[coeff_pos], item, norm_time, S, comp_count);
-	else	    interpolate           (&buffer[coeff_pos], item, norm_time, S, comp_count);
+	if (state)	interpolate_derivative(&m_buffer[coeff_pos], item, norm_time, S, comp_count);
+	else	    interpolate           (&m_buffer[coeff_pos], item, norm_time, S, comp_count);
 }
 
 void dph::EphemerisRelease::get_origin_earth(double JED, double* S, bool state) const

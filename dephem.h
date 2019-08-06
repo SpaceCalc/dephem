@@ -46,22 +46,22 @@ namespace dph
 		// Первая доступная дата для рассчёта.
 		double startDate() const;
 
-		// Последняя доступная дата для рассчёта:
+		// Последняя доступная дата для рассчёта.
 		double endDate() const;
 
-		// Получить номер выпуска:
+		// Получить номер выпуска.
 		uint32_t releaseIndex() const;
 
-		// Получить строковую информацию о выпуске:
+		// Получить строковую информацию о выпуске.
 		const std::string& releaseLabel() const;
 
-		// Получить имя константы по её индексу:
+		// Получить имя константы по её индексу.
 		const std::string& constantName(size_t constantIndex) const;
 
-		// Получить значение константы по её индексу:
+		// Получить значение константы по её индексу.
 		double constantValue(size_t constantIndex) const;
 
-		// Получить значение константы по её имени:
+		// Получить значение константы по её имени.
 		double constant(const std::string constantName) const;
 
 	private:

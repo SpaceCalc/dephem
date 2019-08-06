@@ -38,7 +38,7 @@ namespace dph
 			double		au = 0;
 			double		emrat = 0;
 
-			char label[3][85]{};
+			char releaseLabel[3][85]{};
 
 		private:
 			friend class EphemerisRelease;

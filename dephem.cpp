@@ -208,8 +208,8 @@ bool dph::EphemerisRelease::read()
 {
 	for (int i = 0; i < 3; i++)
 	{
-		std::fread(Info.label[i], 1, 84, m_binaryFileStream);
-		Info.label[i][84] = '\0';
+		std::fread(Info.releaseLabel[i], 1, 84, m_binaryFileStream);
+		Info.releaseLabel[i][84] = '\0';
 	}
 
 	std::fread(Info.const_name,   1, 400 * 6, m_binaryFileStream);

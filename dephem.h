@@ -16,6 +16,7 @@ namespace dph
 {
 	class EphemerisRelease
 	{
+		friend class more_info;
 		struct header_info;
 	public:
 		
@@ -132,6 +133,17 @@ namespace dph
 		// Получить значение радиу-вектора (или вектора состояния) Луны относительно
 		// барицентра Солнечной Системы.
 		void get_origin_moon(double JED, double* S, bool state) const;
+	};
+
+	class more_info
+	{
+	public:
+		
+		// Получить значение астрономической единицы, хранящейся в выпуске.
+		static double au(const EphemerisRelease& ephemerisRelease)
+		{
+			return ephemerisRelease.info->m_au;
+		}
 	};
 }
 

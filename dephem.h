@@ -43,6 +43,9 @@ namespace dph
 		// Готов ли объект к работе.
 		bool is_ready() const;
 
+		// Первая доступная дата для рассчёта.
+		double startDate() const;
+
 		// Получить значение хранимой константы по её имени.
 		double get_const(const char* const_name) const;
 

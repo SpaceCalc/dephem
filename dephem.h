@@ -60,7 +60,7 @@ namespace dph
 		double* m_dpoly = nullptr;
 
 	public:
-		explicit EphemerisRelease(const char* binaryFilePath);
+		explicit EphemerisRelease(const std::string& binaryFilePath);
 
 		EphemerisRelease(const EphemerisRelease& other);
 

@@ -1,6 +1,7 @@
 #include "dephem.h"
 
-dph::EphemerisRelease::EphemerisRelease(const char * binaryFilePath) : m_binaryFilePath(binaryFilePath)
+dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) : 
+	m_binaryFilePath(binaryFilePath)
 {			
 	// Попытка открыть файл:
 	m_binaryFileStream = std::fopen(this->m_binaryFilePath.c_str(), "rb");

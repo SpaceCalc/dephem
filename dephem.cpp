@@ -48,63 +48,6 @@ double dph::EphemerisRelease::endDate() const
 	return m_endDate;
 }
 
-double dph::EphemerisRelease::get_const(const char* const_name) const
-{
-	size_t len = strlen(const_name);
-	
-	if (this->m_ready == false)
-	{
-		return 0;
-	}
-	else if (len > 6)
-	{
-		return 0;
-	}
-
-	for (uint32_t i = 0; i < m_constantsCount; i++)
-	{
-		bool correct = true;
-
-		for (size_t j = 0; j < len; j++) if (const_name[j] != m_constantsNames[i][j])
-		{
-			correct = false;
-			break;
-		}
-
-		if (correct) return m_constantsValues[i];
-	}
-
-	return 0;
-}
-
-void dph::EphemerisRelease::get_coeff(double * coeff, double JED) const
-{
-	if (this->m_ready == false)
-	{
-		return;
-	}
-	else if (JED < m_startDate || JED > m_endDate)
-	{
-		return;
-	}
-	else if (coeff == nullptr)
-	{
-		return;
-	}		
-	
-	size_t block_num = size_t((JED - m_startDate) / m_blockTimeSpan);
-
-	if (JED < m_buffer[0] || JED >= m_buffer[1])
-	{
-		fill_buffer(block_num - (JED == m_endDate ? 1 : 0));
-	}
-
-	for (size_t i = 0; i < m_ncoeff; ++i)
-	{
-		coeff[i] = m_buffer[i];
-	}		
-}
-
 std::string dph::EphemerisRelease::cutBackSymbols(const char* charArray, size_t arraySize, char symbolToCut)
 {
 	for (size_t i = arraySize - 1; i > 0; --i)

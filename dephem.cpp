@@ -17,7 +17,6 @@ dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) :
 	else // Подготовка объекта прошла успешно.
 	{
 		m_ready  = true;
-		m_buffer = new double[m_ncoeff]{};
 	}
 }
 
@@ -275,6 +274,9 @@ void dph::EphemerisRelease::post_read_calc()
 	}
 	m_poly  = new double[m_maxCheby] {1};
 	m_dpoly = new double[m_maxCheby] {0, 1};
+
+	// Выделение памяти под буффер:
+	m_buffer = new double[m_ncoeff] {};
 }
 
 bool dph::EphemerisRelease::authentic() const

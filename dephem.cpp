@@ -48,6 +48,30 @@ double dph::EphemerisRelease::endDate() const
 	return m_endDate;
 }
 
+const std::string& dph::EphemerisRelease::constantName(size_t constantIndex) const
+{
+	if (m_ready == false)
+	{
+		return std::string();
+	}
+	else if (m_constantsCount == 0)
+	{
+		return std::string();
+	}
+	else if (m_constantsNames == nullptr)
+	{
+		return std::string();
+	}
+	else if (constantIndex > m_constantsCount)
+	{
+		return std::string();
+	}
+	else
+	{
+		return m_constantsNames[constantIndex];
+	}
+}
+
 std::string dph::EphemerisRelease::cutBackSymbols(const char* charArray, size_t arraySize, char symbolToCut)
 {
 	for (size_t i = arraySize - 1; i > 0; --i)

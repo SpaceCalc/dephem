@@ -7,12 +7,10 @@ dephem::dephem(const char * file_path) : file_path(file_path)
 	
 	if (eph == nullptr)	// Ошибка открытия файла.
 	{
-		throw_error("File opening error.");
 		return;
 	}
 	else if (read() == false) // Ошибка чтения файла или инициализации переменных.
 	{
-		throw_error("File reading error.");
 		return;
 	}
 	else // Подготовка объекта прошла успешно.
@@ -37,7 +35,6 @@ dephem::dephem(const dephem& other)
 		// Завершение копирования при ошибке открытия файла:
 		if (eph == nullptr)
 		{
-			throw_error("File opening error.");
 			ready = false;
 			return;
 		}
@@ -78,7 +75,6 @@ dephem& dephem::operator=(const dephem& other)
 		// Завершение копирования при ошибке открытия файла:
 		if (eph == nullptr)
 		{
-			throw_error("File opening error.");
 			ready = false;
 			return *this;
 		}
@@ -126,12 +122,10 @@ double dephem::get_const(const char* const_name) const
 	
 	if (this->ready == false)
 	{
-		throw_error("DE object is not ready for use.");
 		return 0;
 	}
 	else if (len > 6)
 	{
-		throw_error("The name of the requested constant is more than 6 characters.");
 		return 0;
 	}
 
@@ -148,7 +142,6 @@ double dephem::get_const(const char* const_name) const
 		if (correct) return Info.const_value[i];
 	}
 
-	throw_error("Current DE version doesn't include requested constant.");
 	return 0;
 }
 
@@ -156,7 +149,6 @@ void dephem::available_items(bool* items, bool derived) const
 {
 	if (this->ready == false)
 	{
-		throw_error("DE object is not ready for use.");
 		return;
 	}
 			
@@ -172,17 +164,14 @@ void dephem::get_coeff(double * coeff, double JED) const
 {
 	if (this->ready == false)
 	{
-		throw_error("DE object is not ready for use.");
 		return;
 	}
 	else if (JED < Info.start || JED > Info.end)
 	{
-		throw_error("The requested time is not available for this DE version.");
 		return;
 	}
 	else if (coeff == nullptr)
 	{
-		throw_error("A null pointer was passed to the function.");
 		return;
 	}		
 	
@@ -197,11 +186,6 @@ void dephem::get_coeff(double * coeff, double JED) const
 	{
 		coeff[i] = buffer[i];
 	}		
-}
-
-void dephem::throw_error(const char * message) const
-{
-	throw std::exception(message);
 }
 
 void dephem::copy(const dephem& other)
@@ -367,8 +351,7 @@ void dephem::fill_buffer(size_t block_num) const
 		std::fseek(eph, adress, 0);
 	}
 
-	if (std::fread((void*)buffer, sizeof(double), Info.ncoeff, eph) != Info.ncoeff) 
-		throw_error("File reading error.");	
+	std::fread((void*)buffer, sizeof(double), Info.ncoeff, eph);
 }
 
 void dephem::interpolate(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const
@@ -540,17 +523,14 @@ void dephem::get_body(unsigned target, unsigned center, double JED, double* S, b
 	//Условия недопустимые для данного метода:
 	if (this->ready == false)
 	{
-		throw_error("DE object is not ready for use");
 		return;
 	}
 	else if (target > 12 || center > 12)
 	{
-		throw_error("The requested body (or bodies) is (are) not supported.");
 		return;
 	}
 	else if (JED < Info.start || JED > Info.end)
 	{
-		throw_error("The requested time is not available for this DE version.");
 		return;
 	}
 
@@ -611,22 +591,18 @@ void dephem::get_other(unsigned item, double JED, double* res, bool state) const
 	//Условия недопустимые для данного метода:
 	if (this->ready == false)
 	{
-		throw_error("DE obect is not ready for use.");
 		return;
 	}
 	else if (item < 13 || item > 16)
 	{
-		throw_error("The requested item is not supported.");
 		return;
 	}
 	else if (JED < Info.start || JED > Info.end)
 	{
-		throw_error("The requested time is not available for this DE version.");
 		return;
 	}
 	else if ( (1 << (item - 2) & Info.items) == 0)
 	{
-		throw_error("The requested item is not included in this version of the DE.");
 		return;
 	}
 	else

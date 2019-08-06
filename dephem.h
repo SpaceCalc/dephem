@@ -9,7 +9,6 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdint>
-#include <exception>
 #include <limits>
 #include <string>
 
@@ -82,8 +81,6 @@ public:
 	void get_coeff(double* coeff, double JED) const;
 
 private:
-
-	void throw_error(const char* message) const;
 	
 	void copy(const dephem& other);
 

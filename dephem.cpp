@@ -3,9 +3,9 @@
 dph::EphemerisRelease::EphemerisRelease(const char * binaryFilePath) : m_binaryFilePath(binaryFilePath)
 {			
 	// Попытка открыть файл:
-	eph = std::fopen(this->m_binaryFilePath.c_str(), "rb");
+	m_binaryFileStream = std::fopen(this->m_binaryFilePath.c_str(), "rb");
 	
-	if (eph == nullptr)	// Ошибка открытия файла.
+	if (m_binaryFileStream == nullptr)	// Ошибка открытия файла.
 	{
 		return;
 	}
@@ -30,10 +30,10 @@ dph::EphemerisRelease::EphemerisRelease(const EphemerisRelease& other)
 	if (ready)
 	{
 		// Попытка открыть файл:
-		eph = std::fopen(this->m_binaryFilePath.c_str(), "rb");
+		m_binaryFileStream = std::fopen(this->m_binaryFilePath.c_str(), "rb");
 
 		// Завершение копирования при ошибке открытия файла:
-		if (eph == nullptr)
+		if (m_binaryFileStream == nullptr)
 		{
 			ready = false;
 			return;
@@ -50,7 +50,7 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 	if (&other == this) return *this;
 
 	// Очистка существующей информации:
-	if (eph != nullptr) std::fclose(eph);
+	if (m_binaryFileStream != nullptr) std::fclose(m_binaryFileStream);
 	delete[] buffer;
 	delete[] Info.const_value;
 	delete[] poly;
@@ -64,10 +64,10 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 	if (ready)
 	{
 		// Попытка открыть файл:
-		eph = std::fopen(this->m_binaryFilePath.c_str(), "rb");
+		m_binaryFileStream = std::fopen(this->m_binaryFilePath.c_str(), "rb");
 
 		// Завершение копирования при ошибке открытия файла:
-		if (eph == nullptr)
+		if (m_binaryFileStream == nullptr)
 		{
 			ready = false;
 			return *this;
@@ -83,7 +83,7 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 dph::EphemerisRelease::~EphemerisRelease()
 {
 	// Закрытие файла ежегодника:
-	if (eph != nullptr) std::fclose(eph);
+	if (m_binaryFileStream != nullptr) std::fclose(m_binaryFileStream);
 
 	// Освобождение выделенной памяти:
 	delete[] buffer;
@@ -189,14 +189,14 @@ void dph::EphemerisRelease::move_swap(EphemerisRelease& other)
 
 	// Перемещение:
 	m_binaryFilePath.swap(other.m_binaryFilePath);
-	this->eph    = other.eph;
+	this->m_binaryFileStream    = other.m_binaryFileStream;
 	this->buffer = other.buffer;
 	this->poly   = other.poly;
 	this->dpoly  = other.dpoly;
 
 	// Очистка объекта копирования:
 	other.ready            = false;
-	other.eph              = nullptr;
+	other.m_binaryFileStream              = nullptr;
 	other.Info.const_value = nullptr;
 	other.buffer           = nullptr;
 	other.poly             = nullptr;
@@ -207,30 +207,30 @@ bool dph::EphemerisRelease::read()
 {
 	for (int i = 0; i < 3; i++)
 	{
-		std::fread(Info.label[i], 1, 84, eph);
+		std::fread(Info.label[i], 1, 84, m_binaryFileStream);
 		Info.label[i][84] = '\0';
 	}
 
-	std::fread(Info.const_name,   1, 400 * 6, eph);
-	std::fread(&Info.start,       8,       1, eph);
-	std::fread(&Info.end,         8,       1, eph);
-	std::fread(&Info.span, 8, 1, eph);
-	std::fread(&Info.const_count, 4,       1, eph);
-	std::fread(&Info.au,          8,       1, eph);
-	std::fread(&Info.emrat,       8,       1, eph);
-	std::fread(Info.key,          4,  12 * 3, eph);
-	std::fread(&Info.denum,       4,       1, eph);
-	std::fread(Info.key[12],      4,       3, eph);		
+	std::fread(Info.const_name,   1, 400 * 6, m_binaryFileStream);
+	std::fread(&Info.start,       8,       1, m_binaryFileStream);
+	std::fread(&Info.end,         8,       1, m_binaryFileStream);
+	std::fread(&Info.span, 8, 1, m_binaryFileStream);
+	std::fread(&Info.const_count, 4,       1, m_binaryFileStream);
+	std::fread(&Info.au,          8,       1, m_binaryFileStream);
+	std::fread(&Info.emrat,       8,       1, m_binaryFileStream);
+	std::fread(Info.key,          4,  12 * 3, m_binaryFileStream);
+	std::fread(&Info.denum,       4,       1, m_binaryFileStream);
+	std::fread(Info.key[12],      4,       3, m_binaryFileStream);		
 	
 	Info.const_value = new double[Info.const_count];
 
 	if (Info.const_count > 400)
 	{
-		std::fread(Info.const_name[400], 6, Info.const_count - 400, eph);
+		std::fread(Info.const_name[400], 6, Info.const_count - 400, m_binaryFileStream);
 	}		
 
-	std::fread(Info.key[13], sizeof(uint32_t), 3, eph);
-	std::fread(Info.key[14], sizeof(uint32_t), 3, eph);
+	std::fread(Info.key[13], sizeof(uint32_t), 3, m_binaryFileStream);
+	std::fread(Info.key[14], sizeof(uint32_t), 3, m_binaryFileStream);
 	
 	// Подсчёт ncoeff + max_cheby + items:
 	Info.ncoeff = 2;
@@ -240,8 +240,8 @@ bool dph::EphemerisRelease::read()
 		Info.ncoeff += comp * Info.key[i][1] * Info.key[i][2];
 	}
 
-	std::fseek(eph, Info.ncoeff * 8, 0);
-	std::fread(Info.const_value, 8, Info.const_count, eph);
+	std::fseek(m_binaryFileStream, Info.ncoeff * 8, 0);
+	std::fread(Info.const_value, 8, Info.const_count, m_binaryFileStream);
 
 	post_read_calc();
 
@@ -287,8 +287,8 @@ bool dph::EphemerisRelease::authentic() const
 	if (Info.au == 0)						return false;
 
 	double time[2];
-	std::fseek(eph, 16 * Info.ncoeff, 0);
-	std::fread(time, 2, 8, eph);
+	std::fseek(m_binaryFileStream, 16 * Info.ncoeff, 0);
+	std::fread(time, 2, 8, m_binaryFileStream);
 
 	if (time[0] != Info.start)				return false;
 	if (time[1] != Info.start + Info.span)	return false;
@@ -297,15 +297,15 @@ bool dph::EphemerisRelease::authentic() const
 
 	if (end_pos > MAX_LONG)
 	{
-		std::fseek(eph, MAX_LONG, 0);
-		std::fseek(eph, end_pos - MAX_LONG, 1); 
+		std::fseek(m_binaryFileStream, MAX_LONG, 0);
+		std::fseek(m_binaryFileStream, end_pos - MAX_LONG, 1); 
 	}
 	else
 	{
-		std::fseek(eph, end_pos, 0);
+		std::fseek(m_binaryFileStream, end_pos, 0);
 	}
 	
-	std::fread(time, 2, 8, eph);
+	std::fread(time, 2, 8, m_binaryFileStream);
 	if (time[0] != Info.end - Info.span)	return false;
 	if (time[1] != Info.end)				return false;
 
@@ -318,15 +318,15 @@ void dph::EphemerisRelease::fill_buffer(size_t block_num) const
 
 	if (adress > MAX_LONG)
 	{
-		std::fseek(eph, MAX_LONG, 0);
-		std::fseek(eph, adress - MAX_LONG, 1);
+		std::fseek(m_binaryFileStream, MAX_LONG, 0);
+		std::fseek(m_binaryFileStream, adress - MAX_LONG, 1);
 	}
 	else
 	{
-		std::fseek(eph, adress, 0);
+		std::fseek(m_binaryFileStream, adress, 0);
 	}
 
-	std::fread((void*)buffer, sizeof(double), Info.ncoeff, eph);
+	std::fread((void*)buffer, sizeof(double), Info.ncoeff, m_binaryFileStream);
 }
 
 void dph::EphemerisRelease::interpolate(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const

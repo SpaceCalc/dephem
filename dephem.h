@@ -21,7 +21,7 @@ namespace dph
 	private:
 		std::string m_binaryFilePath;
 
-		FILE* eph = nullptr;
+		FILE* m_binaryFileStream = nullptr;
 
 		bool ready = false;
 

@@ -1,6 +1,6 @@
 #include "dephem.h"
 
-dephem::dephem(const char * file_path, unsigned int option) : file_path(file_path), option(option)
+dephem::dephem(const char * file_path) : file_path(file_path)
 {			
 	// Попытка открыть файл:
 	eph = std::fopen(this->file_path.c_str(), "rb");
@@ -26,7 +26,6 @@ dephem::dephem(const dephem& other)
 {
 	// Предварительное копирование:	
 	this->file_path = other.file_path;
-	this->option    = other.option;
 	this->ready     = other.ready;
 	
 	// Копирование при готовности:
@@ -68,7 +67,6 @@ dephem& dephem::operator=(const dephem& other)
 
 	// Предварительное копирование:
 	this->file_path = other.file_path;
-	this->option    = other.option;
 	this->ready     = other.ready;
 
 	// Копирование при готовности:
@@ -203,7 +201,7 @@ void dephem::get_coeff(double * coeff, double JED) const
 
 void dephem::throw_error(const char * message) const
 {
-	if (option & USE_EXCEPTION) throw std::exception(message);
+	throw std::exception(message);
 }
 
 void dephem::copy(const dephem& other)
@@ -226,7 +224,6 @@ void dephem::copy(const dephem& other)
 void dephem::move_swap(dephem& other)
 {
 	// Копирование:
-	this->option = other.option;
 	this->ready  = other.ready;
 	this->Info   = other.Info; // (Некоторые элементы структуры копируются по указателю - перемещаются).
 
@@ -289,7 +286,7 @@ bool dephem::read()
 
 	post_read_calc();
 
-	return (option & NO_CHECK) || authentic();
+	return authentic();
 }
 
 void dephem::post_read_calc()

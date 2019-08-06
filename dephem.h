@@ -17,16 +17,10 @@ class dephem
 {
 	static constexpr size_t MAX_LONG = std::numeric_limits<long>::max();
 
-public:
-	static const unsigned int USE_EXCEPTION = 0x1;
-	static const unsigned int NO_CHECK      = 0x2;
-
 private:
 	std::string file_path;
 	
 	FILE* eph = nullptr;
-
-	mutable unsigned int option = 0;
 
 	bool ready = false;			
 
@@ -65,7 +59,7 @@ private:
 	double* dpoly = nullptr;
 
 public:
-	explicit dephem(const char* file_path, unsigned int option = 0);
+	explicit dephem(const char* file_path);
 
 	dephem(const dephem& other);
 

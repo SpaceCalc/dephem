@@ -65,11 +65,11 @@ namespace dph
 		static constexpr size_t FSEEK_MAX_OFFSET = std::numeric_limits<long>::max();
 
 		// Готовность объекта к работе.
-		bool m_ready = false;
+		bool m_ready{ false };
 		
 		// Работа с файлом //
 		std::string	m_binaryFilePath;				// Путь к бинарному файлу выпуска эфемерид.
-		FILE*		m_binaryFileStream = nullptr;	// Поток чтения файла.
+		FILE*		m_binaryFileStream{ nullptr };	// Поток чтения файла.
 
 		// Значения, считанные из файла //
 		char		releaseLabel[3][85]{};			// Строковая информация о выпуске. 

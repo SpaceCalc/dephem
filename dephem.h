@@ -45,7 +45,8 @@ namespace dph
 
 		// Получить значение радиус-вектора (или вектора состояния) выбранного тела относительно 
 		// другого на заданный момент времени.
-		void get_body(unsigned target, unsigned center, double JED, double* S, bool state) const;
+		void calculateBody(unsigned targetBodyIndex, unsigned centerBodyIndex, double JED, 
+			bool calculateState, double* resultArray) const;
 
 		// Получить значение(-я) прочих элементов, хранящихся в выпуске эфемерид.
 		void get_other(unsigned item, double JED, double* res, bool state) const;

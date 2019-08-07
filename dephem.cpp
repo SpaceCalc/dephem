@@ -577,7 +577,8 @@ void dph::EphemerisRelease::get_origin_moon(double JED, double* S, bool state) c
 	}	
 }
 
-void dph::EphemerisRelease::get_body(unsigned target, unsigned center, double JED, double* S, bool state) const
+void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned centerBodyIndex, double JED,
+	bool calculateState, double* resultArray) const
 {
 	/*
 	0   Mercury
@@ -596,15 +597,15 @@ void dph::EphemerisRelease::get_body(unsigned target, unsigned center, double JE
 	 */
 
 	// Уменьшение индекса на единицу:
-	--target;
-	--center;
+	--targetBodyIndex;
+	--centerBodyIndex;
 
 	//Условия недопустимые для данного метода:
 	if (this->m_ready == false)
 	{
 		return;
 	}
-	else if (target > 12 || center > 12)
+	else if (targetBodyIndex > 12 || centerBodyIndex > 12)
 	{
 		return;
 	}
@@ -614,24 +615,36 @@ void dph::EphemerisRelease::get_body(unsigned target, unsigned center, double JE
 	}
 
 	// Определить количество требуемых компонент:
-	unsigned comp_count = state ? 6 : 3;
+	unsigned comp_count = calculateState ? 6 : 3;
 
-	if (target == 11 || center == 11)
+	if (targetBodyIndex == 11 || centerBodyIndex == 11)
 	{
-		unsigned g = target == 11 ? center : target;
+		unsigned g = targetBodyIndex == 11 ? centerBodyIndex : targetBodyIndex;
 		
-		if      (g == 12)	get_origin_item (2, JED, S, state);
-		else if (g ==  2)	get_origin_earth(   JED, S, state);
-		else if (g ==  9)	get_origin_moon (   JED, S, state);
-		else				get_origin_item (g, JED, S, state);
+		if      (g == 12)	get_origin_item (2, JED, resultArray, calculateState);
+		else if (g ==  2)	get_origin_earth(   JED, resultArray, calculateState);
+		else if (g ==  9)	get_origin_moon (   JED, resultArray, calculateState);
+		else				get_origin_item (g, JED, resultArray, calculateState);
 
-		if(target == 11)	for (unsigned i = 0; i < comp_count; ++i)	S[i] = -S[i];
+		if (targetBodyIndex == 11)
+		{
+			for (unsigned i = 0; i < comp_count; ++i)
+			{
+				resultArray[i] = -resultArray[i];
+			}
+		}				
 	}
-	else if (target * center == 18 && target + center == 11)
+	else if (targetBodyIndex * centerBodyIndex == 18 && targetBodyIndex + centerBodyIndex == 11)
 	{
-		get_origin_item(9, JED, S, state);
+		get_origin_item(9, JED, resultArray, calculateState);
 		
-		if(target == 2)	for (unsigned i = 0; i < comp_count; ++i)	S[i] = -S[i];
+		if (targetBodyIndex == 2)
+		{
+			for (unsigned i = 0; i < comp_count; ++i)
+			{
+				resultArray[i] = -resultArray[i];
+			}
+		}				
 	}
 	else
 	{
@@ -639,18 +652,18 @@ void dph::EphemerisRelease::get_body(unsigned target, unsigned center, double JE
 
 		for (unsigned i = 0; i < 2; ++i)
 		{
-			double* G = i ? C : S;
-			int		g = i ? center : target;
+			double* G = i ? C : resultArray;
+			int		g = i ? centerBodyIndex : targetBodyIndex;
 
-			if      (g == 12)	get_origin_item (2, JED, G, state);
-			else if (g ==  2)	get_origin_earth(   JED, G, state);
-			else if (g ==  9)	get_origin_moon (   JED, G, state);
-			else				get_origin_item (g, JED, G, state);
+			if      (g == 12)	get_origin_item (2, JED, G, calculateState);
+			else if (g ==  2)	get_origin_earth(   JED, G, calculateState);
+			else if (g ==  9)	get_origin_moon (   JED, G, calculateState);
+			else				get_origin_item (g, JED, G, calculateState);
 		}
 
 		for (unsigned i = 0; i < comp_count; ++i)
 		{
-			S[i] -= C[i];
+			resultArray[i] -= C[i];
 		}	
 	}
 }

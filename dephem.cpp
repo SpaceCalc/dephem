@@ -94,6 +94,34 @@ std::string dph::EphemerisRelease::cutBackSymbols(const char* charArray, size_t 
 	return std::string(charArray, arraySize);
 }
 
+void dph::EphemerisRelease::copy(const EphemerisRelease& other)
+{
+	m_ready = other.m_ready;
+
+	m_binaryFilePath	= other.m_binaryFilePath;
+	m_binaryFileStream	= std::fopen(other.m_binaryFilePath.c_str(), "rb");
+
+	m_releaseLabel =	other.m_releaseLabel;
+	m_releaseIndex =	other.m_releaseIndex;
+	m_startDate =		other.m_startDate;
+	m_endDate =			other.m_endDate;
+	m_blockTimeSpan =	other.m_blockTimeSpan;
+	std::memcpy(m_keys, other.m_keys, sizeof(m_keys));
+	m_au =				other.m_au;
+	m_emrat =			other.m_emrat;
+	m_constants =		other.m_constants;
+
+	m_blocksCount =		other.m_blocksCount;
+	m_ncoeff =			other.m_ncoeff;
+	m_maxCheby =		other.m_maxCheby;
+	m_emrat2 =			other.m_emrat2;
+	m_dimensionFit =	other.m_dimensionFit;
+
+	m_buffer =	other.m_buffer;
+	m_poly =	other.m_poly;
+	m_dpoly =	other.m_poly;
+}
+
 void dph::EphemerisRelease::readAndPackData()
 {
 	// Буфферы для чтения информации из файла:

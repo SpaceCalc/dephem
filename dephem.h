@@ -98,7 +98,7 @@ namespace dph
 		double		m_emrat2{};			// Отношение массы Луны к массе Земли и Луны.
 		double		m_dimensionFit{};	// Значение для соблюдения размерности.      
 
-		// Динамическик массивы для работы с выпуском //
+		// Динамические массивы для работы с выпуском //
 		mutable std::vector<double> m_buffer{};			// Коэффициенты блока, читаемые из файла.
 		mutable std::vector<double> m_poly{ 1 };		// Значения полиномов.
 		mutable std::vector<double> m_dpoly{ 0, 1 };	// Значения производных полиномов.
@@ -110,6 +110,9 @@ namespace dph
 		// размера "arraySize".
 		static std::string cutBackSymbols(const char* charArray, size_t arraySize,
 			char symbolToCut);
+
+		// Копирование информации из объекта "other" в текущий объект:
+		void copy(const EphemerisRelease& other);
 
 		//  Чтение файла.
 		void readAndPackData();

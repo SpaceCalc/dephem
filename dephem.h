@@ -26,9 +26,11 @@ namespace dph
 		// Конструктор по пути к бинарному файлу эфемерид.
 		explicit EphemerisRelease(const std::string& binaryFilePath);
 
+		// Конструктор копирования.
+		EphemerisRelease(const EphemerisRelease& other);
+
 		// Деструктор.
 		~EphemerisRelease();
-
 
 		// ------------------------------- Основные методы класса -------------------------------//
 

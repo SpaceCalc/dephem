@@ -23,6 +23,29 @@ dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) :
 	}
 }
 
+dph::EphemerisRelease::EphemerisRelease(const EphemerisRelease& other)
+{
+	if (other.m_ready)
+	{
+		copy(other);
+
+		if (isDataCorrect())
+		{
+			m_ready = true;
+		}
+		else
+		{
+			m_ready = false;
+			
+			// TO DO: Приведение объекта к изначальному состоянию.
+		}
+	}
+	else
+	{
+		return;
+	}
+}
+
 dph::EphemerisRelease::~EphemerisRelease()
 {
 	// Закрытие файла ежегодника:
@@ -223,9 +246,10 @@ void dph::EphemerisRelease::additionalCalculations()
 
 bool dph::EphemerisRelease::isDataCorrect() const
 {
+	if (m_binaryFileStream == nullptr)	return false;
 	if (m_ncoeff == 0)					return false;
-	if (m_startDate >= m_endDate)				return false;
-	if (m_blockTimeSpan == 0)						return false;
+	if (m_startDate >= m_endDate)		return false;
+	if (m_blockTimeSpan == 0)			return false;
 	if (m_maxCheby == 0)				return false;
 	if (m_emrat == 0)					return false;
 	if (m_au == 0)						return false;

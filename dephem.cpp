@@ -615,20 +615,21 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 	}
 
 	// Определить количество требуемых компонент:
-	unsigned comp_count = calculateState ? 6 : 3;
+	unsigned componentsCount = calculateState ? 6 : 3;
 
 	if (targetBodyIndex == 12 || centerBodyIndex == 12)
 	{
-		unsigned g = targetBodyIndex == 12 ? centerBodyIndex : targetBodyIndex;
+		unsigned notSSBARY = targetBodyIndex == 12 ? centerBodyIndex : targetBodyIndex;
 		
-		if      (g == 13)	get_origin_item (2, JED, resultArray, calculateState);
-		else if (g ==  3)	get_origin_earth(   JED, resultArray, calculateState);
-		else if (g == 10)	get_origin_moon (   JED, resultArray, calculateState);
-		else				get_origin_item (g - 1, JED, resultArray, calculateState);
+		if      (notSSBARY == 13)	get_origin_item(2, JED, resultArray, calculateState);
+		else if (notSSBARY ==  3)	get_origin_earth(JED, resultArray, calculateState);
+		else if (notSSBARY == 10)	get_origin_moon(JED, resultArray, calculateState);
+		else						
+			get_origin_item(notSSBARY - 1, JED, resultArray, calculateState);
 
 		if (targetBodyIndex == 12)
 		{
-			for (unsigned i = 0; i < comp_count; ++i)
+			for (unsigned i = 0; i < componentsCount; ++i)
 			{
 				resultArray[i] = -resultArray[i];
 			}
@@ -640,7 +641,7 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 		
 		if (targetBodyIndex == 3)
 		{
-			for (unsigned i = 0; i < comp_count; ++i)
+			for (unsigned i = 0; i < componentsCount; ++i)
 			{
 				resultArray[i] = -resultArray[i];
 			}
@@ -648,22 +649,25 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 	}
 	else
 	{
-		double C[6];
+		double centerBodyArray[6]{};
 
-		for (unsigned i = 0; i < 2; ++i)
+		for (unsigned i = 0; i <= 1; ++i)
 		{
-			double* G = i ? C : resultArray;
-			int		g = i ? centerBodyIndex : targetBodyIndex;
+			double*  currentArray =		i == 0 ? centerBodyArray : resultArray;
+			unsigned currentBodyIndex =	i == 0 ? centerBodyIndex : targetBodyIndex;
 
-			if      (g == 13)	get_origin_item (2, JED, G, calculateState);
-			else if (g ==  3)	get_origin_earth(   JED, G, calculateState);
-			else if (g == 10)	get_origin_moon (   JED, G, calculateState);
-			else				get_origin_item (g - 1, JED, G, calculateState);
+			switch (currentBodyIndex)
+			{
+			case 3:		get_origin_earth(JED, currentArray, calculateState);	break;
+			case 10:	get_origin_moon(JED, currentArray, calculateState);		break;
+			case 13:	get_origin_item(2, JED, currentArray, calculateState);	break;
+			default:	get_origin_item(currentBodyIndex - 1, JED, currentArray, calculateState);
+			}
 		}
 
-		for (unsigned i = 0; i < comp_count; ++i)
+		for (unsigned i = 0; i < componentsCount; ++i)
 		{
-			resultArray[i] -= C[i];
+			resultArray[i] -= centerBodyArray[i];
 		}	
 	}
 }

@@ -117,6 +117,33 @@ std::string dph::EphemerisRelease::cutBackSymbols(const char* charArray, size_t 
 	return std::string(charArray, arraySize);
 }
 
+void dph::EphemerisRelease::clear()
+{
+	m_ready = false;
+
+	m_binaryFilePath.clear();
+	fclose(m_binaryFileStream);
+
+	m_releaseLabel.clear();
+	m_releaseIndex = 0;
+	m_startDate = 0.0;
+	m_endDate = 0.0;
+	m_blockTimeSpan = 0.0;
+	std::memset(m_keys, 0, sizeof(m_keys));
+	m_au = 0.0;
+	m_emrat = 0.0;
+	std::map<std::string, double>().swap(m_constants);	// SWAP TRICK
+
+	m_blocksCount = 0;
+	m_ncoeff = 0;
+	m_maxCheby = 0;
+	m_dimensionFit = 0;
+
+	std::vector<double>().swap(m_buffer);	// SWAP TRICK
+	std::vector<double>().swap(m_poly);		// SWAP TRICK
+	std::vector<double>().swap(m_dpoly);	// SWAP TRICK
+}
+
 void dph::EphemerisRelease::copy(const EphemerisRelease& other)
 {
 	m_ready = other.m_ready;

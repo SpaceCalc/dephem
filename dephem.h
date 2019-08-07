@@ -113,6 +113,9 @@ namespace dph
 		static std::string cutBackSymbols(const char* charArray, size_t arraySize,
 			char symbolToCut);
 
+		// Приведение объекта к изначальному состоянию.
+		void clear();
+		
 		// Копирование информации из объекта "other" в текущий объект:
 		void copy(const EphemerisRelease& other);
 

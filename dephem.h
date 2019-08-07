@@ -150,8 +150,8 @@ namespace dph
 			const double* coeffArray, unsigned componentsCount, double* resultArray) const;
 
 		// Интерполяция компонент и их производных выбранного базового элемента.
-		void interpolateState(const double* coeffArray, unsigned baseItemIndex, 
-			double normalizedTime, double* resultArray, unsigned componentsCount) const;
+		void interpolateState(unsigned baseItemIndex, double normalizedTime,
+			const double* coeffArray, unsigned componentsCount, double* resultArray) const;
 
 		// Получить значения требуемых компонент базового элемента на выбранный момент времени.
 		void get_origin_item(unsigned item, double JED, double* S, bool state) const;

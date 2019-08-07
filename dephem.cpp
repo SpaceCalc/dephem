@@ -111,7 +111,7 @@ dph::EphemerisRelease::~EphemerisRelease()
 		std::fclose(m_binaryFileStream);
 }
 
-bool dph::EphemerisRelease::is_ready() const
+bool dph::EphemerisRelease::isReady() const
 {
 	return m_ready;
 }

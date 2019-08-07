@@ -140,8 +140,11 @@ void dph::EphemerisRelease::clear()
 	m_ready = false;
 
 	m_binaryFilePath.clear();
-	if(m_binaryFileStream != nullptr)
+	if (m_binaryFileStream != nullptr)
+	{
 		fclose(m_binaryFileStream);
+		m_binaryFileStream = nullptr;
+	}		
 
 	m_releaseLabel.clear();
 	m_releaseIndex = 0;

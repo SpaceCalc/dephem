@@ -433,30 +433,30 @@ void dph::EphemerisRelease::fillBuffer(size_t block_num) const
 	std::fread(m_buffer.data(), sizeof(double), m_ncoeff, m_binaryFileStream);
 }
 
-void dph::EphemerisRelease::interpolatePosition(const double* set, unsigned item, double norm_time, 
-	double* res, unsigned comp_count) const
+void dph::EphemerisRelease::interpolatePosition(const double* coeffArray, unsigned baseItemIndex,
+	double normalizedTime, double* resultArray, unsigned componentsCount) const
 {
 	// Копирование значения количества коэффициентов на компоненту:
-	uint32_t cpec = m_keys[item][1];
+	uint32_t cpec = m_keys[baseItemIndex][1];
 	
 	// Предварительное заполнение полиномов (вычисление их сумм):
-	m_poly[1] = norm_time;
+	m_poly[1] = normalizedTime;
 
 	// Заполнение полиномов (вычисление их сумм):
 	for (uint32_t i = 2; i < cpec; ++i)
 	{
-		m_poly[i] = 2 * norm_time * m_poly[i - 1] - m_poly[i - 2];
+		m_poly[i] = 2 * normalizedTime * m_poly[i - 1] - m_poly[i - 2];
 	}
 
 	// Обнуление массива результата вычислений:
-	memset(res, 0, sizeof(double) * comp_count);
+	memset(resultArray, 0, sizeof(double) * componentsCount);
 
 	// Вычисление координат:
-	for (unsigned i = 0; i < comp_count; ++i)
+	for (unsigned i = 0; i < componentsCount; ++i)
 	{
 		for (uint32_t j = 0; j < cpec; ++j)
 		{
-			res[i] += m_poly[j] * set[i * cpec + j];
+			resultArray[i] += m_poly[j] * coeffArray[i * cpec + j];
 		}
 	}
 }

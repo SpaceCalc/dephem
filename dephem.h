@@ -146,8 +146,8 @@ namespace dph
 		void fillBuffer(size_t block_num) const;
 
 		// »нтерпол€ци€ компонент выбранного базового элемента.
-		void interpolatePosition(const double* set, unsigned item, double norm_time, 
-			double* res, unsigned comp_count) const;
+		void interpolatePosition(const double* coeffArray, unsigned baseItemIndex, 
+			double normalizedTime, double* resultArray, unsigned componentsCount) const;
 
 		// »нтерпол€ци€ компонент и их производных выбранного базового элемента.
 		void interpolateState(const double* set, unsigned item, double norm_time, 

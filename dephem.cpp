@@ -433,7 +433,8 @@ void dph::EphemerisRelease::fillBuffer(size_t block_num) const
 	std::fread(m_buffer.data(), sizeof(double), m_ncoeff, m_binaryFileStream);
 }
 
-void dph::EphemerisRelease::interpolate(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const
+void dph::EphemerisRelease::interpolatePosition(const double* set, unsigned item, double norm_time, 
+	double* res, unsigned comp_count) const
 {
 	// Копирование значения количества коэффициентов на компоненту:
 	uint32_t cpec = m_keys[item][1];
@@ -542,7 +543,7 @@ void dph::EphemerisRelease::get_origin_item(unsigned item, double JED, double *S
 	// или радиус-вектор и вектор скорости) выбирается соответствующий
 	// метод:
 	if (state)	interpolate_derivative(&m_buffer[coeff_pos], item, norm_time, S, comp_count);
-	else	    interpolate           (&m_buffer[coeff_pos], item, norm_time, S, comp_count);
+	else	    interpolatePosition           (&m_buffer[coeff_pos], item, norm_time, S, comp_count);
 }
 
 void dph::EphemerisRelease::get_origin_earth(double JED, double* S, bool state) const

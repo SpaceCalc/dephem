@@ -111,13 +111,13 @@ namespace dph
 			char symbolToCut);
 
 		//  Чтение файла.
-		bool read();
+		void readAndPackData();
 
 		// Дополнительные вычисления после чтения файла.
-		void post_read_calc();
+		void additionalCalculations();
 
 		// Проверка значений, хранящихся в объекте и проверка файла.
-		bool authentic() const;
+		bool isDataCorrect() const;
 
 		// Заполнение буффера "m_buffer" коэффициентами требуемого блока.
 		void fill_buffer(size_t block_num) const;

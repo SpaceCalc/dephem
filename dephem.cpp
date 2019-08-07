@@ -3,20 +3,23 @@
 dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) : 
 	m_binaryFilePath(binaryFilePath)
 {			
-	// Попытка открыть файл:
+	// Открытие файла:
 	m_binaryFileStream = std::fopen(this->m_binaryFilePath.c_str(), "rb");
-	
-	if (m_binaryFileStream == nullptr)	// Ошибка открытия файла.
+
+	bool isFileOpen = m_binaryFileStream != nullptr;
+
+	if (isFileOpen)
 	{
-		return;
-	}
-	else if (read() == false) // Ошибка чтения файла или инициализации переменных.
-	{
-		return;
-	}
-	else // Подготовка объекта прошла успешно.
-	{
-		m_ready  = true;
+		readAndPackData();
+
+		if (isDataCorrect())
+		{
+			m_ready = true;
+		}
+		else
+		{
+			// TO DO: Приведение объекта к изначальному состоянию.
+		}
 	}
 }
 
@@ -95,7 +98,7 @@ std::string dph::EphemerisRelease::cutBackSymbols(const char* charArray, size_t 
 	return std::string(charArray, arraySize);
 }
 
-bool dph::EphemerisRelease::read()
+void dph::EphemerisRelease::readAndPackData()
 {
 	// Буфферы для чтения информации из файла:
 	char	releaseLabel_buffer[RLS_LABELS_COUNT][RLS_LABEL_SIZE]{};	// Строк. инф. о выпуске.
@@ -170,13 +173,10 @@ bool dph::EphemerisRelease::read()
 	}
 
 	// Дополнительные вычисления:
-	post_read_calc();
-
-	// Вернуть результат проверки считанной информации:
-	return authentic();
+	additionalCalculations();
 }
 
-void dph::EphemerisRelease::post_read_calc()
+void dph::EphemerisRelease::additionalCalculations()
 {
 	// Определение доп. коэффициентов для работы с ежегодником:
 	m_emrat2 = 1 / (1 + m_emrat);
@@ -197,7 +197,7 @@ void dph::EphemerisRelease::post_read_calc()
 	m_buffer = new double[m_ncoeff] {};
 }
 
-bool dph::EphemerisRelease::authentic() const
+bool dph::EphemerisRelease::isDataCorrect() const
 {
 	if (m_ncoeff == 0)					return false;
 	if (m_startDate >= m_endDate)				return false;

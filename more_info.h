@@ -8,7 +8,7 @@ namespace dph
 {
 	class more_info
 	{
-
+		static std::string releaseLabel(const EphemerisRelease& ephemerisRelease);
 	};
 }
 

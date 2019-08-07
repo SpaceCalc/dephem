@@ -461,40 +461,40 @@ void dph::EphemerisRelease::interpolatePosition(unsigned baseItemIndex, double n
 	}
 }
 
-void dph::EphemerisRelease::interpolateState(const double* set, unsigned item, double norm_time, 
-	double* res, unsigned comp_count) const
+void dph::EphemerisRelease::interpolateState(const double* coeffArray, unsigned baseItemIndex,
+	double normalizedTime, double* resultArray, unsigned componentsCount) const
 {
 	// Копирование значения количества коэффициентов на компоненту:
-	uint32_t cpec = m_keys[item][1];
+	uint32_t cpec = m_keys[baseItemIndex][1];
 
 	// Предварительное заполнение полиномов (вычисление их сумм):
-	m_poly[1]  = norm_time;
-	m_poly[2]  = 2 * norm_time * norm_time - 1;
-	m_dpoly[2] = 4 * norm_time;
+	m_poly[1]  = normalizedTime;
+	m_poly[2]  = 2 * normalizedTime * normalizedTime - 1;
+	m_dpoly[2] = 4 * normalizedTime;
 
 	// Заполнение полиномов (вычисление их сумм):
 	for (uint32_t i = 3; i < cpec; ++i)
 	{
-		 m_poly[i] =                   2 * norm_time *  m_poly[i - 1] -  m_poly[i - 2];
-		m_dpoly[i] = 2 * m_poly[i - 1] + 2 * norm_time * m_dpoly[i - 1] - m_dpoly[i - 2];
+		 m_poly[i] = 2 * normalizedTime *  m_poly[i - 1] -  m_poly[i - 2];
+		m_dpoly[i] = 2 * m_poly[i - 1] + 2 * normalizedTime * m_dpoly[i - 1] - m_dpoly[i - 2];
 	}
 
 	// Обнуление массива результата вычислений:
-	memset(res, 0, sizeof(double) * comp_count * 2);
+	memset(resultArray, 0, sizeof(double) * componentsCount * 2);
 
 	// Определение переменной для соблюдения размерности:
-	double derivative_units = m_keys[item][2] * m_dimensionFit;
+	double derivative_units = m_keys[baseItemIndex][2] * m_dimensionFit;
 
 	// Вычисление координат:
-	for (unsigned i = 0; i < comp_count; ++i)
+	for (unsigned i = 0; i < componentsCount; ++i)
 	{
-		for (uint32_t j = 0; j < cpec; ++j, ++set)
+		for (uint32_t j = 0; j < cpec; ++j, ++coeffArray)
 		{
-			res[i]              +=  m_poly[j] * *set;
-			res[i + comp_count] += m_dpoly[j] * *set;
+			resultArray[i]                   +=  m_poly[j] * *coeffArray;
+			resultArray[i + componentsCount] += m_dpoly[j] * *coeffArray;
 		}
 
-		res[i + comp_count] *= derivative_units;
+		resultArray[i + componentsCount] *= derivative_units;
 	}
 }
 

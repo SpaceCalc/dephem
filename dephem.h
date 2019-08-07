@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <limits>
 #include <string>
+#include <map>
 
 namespace dph
 {
@@ -53,7 +54,7 @@ namespace dph
 		uint32_t releaseIndex() const;
 
 		// Получить значение константы по её имени.
-		double constant(const std::string constantName) const;
+		double constant(const std::string& constantName) const;
 
 	private:
 		
@@ -86,10 +87,8 @@ namespace dph
 		double			m_blockTimeSpan{};				// Временная протяжённость блока.     
 		uint32_t		m_keys[15][3]{};				// Ключи поиска коэффициентов.      	
 		double			m_au{};							// Астрономическая единица (км).      
-		double			m_emrat{};						// Отношение массы Земли к массе Луны.
-		uint32_t		m_constantsCount{};				// Количество констант в файле.       
-		std::string*	m_constantsNames{ nullptr };	// Массив с именами констант.         
-		double*			m_constantsValues{ nullptr };	// Массив со значениями констант.     
+		double			m_emrat{};						// Отношение массы Земли к массе Луны.     
+		std::map<std::string, double> m_constants;		// Константы выпуска.
 
 		// Значения, дополнительно определённные внутри объекта //
 		size_t		m_blocksCount{};	// Количество блоков в файле.                

@@ -27,7 +27,6 @@ dph::EphemerisRelease::~EphemerisRelease()
 
 	// Освобождение выделенной памяти:
 	delete[] m_buffer;
-	delete[] m_constantsValues;
 	delete[] m_poly;
 	delete[] m_dpoly;
 }
@@ -59,7 +58,7 @@ uint32_t dph::EphemerisRelease::releaseIndex() const
 	}
 }
 
-double dph::EphemerisRelease::constant(const std::string constantName) const
+double dph::EphemerisRelease::constant(const std::string& constantName) const
 {
 	if (m_ready == false)
 	{
@@ -77,25 +76,9 @@ double dph::EphemerisRelease::constant(const std::string constantName) const
 	{
 		return m_releaseIndex;
 	}
-	else if (m_constantsCount == 0)
-	{
-		return 0.0;
-	}
-	else if (m_constantsValues == nullptr || m_constantsNames == nullptr)
-	{
-		return 0.0;
-	}
 	else
 	{
-		for (uint32_t i = 0; i < m_constantsCount; ++i)
-		{
-			if (constantName == m_constantsNames[i])
-			{
-				return m_constantsValues[i];
-			}
-		}
-
-		return 0.0;
+		return m_constants.at(constantName);
 	}
 }
 
@@ -119,6 +102,8 @@ bool dph::EphemerisRelease::read()
 	char	constantsNames_buffer[CCOUNT_MAX_NEW][CNAME_SIZE]{};		// Имена констант.
 	double	constantsValues_buffer[CCOUNT_MAX_NEW]{};					// Значения констант.
 	
+	// Количество констант в файле эфемерид:
+	uint32_t constantsCount{};
 	// ------------------------------------- Чтение файла ------------------------------------- //
 
 	std::fread(&releaseLabel_buffer,	RLS_LABEL_SIZE,	RLS_LABELS_COUNT,	m_binaryFileStream);
@@ -126,7 +111,7 @@ bool dph::EphemerisRelease::read()
 	std::fread(&m_startDate,			8,				1,					m_binaryFileStream);
 	std::fread(&m_endDate,				8,				1,					m_binaryFileStream);
 	std::fread(&m_blockTimeSpan,		8,				1,					m_binaryFileStream);
-	std::fread(&m_constantsCount,		4,				1,					m_binaryFileStream);
+	std::fread(&constantsCount,			4,				1,					m_binaryFileStream);
 	std::fread(&m_au,					8,				1,					m_binaryFileStream);
 	std::fread(&m_emrat,				8,				1,					m_binaryFileStream);
 	std::fread(&m_keys,					4,				12 * 3,				m_binaryFileStream);
@@ -134,10 +119,10 @@ bool dph::EphemerisRelease::read()
 	std::fread(&m_keys[12],				4,				3,					m_binaryFileStream);		
 
 	// Чтение дополнительных констант:
-	if (m_constantsCount > 400)
+	if (constantsCount > 400)
 	{
 		// Количество дополнительных констант:
-		size_t extraConstantsCount = m_constantsCount - CCOUNT_MAX_OLD;
+		size_t extraConstantsCount = constantsCount - CCOUNT_MAX_OLD;
 
 		std::fread(constantsNames_buffer[400], CNAME_SIZE, extraConstantsCount, 
 			m_binaryFileStream);
@@ -157,10 +142,10 @@ bool dph::EphemerisRelease::read()
 	}
 
 	// Переход к блоку с константами и их чтение:	
-	if (m_constantsCount <= CCOUNT_MAX_NEW)
+	if (constantsCount <= CCOUNT_MAX_NEW)
 	{
 		std::fseek(m_binaryFileStream, m_ncoeff * 8, 0);
-		std::fread(constantsValues_buffer, sizeof(double), m_constantsCount, m_binaryFileStream);
+		std::fread(constantsValues_buffer, sizeof(double), constantsCount, m_binaryFileStream);
 	}
 	
 
@@ -174,21 +159,14 @@ bool dph::EphemerisRelease::read()
 	}
 	m_releaseLabel.shrink_to_fit();
 
-	// Формирование массивов с именами констант и их значениями:
-	if (m_constantsCount > 0 && m_constantsCount <= CCOUNT_MAX_NEW)
+	// Заполнение контейнера m_constants именами и значениями констант:
+	if (constantsCount > 0 && constantsCount <= CCOUNT_MAX_NEW)
 	{
-		// Выделение памяти:
-		m_constantsNames  = new std::string[m_constantsCount];
-		m_constantsValues = new double[m_constantsCount];
-
-		// Форматирование имён констант:
-		for (uint32_t i = 0; i < m_constantsCount; ++i)
+		for (uint32_t i = 0; i < constantsCount; ++i)
 		{
-			m_constantsNames[i] = cutBackSymbols(constantsNames_buffer[i], CNAME_SIZE, ' ');
+			std::string constantName = cutBackSymbols(constantsNames_buffer[i], CNAME_SIZE, ' ');
+			m_constants[constantName] = constantsValues_buffer[i];
 		}
-
-		// Копирование значений констант:
-		std::memcpy(m_constantsValues, constantsValues_buffer, m_constantsCount);
 	}
 
 	// Дополнительные вычисления:

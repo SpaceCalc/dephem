@@ -12,6 +12,7 @@
 #include <limits>
 #include <string>
 #include <map>
+#include <vector>
 
 namespace dph
 {
@@ -98,9 +99,9 @@ namespace dph
 		double		m_dimensionFit{};	// Значение для соблюдения размерности.      
 
 		// Динамическик массивы для работы с выпуском //
-		mutable const double* m_buffer{ nullptr };	// Коэффициенты блока, читаемые из файла.
-		double* m_poly{ nullptr };					// Значения полиномов.
-		double* m_dpoly{ nullptr };					// Значения производных полиномов.
+		mutable std::vector<double> m_buffer{};			// Коэффициенты блока, читаемые из файла.
+		mutable std::vector<double> m_poly{ 1 };		// Значения полиномов.
+		mutable std::vector<double> m_dpoly{ 0, 1 };	// Значения производных полиномов.
 
 
 		// ------------------------- Внутренние методы работы объекта -------------------------- //

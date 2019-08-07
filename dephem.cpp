@@ -28,11 +28,6 @@ dph::EphemerisRelease::~EphemerisRelease()
 	// Закрытие файла ежегодника:
 	if (m_binaryFileStream != nullptr) 
 		std::fclose(m_binaryFileStream);
-
-	// Освобождение выделенной памяти:
-	delete[] m_buffer;
-	delete[] m_poly;
-	delete[] m_dpoly;
 }
 
 bool dph::EphemerisRelease::is_ready() const
@@ -191,11 +186,11 @@ void dph::EphemerisRelease::additionalCalculations()
 	{
 		if (m_keys[i][1] > m_maxCheby) m_maxCheby = m_keys[i][1];
 	}
-	m_poly  = new double[m_maxCheby] {1};
-	m_dpoly = new double[m_maxCheby] {0, 1};
 
-	// Выделение памяти под буффер:
-	m_buffer = new double[m_ncoeff] {};
+	// Резервирование памяти в векторах:
+	m_buffer.resize(m_ncoeff);
+	m_poly.resize(m_maxCheby);
+	m_dpoly.resize(m_maxCheby);
 }
 
 bool dph::EphemerisRelease::isDataCorrect() const
@@ -247,7 +242,7 @@ void dph::EphemerisRelease::fill_buffer(size_t block_num) const
 		std::fseek(m_binaryFileStream, adress, 0);
 	}
 
-	std::fread((void*)m_buffer, sizeof(double), m_ncoeff, m_binaryFileStream);
+	std::fread(m_buffer.data(), sizeof(double), m_ncoeff, m_binaryFileStream);
 }
 
 void dph::EphemerisRelease::interpolate(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const

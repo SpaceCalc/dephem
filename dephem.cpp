@@ -578,17 +578,18 @@ void dph::EphemerisRelease::calculateBaseEarth(double JED, bool calculateState,
 void dph::EphemerisRelease::calculateBaseMoon(double JED, bool calculateState,
 	double* resultArray) const
 {
-	// Получение ВС барицентра З-Л:
+	// Получение радиус-вектора (или вектора состояния) барицентра сиситемы Земля-Луна
+	// относительно барицентра Солнечной Системы:
 	calculateBaseItem(2, JED, calculateState, resultArray);
 
-	// Получение ВС Луны (относительно Земли):
-	double E_M[6];
-	calculateBaseItem(9, JED, calculateState, E_M);
+	// Получение радиус-вектора (или вектора состояния) Луны относитльно Земли:
+	double MoonRelativeEarth[6];
+	calculateBaseItem(9, JED, calculateState, MoonRelativeEarth);
 
 	// Определение относительного положения:
 	for (int i = 0; i < int(calculateState ? 6 : 3); ++i)
 	{
-		resultArray[i] += E_M[i] * (1 - m_emrat2);
+		resultArray[i] += MoonRelativeEarth[i] * (1 - m_emrat2);
 	}	
 }
 

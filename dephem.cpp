@@ -168,6 +168,10 @@ void dph::EphemerisRelease::clear()
 
 void dph::EphemerisRelease::copy(const EphemerisRelease& other)
 {
+	// Используется в:
+	//	- Конструктор копирования.
+	//	- Оператор копирования.
+	
 	m_ready = other.m_ready;
 
 	m_binaryFilePath	= other.m_binaryFilePath;

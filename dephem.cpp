@@ -672,24 +672,25 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 	}
 }
 
-void dph::EphemerisRelease::get_other(unsigned item, double JED, double* res, bool state) const
+void dph::EphemerisRelease::get_other(unsigned otherItemIndex, double JED,
+	bool calculateDerivative, double* resultArray) const
 {
 	/*
-	13	Earth Nutations in longitudeand obliquity(IAU 1980 model)
-	14	Lunar mantle libration
-	15	Lunar mantle angular velocity
-	16	TT - TDB(at geocenter)
+	14	Earth Nutations in longitudeand obliquity(IAU 1980 model)
+	15	Lunar mantle libration
+	16	Lunar mantle angular velocity
+	17	TT - TDB(at geocenter)
 	*/
 
 	// Уменьшение индекса на единицу:
-	--item;
+	--otherItemIndex;
 
 	//Условия недопустимые для данного метода:
 	if (this->m_ready == false)
 	{
 		return;
 	}
-	else if (item < 13 || item > 16)
+	else if (otherItemIndex < 13 || otherItemIndex > 16)
 	{
 		return;
 	}
@@ -699,6 +700,6 @@ void dph::EphemerisRelease::get_other(unsigned item, double JED, double* res, bo
 	}
 	else
 	{
-		get_origin_item(item - 2, JED, res, state);
+		get_origin_item(otherItemIndex - 2, JED, resultArray, calculateDerivative);
 	}
 }

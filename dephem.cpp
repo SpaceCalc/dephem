@@ -71,7 +71,7 @@ std::string dph::EphemerisRelease::releaseLabel() const
 	}
 }
 
-const std::string& dph::EphemerisRelease::constantName(size_t constantIndex) const
+std::string dph::EphemerisRelease::constantName(size_t constantIndex) const
 {
 	if (m_ready == false)
 	{

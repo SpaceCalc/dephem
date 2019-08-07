@@ -56,7 +56,7 @@ namespace dph
 		std::string releaseLabel() const;
 
 		// Получить имя константы по её индексу.
-		const std::string& constantName(size_t constantIndex) const;
+		std::string constantName(size_t constantIndex) const;
 
 		// Получить значение константы по её индексу.
 		double constantValue(size_t constantIndex) const;

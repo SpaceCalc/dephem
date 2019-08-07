@@ -155,7 +155,7 @@ namespace dph
 
 		// Получить значения требуемых компонент базового элемента на выбранный момент времени.
 		void calculateBaseItem(unsigned baseItemIndex, double JED, 
-			double* resultArray, bool calculateState) const;
+			bool calculateState, double* resultArray) const;
 
 		// Получить значение радиус-вектора (или вектора состояния) Земли относительно
 		// барицентра Солнечной Системы.

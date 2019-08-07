@@ -498,8 +498,8 @@ void dph::EphemerisRelease::interpolateState(unsigned baseItemIndex, double norm
 	}
 }
 
-void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED,
-	double* resultArray, bool calculateState) const
+void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED, 
+	bool calculateState, double* resultArray) const
 {
 	/*
 	0	Mercury
@@ -560,11 +560,11 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED
 void dph::EphemerisRelease::get_origin_earth(double JED, double* S, bool state) const
 {
 	// Получение ВС барицентра З-Л:
-	calculateBaseItem(2, JED, S, state);
+	calculateBaseItem(2, JED, state, S);
 
 	// Получение ВС Луны (относительно Земли):
 	double E_M[6];
-	calculateBaseItem(9, JED, E_M, state);
+	calculateBaseItem(9, JED, state, E_M);
 
 	// Определение относительного положения:
 	for (int i = 0; i < int(state ? 6 : 3); ++i)
@@ -576,11 +576,11 @@ void dph::EphemerisRelease::get_origin_earth(double JED, double* S, bool state) 
 void dph::EphemerisRelease::get_origin_moon(double JED, double* S, bool state) const
 {
 	// Получение ВС барицентра З-Л:
-	calculateBaseItem(2, JED, S, state);
+	calculateBaseItem(2, JED, state, S);
 
 	// Получение ВС Луны (относительно Земли):
 	double E_M[6];
-	calculateBaseItem(9, JED, E_M, state);
+	calculateBaseItem(9, JED, state, E_M);
 
 	// Определение относительного положения:
 	for (int i = 0; i < int(state ? 6 : 3); ++i)
@@ -633,11 +633,11 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 	{
 		unsigned notSSBARY = targetBodyIndex == 12 ? centerBodyIndex : targetBodyIndex;
 		
-		if      (notSSBARY == 13)	calculateBaseItem(2, JED, resultArray, calculateState);
+		if      (notSSBARY == 13)	calculateBaseItem(2, JED, calculateState, resultArray);
 		else if (notSSBARY ==  3)	get_origin_earth(JED, resultArray, calculateState);
 		else if (notSSBARY == 10)	get_origin_moon(JED, resultArray, calculateState);
 		else						
-			calculateBaseItem(notSSBARY - 1, JED, resultArray, calculateState);
+			calculateBaseItem(notSSBARY - 1, JED, calculateState, resultArray);
 
 		if (targetBodyIndex == 12)
 		{
@@ -649,7 +649,7 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 	}
 	else if (targetBodyIndex * centerBodyIndex == 30 && targetBodyIndex + centerBodyIndex == 13)
 	{
-		calculateBaseItem(9, JED, resultArray, calculateState);
+		calculateBaseItem(9, JED, calculateState, resultArray);
 		
 		if (targetBodyIndex == 3)
 		{
@@ -670,10 +670,10 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 
 			switch (currentBodyIndex)
 			{
-			case 3:		get_origin_earth(JED, currentArray, calculateState);	break;
-			case 10:	get_origin_moon(JED, currentArray, calculateState);		break;
-			case 13:	calculateBaseItem(2, JED, currentArray, calculateState);	break;
-			default:	calculateBaseItem(currentBodyIndex - 1, JED, currentArray, calculateState);
+			case 3:		get_origin_earth(JED, currentArray, calculateState);		break;
+			case 10:	get_origin_moon(JED, currentArray, calculateState);			break;
+			case 13:	calculateBaseItem(2, JED, calculateState, currentArray);	break;
+			default:	calculateBaseItem(currentBodyIndex - 1, JED, calculateState, currentArray);
 			}
 		}
 
@@ -709,6 +709,6 @@ void dph::EphemerisRelease::calculateOther(unsigned otherItemIndex, double JED,
 	}
 	else
 	{
-		calculateBaseItem(otherItemIndex - 3, JED, resultArray, calculateDerivative);
+		calculateBaseItem(otherItemIndex - 3, JED, calculateDerivative, resultArray);
 	}
 }

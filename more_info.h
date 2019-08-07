@@ -4,9 +4,12 @@
 
 #include "dephem.h"
 
-class more_info
+namespace dph
 {
-	
-};
+	class more_info
+	{
+
+	};
+}
 
 #endif

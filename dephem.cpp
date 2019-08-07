@@ -59,30 +59,6 @@ uint32_t dph::EphemerisRelease::releaseIndex() const
 	}
 }
 
-std::string dph::EphemerisRelease::constantName(size_t constantIndex) const
-{
-	if (m_ready == false)
-	{
-		return std::string();
-	}
-	else if (m_constantsCount == 0)
-	{
-		return std::string();
-	}
-	else if (m_constantsNames == nullptr)
-	{
-		return std::string();
-	}
-	else if (constantIndex > m_constantsCount)
-	{
-		return std::string();
-	}
-	else
-	{
-		return m_constantsNames[constantIndex];
-	}
-}
-
 double dph::EphemerisRelease::constantValue(size_t constantIndex) const
 {
 	if (m_ready == false)

@@ -52,9 +52,6 @@ namespace dph
 		// Получить номер выпуска.
 		uint32_t releaseIndex() const;
 
-		// Получить имя константы по её индексу.
-		std::string constantName(size_t constantIndex) const;
-
 		// Получить значение константы по её индексу.
 		double constantValue(size_t constantIndex) const;
 

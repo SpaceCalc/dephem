@@ -64,6 +64,25 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 	return *this;
 }
 
+dph::EphemerisRelease::EphemerisRelease(EphemerisRelease&& other) noexcept
+{
+	if (other.m_ready)
+	{
+		move(other);
+
+		if (isDataCorrect())
+		{
+			m_ready = true;
+		}
+		else
+		{
+			m_ready = false;
+
+			clear();
+		}
+	}
+}
+
 dph::EphemerisRelease::~EphemerisRelease()
 {
 	// Закрытие файла ежегодника:

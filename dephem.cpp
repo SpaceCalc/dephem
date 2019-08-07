@@ -59,7 +59,7 @@ uint32_t dph::EphemerisRelease::releaseIndex() const
 	}
 }
 
-const std::string& dph::EphemerisRelease::releaseLabel() const
+std::string dph::EphemerisRelease::releaseLabel() const
 {
 	if (m_ready == false)
 	{

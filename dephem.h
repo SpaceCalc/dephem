@@ -163,7 +163,7 @@ namespace dph
 
 		// Получить значение радиу-вектора (или вектора состояния) Луны относительно
 		// барицентра Солнечной Системы.
-		void calculateBaseMoon(double JED, double* S, bool state) const;
+		void calculateBaseMoon(double JED, double* resultArray, bool calculateState) const;
 	};
 }
 

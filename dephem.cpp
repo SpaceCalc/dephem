@@ -575,19 +575,20 @@ void dph::EphemerisRelease::calculateBaseEarth(double JED, bool calculateState,
 	}
 }
 
-void dph::EphemerisRelease::calculateBaseMoon(double JED, double* S, bool state) const
+void dph::EphemerisRelease::calculateBaseMoon(double JED, double* resultArray, 
+	bool calculateState) const
 {
 	// Получение ВС барицентра З-Л:
-	calculateBaseItem(2, JED, state, S);
+	calculateBaseItem(2, JED, calculateState, resultArray);
 
 	// Получение ВС Луны (относительно Земли):
 	double E_M[6];
-	calculateBaseItem(9, JED, state, E_M);
+	calculateBaseItem(9, JED, calculateState, E_M);
 
 	// Определение относительного положения:
-	for (int i = 0; i < int(state ? 6 : 3); ++i)
+	for (int i = 0; i < int(calculateState ? 6 : 3); ++i)
 	{
-		S[i] += E_M[i] * (1 - m_emrat2);
+		resultArray[i] += E_M[i] * (1 - m_emrat2);
 	}	
 }
 

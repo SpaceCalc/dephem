@@ -637,11 +637,13 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 	{
 		unsigned notSSBARY = targetBodyIndex == 12 ? centerBodyIndex : targetBodyIndex;
 		
-		if      (notSSBARY == 13)	calculateBaseItem(2, JED, calculateState, resultArray);
-		else if (notSSBARY ==  3)	calculateBaseEarth(JED, calculateState, resultArray);
-		else if (notSSBARY == 10)	calculateBaseMoon(JED, calculateState, resultArray);
-		else						
-			calculateBaseItem(notSSBARY - 1, JED, calculateState, resultArray);
+		switch (notSSBARY)
+		{
+		case 3  :	calculateBaseEarth(JED, calculateState, resultArray);	break;
+		case 10 :	calculateBaseMoon(JED, calculateState, resultArray);	break;
+		case 13 :	calculateBaseItem(2, JED, calculateState, resultArray);	break;
+		default :	calculateBaseItem(notSSBARY - 1, JED, calculateState, resultArray);
+		} 
 
 		if (targetBodyIndex == 12)
 		{

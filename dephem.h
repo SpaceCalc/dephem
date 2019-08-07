@@ -45,10 +45,12 @@ namespace dph
 
 		// Получить значение радиус-вектора (или вектора состояния) выбранного тела относительно 
 		// другого на заданный момент времени.
-		void get_body(unsigned target, unsigned center, double JED, double* S, bool state) const;
+		void calculateBody(unsigned targetBodyIndex, unsigned centerBodyIndex, double JED, 
+			bool calculateState, double* resultArray) const;
 
 		// Получить значение(-я) прочих элементов, хранящихся в выпуске эфемерид.
-		void get_other(unsigned item, double JED, double* res, bool state) const;
+		void calculateOther(unsigned otherItemIndex, double JED, 
+			bool calculateDerivative, double* resultArray) const;
 
 
 		// -------------------------------------- ГЕТТЕРЫ -------------------------------------- //
@@ -141,24 +143,27 @@ namespace dph
 		bool isDataCorrect() const;
 
 		// Заполнение буффера "m_buffer" коэффициентами требуемого блока.
-		void fill_buffer(size_t block_num) const;
+		void fillBuffer(size_t block_num) const;
 
 		// Интерполяция компонент выбранного базового элемента.
-		void interpolate(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const;
+		void interpolatePosition(unsigned baseItemIndex, double normalizedTime, 
+			const double* coeffArray, unsigned componentsCount, double* resultArray) const;
 
 		// Интерполяция компонент и их производных выбранного базового элемента.
-		void interpolate_derivative(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const;
+		void interpolateState(unsigned baseItemIndex, double normalizedTime,
+			const double* coeffArray, unsigned componentsCount, double* resultArray) const;
 
 		// Получить значения требуемых компонент базового элемента на выбранный момент времени.
-		void get_origin_item(unsigned item, double JED, double* S, bool state) const;
+		void calculateBaseItem(unsigned baseItemIndex, double JED, 
+			bool calculateState, double* resultArray) const;
 
 		// Получить значение радиус-вектора (или вектора состояния) Земли относительно
 		// барицентра Солнечной Системы.
-		void get_origin_earth(double JED, double* S, bool state) const;
+		void calculateBaseEarth(double JED, bool calculateState, double* resultArray) const;
 
 		// Получить значение радиу-вектора (или вектора состояния) Луны относительно
 		// барицентра Солнечной Системы.
-		void get_origin_moon(double JED, double* S, bool state) const;
+		void calculateBaseMoon(double JED, bool calculateState, double* resultArray) const;
 	};
 }
 

@@ -416,7 +416,7 @@ bool dph::EphemerisRelease::isDataCorrect() const
 	return true;
 }
 
-void dph::EphemerisRelease::fill_buffer(size_t block_num) const
+void dph::EphemerisRelease::fillBuffer(size_t block_num) const
 {
 	size_t adress = (2 + block_num) * m_ncoeff * 8;
 
@@ -433,70 +433,73 @@ void dph::EphemerisRelease::fill_buffer(size_t block_num) const
 	std::fread(m_buffer.data(), sizeof(double), m_ncoeff, m_binaryFileStream);
 }
 
-void dph::EphemerisRelease::interpolate(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const
+void dph::EphemerisRelease::interpolatePosition(unsigned baseItemIndex, double normalizedTime,
+	const double* coeffArray, unsigned componentsCount, double* resultArray) const
 {
 	// Копирование значения количества коэффициентов на компоненту:
-	uint32_t cpec = m_keys[item][1];
+	uint32_t cpec = m_keys[baseItemIndex][1];
 	
 	// Предварительное заполнение полиномов (вычисление их сумм):
-	m_poly[1] = norm_time;
+	m_poly[1] = normalizedTime;
 
 	// Заполнение полиномов (вычисление их сумм):
 	for (uint32_t i = 2; i < cpec; ++i)
 	{
-		m_poly[i] = 2 * norm_time * m_poly[i - 1] - m_poly[i - 2];
+		m_poly[i] = 2 * normalizedTime * m_poly[i - 1] - m_poly[i - 2];
 	}
 
 	// Обнуление массива результата вычислений:
-	memset(res, 0, sizeof(double) * comp_count);
+	memset(resultArray, 0, sizeof(double) * componentsCount);
 
 	// Вычисление координат:
-	for (unsigned i = 0; i < comp_count; ++i)
+	for (unsigned i = 0; i < componentsCount; ++i)
 	{
 		for (uint32_t j = 0; j < cpec; ++j)
 		{
-			res[i] += m_poly[j] * set[i * cpec + j];
+			resultArray[i] += m_poly[j] * coeffArray[i * cpec + j];
 		}
 	}
 }
 
-void dph::EphemerisRelease::interpolate_derivative(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const
+void dph::EphemerisRelease::interpolateState(unsigned baseItemIndex, double normalizedTime,
+	const double* coeffArray, unsigned componentsCount, double* resultArray) const
 {
 	// Копирование значения количества коэффициентов на компоненту:
-	uint32_t cpec = m_keys[item][1];
+	uint32_t cpec = m_keys[baseItemIndex][1];
 
 	// Предварительное заполнение полиномов (вычисление их сумм):
-	m_poly[1]  = norm_time;
-	m_poly[2]  = 2 * norm_time * norm_time - 1;
-	m_dpoly[2] = 4 * norm_time;
+	m_poly[1]  = normalizedTime;
+	m_poly[2]  = 2 * normalizedTime * normalizedTime - 1;
+	m_dpoly[2] = 4 * normalizedTime;
 
 	// Заполнение полиномов (вычисление их сумм):
 	for (uint32_t i = 3; i < cpec; ++i)
 	{
-		 m_poly[i] =                   2 * norm_time *  m_poly[i - 1] -  m_poly[i - 2];
-		m_dpoly[i] = 2 * m_poly[i - 1] + 2 * norm_time * m_dpoly[i - 1] - m_dpoly[i - 2];
+		 m_poly[i] = 2 * normalizedTime *  m_poly[i - 1] -  m_poly[i - 2];
+		m_dpoly[i] = 2 * m_poly[i - 1] + 2 * normalizedTime * m_dpoly[i - 1] - m_dpoly[i - 2];
 	}
 
 	// Обнуление массива результата вычислений:
-	memset(res, 0, sizeof(double) * comp_count * 2);
+	memset(resultArray, 0, sizeof(double) * componentsCount * 2);
 
 	// Определение переменной для соблюдения размерности:
-	double derivative_units = m_keys[item][2] * m_dimensionFit;
+	double derivative_units = m_keys[baseItemIndex][2] * m_dimensionFit;
 
 	// Вычисление координат:
-	for (unsigned i = 0; i < comp_count; ++i)
+	for (unsigned i = 0; i < componentsCount; ++i)
 	{
-		for (uint32_t j = 0; j < cpec; ++j, ++set)
+		for (uint32_t j = 0; j < cpec; ++j, ++coeffArray)
 		{
-			res[i]              +=  m_poly[j] * *set;
-			res[i + comp_count] += m_dpoly[j] * *set;
+			resultArray[i]                   +=  m_poly[j] * *coeffArray;
+			resultArray[i + componentsCount] += m_dpoly[j] * *coeffArray;
 		}
 
-		res[i + comp_count] *= derivative_units;
+		resultArray[i + componentsCount] *= derivative_units;
 	}
 }
 
-void dph::EphemerisRelease::get_origin_item(unsigned item, double JED, double *S, bool state) const
+void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED, 
+	bool calculateState, double* resultArray) const
 {
 	/*
 	0	Mercury
@@ -521,90 +524,104 @@ void dph::EphemerisRelease::get_origin_item(unsigned item, double JED, double *S
 
 	if (JED < m_buffer[0] || JED >= m_buffer[1])
 	{
-		fill_buffer(offset - (JED == m_endDate ? 1 : 0));
+		fillBuffer(offset - (JED == m_endDate ? 1 : 0));
 	}
 
-	norm_time = (norm_time - offset) * m_keys[item][2];	
+	norm_time = (norm_time - offset) * m_keys[baseItemIndex][2];	
 	offset    = size_t(norm_time);									
 	norm_time = 2 * (norm_time - offset) - 1;	
 	
 	if (JED == m_endDate)
 	{
-		offset    = m_keys[item][2] - 1;
+		offset    = m_keys[baseItemIndex][2] - 1;
 		norm_time = 1;
 	}
 	
 	// Порядковый номер первого коэффициента для выбранного подпромежутка:
-	int comp_count = item == 11 ? 2 : item == 14 ? 1 : 3;
-	int coeff_pos  = m_keys[item][0] - 1 + comp_count * offset * m_keys[item][1];
+	int comp_count = baseItemIndex == 11 ? 2 : baseItemIndex == 14 ? 1 : 3;
+	int coeff_pos  = m_keys[baseItemIndex][0] - 1 + comp_count * offset * m_keys[baseItemIndex][1];
 
 	// В зависимости от того, что требуется вычислить (радиус-вектор
 	// или радиус-вектор и вектор скорости) выбирается соответствующий
 	// метод:
-	if (state)	interpolate_derivative(&m_buffer[coeff_pos], item, norm_time, S, comp_count);
-	else	    interpolate           (&m_buffer[coeff_pos], item, norm_time, S, comp_count);
+	if (calculateState)
+	{
+		interpolateState(baseItemIndex, norm_time, &m_buffer[coeff_pos], comp_count, 
+			resultArray);
+	}		
+	else
+	{
+		interpolatePosition(baseItemIndex, norm_time, &m_buffer[coeff_pos], comp_count, 
+			resultArray);
+	}
+		
 }
 
-void dph::EphemerisRelease::get_origin_earth(double JED, double* S, bool state) const
+void dph::EphemerisRelease::calculateBaseEarth(double JED, bool calculateState, 
+	double* resultArray) const
 {
-	// Получение ВС барицентра З-Л:
-	get_origin_item(2, JED, S, state);
+	// Получение радиус-вектора (или вектора состояния) барицентра сиситемы Земля-Луна
+	// относительно барицентра Солнечной Системы:
+	calculateBaseItem(2, JED, calculateState, resultArray);
 
-	// Получение ВС Луны (относительно Земли):
-	double E_M[6];
-	get_origin_item(9, JED, E_M, state);
+	// Получение радиус-вектора (или вектора состояния) Луны относитльно Земли:
+	double MoonRelativeEarth[6];
+	calculateBaseItem(9, JED, calculateState, MoonRelativeEarth);
 
-	// Определение относительного положения:
-	for (int i = 0; i < int(state ? 6 : 3); ++i)
+	// Опредление положения Земли относительно барицентра Солнечной Системы:
+	for (int i = 0; i < int(calculateState ? 6 : 3); ++i)
 	{
-		S[i] -= E_M[i] * m_emrat2;
+		resultArray[i] -= MoonRelativeEarth[i] * m_emrat2;
 	}
 }
 
-void dph::EphemerisRelease::get_origin_moon(double JED, double* S, bool state) const
+void dph::EphemerisRelease::calculateBaseMoon(double JED, bool calculateState,
+	double* resultArray) const
 {
-	// Получение ВС барицентра З-Л:
-	get_origin_item(2, JED, S, state);
+	// Получение радиус-вектора (или вектора состояния) барицентра сиситемы Земля-Луна
+	// относительно барицентра Солнечной Системы:
+	calculateBaseItem(2, JED, calculateState, resultArray);
 
-	// Получение ВС Луны (относительно Земли):
-	double E_M[6];
-	get_origin_item(9, JED, E_M, state);
+	// Получение радиус-вектора (или вектора состояния) Луны относитльно Земли:
+	double MoonRelativeEarth[6];
+	calculateBaseItem(9, JED, calculateState, MoonRelativeEarth);
 
 	// Определение относительного положения:
-	for (int i = 0; i < int(state ? 6 : 3); ++i)
+	for (int i = 0; i < int(calculateState ? 6 : 3); ++i)
 	{
-		S[i] += E_M[i] * (1 - m_emrat2);
+		resultArray[i] += MoonRelativeEarth[i] * (1 - m_emrat2);
 	}	
 }
 
-void dph::EphemerisRelease::get_body(unsigned target, unsigned center, double JED, double* S, bool state) const
+void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned centerBodyIndex, double JED,
+	bool calculateState, double* resultArray) const
 {
 	/*
-	0   Mercury
-	1   Venus
-	2   Earth
-	3   Mars
-	4   Jupiter
-	5   Saturn
-	6   Uranus
-	7   Neptune
-	8   Pluto
-	9   Moon
-	10  Sun
-	11  Solar System barycenter
-	12  Earth-Moon barycenter
+	1   Mercury
+	2   Venus
+	3   Earth
+	4   Mars
+	5   Jupiter
+	6   Saturn
+	7   Uranus
+	8   Neptune
+	9   Pluto
+	10  Moon
+	11  Sun
+	12  Solar System barycenter
+	13  Earth-Moon barycenter
 	 */
-
-	// Уменьшение индекса на единицу:
-	--target;
-	--center;
 
 	//Условия недопустимые для данного метода:
 	if (this->m_ready == false)
 	{
 		return;
 	}
-	else if (target > 12 || center > 12)
+	else if (targetBodyIndex == 0 || centerBodyIndex == 0)
+	{
+		return;
+	}
+	else if (targetBodyIndex > 13 || centerBodyIndex > 13)
 	{
 		return;
 	}
@@ -614,65 +631,81 @@ void dph::EphemerisRelease::get_body(unsigned target, unsigned center, double JE
 	}
 
 	// Определить количество требуемых компонент:
-	unsigned comp_count = state ? 6 : 3;
+	unsigned componentsCount = calculateState ? 6 : 3;
 
-	if (target == 11 || center == 11)
+	if (targetBodyIndex == 12 || centerBodyIndex == 12)
 	{
-		unsigned g = target == 11 ? center : target;
+		unsigned notSSBARY = targetBodyIndex == 12 ? centerBodyIndex : targetBodyIndex;
 		
-		if      (g == 12)	get_origin_item (2, JED, S, state);
-		else if (g ==  2)	get_origin_earth(   JED, S, state);
-		else if (g ==  9)	get_origin_moon (   JED, S, state);
-		else				get_origin_item (g, JED, S, state);
+		switch (notSSBARY)
+		{
+		case 3  :	calculateBaseEarth(JED, calculateState, resultArray);	break;
+		case 10 :	calculateBaseMoon(JED, calculateState, resultArray);	break;
+		case 13 :	calculateBaseItem(2, JED, calculateState, resultArray);	break;
+		default :	calculateBaseItem(notSSBARY - 1, JED, calculateState, resultArray);
+		} 
 
-		if(target == 11)	for (unsigned i = 0; i < comp_count; ++i)	S[i] = -S[i];
+		if (targetBodyIndex == 12)
+		{
+			for (unsigned i = 0; i < componentsCount; ++i)
+			{
+				resultArray[i] = -resultArray[i];
+			}
+		}				
 	}
-	else if (target * center == 18 && target + center == 11)
+	else if (targetBodyIndex * centerBodyIndex == 30 && targetBodyIndex + centerBodyIndex == 13)
 	{
-		get_origin_item(9, JED, S, state);
+		calculateBaseItem(9, JED, calculateState, resultArray);
 		
-		if(target == 2)	for (unsigned i = 0; i < comp_count; ++i)	S[i] = -S[i];
+		if (targetBodyIndex == 3)
+		{
+			for (unsigned i = 0; i < componentsCount; ++i)
+			{
+				resultArray[i] = -resultArray[i];
+			}
+		}				
 	}
 	else
 	{
-		double C[6];
+		double centerBodyArray[6]{};
 
-		for (unsigned i = 0; i < 2; ++i)
+		for (unsigned i = 0; i <= 1; ++i)
 		{
-			double* G = i ? C : S;
-			int		g = i ? center : target;
+			double*  currentArray =		i == 0 ? centerBodyArray : resultArray;
+			unsigned currentBodyIndex =	i == 0 ? centerBodyIndex : targetBodyIndex;
 
-			if      (g == 12)	get_origin_item (2, JED, G, state);
-			else if (g ==  2)	get_origin_earth(   JED, G, state);
-			else if (g ==  9)	get_origin_moon (   JED, G, state);
-			else				get_origin_item (g, JED, G, state);
+			switch (currentBodyIndex)
+			{
+			case 3:		calculateBaseEarth(JED, calculateState, currentArray);		break;
+			case 10:	calculateBaseMoon(JED, calculateState, currentArray);		break;
+			case 13:	calculateBaseItem(2, JED, calculateState, currentArray);	break;
+			default:	calculateBaseItem(currentBodyIndex - 1, JED, calculateState, currentArray);
+			}
 		}
 
-		for (unsigned i = 0; i < comp_count; ++i)
+		for (unsigned i = 0; i < componentsCount; ++i)
 		{
-			S[i] -= C[i];
+			resultArray[i] -= centerBodyArray[i];
 		}	
 	}
 }
 
-void dph::EphemerisRelease::get_other(unsigned item, double JED, double* res, bool state) const
+void dph::EphemerisRelease::calculateOther(unsigned otherItemIndex, double JED,
+	bool calculateDerivative, double* resultArray) const
 {
 	/*
-	13	Earth Nutations in longitudeand obliquity(IAU 1980 model)
-	14	Lunar mantle libration
-	15	Lunar mantle angular velocity
-	16	TT - TDB(at geocenter)
+	14	Earth Nutations in longitudeand obliquity(IAU 1980 model)
+	15	Lunar mantle libration
+	16	Lunar mantle angular velocity
+	17	TT - TDB(at geocenter)
 	*/
-
-	// Уменьшение индекса на единицу:
-	--item;
 
 	//Условия недопустимые для данного метода:
 	if (this->m_ready == false)
 	{
 		return;
 	}
-	else if (item < 13 || item > 16)
+	else if (otherItemIndex < 14 || otherItemIndex > 17)
 	{
 		return;
 	}
@@ -682,6 +715,6 @@ void dph::EphemerisRelease::get_other(unsigned item, double JED, double* res, bo
 	}
 	else
 	{
-		get_origin_item(item - 2, JED, res, state);
+		calculateBaseItem(otherItemIndex - 3, JED, calculateDerivative, resultArray);
 	}
 }

@@ -42,6 +42,28 @@ dph::EphemerisRelease::EphemerisRelease(const EphemerisRelease& other)
 	}
 }
 
+dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& other)
+{
+	if (other.m_ready)
+	{
+		clear();
+		copy(other);
+
+		if (isDataCorrect())
+		{
+			m_ready = true;
+		}
+		else
+		{
+			m_ready = false;
+			
+			clear();
+		}
+	}
+
+	return *this;
+}
+
 dph::EphemerisRelease::~EphemerisRelease()
 {
 	// Закрытие файла ежегодника:

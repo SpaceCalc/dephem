@@ -29,6 +29,9 @@ namespace dph
 		// Конструктор копирования.
 		EphemerisRelease(const EphemerisRelease& other);
 
+		// Оператор копирования.
+		EphemerisRelease& operator=(const EphemerisRelease& other);
+
 		// Деструктор.
 		~EphemerisRelease();
 

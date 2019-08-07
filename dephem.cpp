@@ -581,31 +581,31 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 	bool calculateState, double* resultArray) const
 {
 	/*
-	0   Mercury
-	1   Venus
-	2   Earth
-	3   Mars
-	4   Jupiter
-	5   Saturn
-	6   Uranus
-	7   Neptune
-	8   Pluto
-	9   Moon
-	10  Sun
-	11  Solar System barycenter
-	12  Earth-Moon barycenter
+	1   Mercury
+	2   Venus
+	3   Earth
+	4   Mars
+	5   Jupiter
+	6   Saturn
+	7   Uranus
+	8   Neptune
+	9   Pluto
+	10  Moon
+	11  Sun
+	12  Solar System barycenter
+	13  Earth-Moon barycenter
 	 */
-
-	// Уменьшение индекса на единицу:
-	--targetBodyIndex;
-	--centerBodyIndex;
 
 	//Условия недопустимые для данного метода:
 	if (this->m_ready == false)
 	{
 		return;
 	}
-	else if (targetBodyIndex > 12 || centerBodyIndex > 12)
+	else if (targetBodyIndex == 0 || centerBodyIndex == 0)
+	{
+		return;
+	}
+	else if (targetBodyIndex > 13 || centerBodyIndex > 13)
 	{
 		return;
 	}
@@ -617,16 +617,16 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 	// Определить количество требуемых компонент:
 	unsigned comp_count = calculateState ? 6 : 3;
 
-	if (targetBodyIndex == 11 || centerBodyIndex == 11)
+	if (targetBodyIndex == 12 || centerBodyIndex == 12)
 	{
-		unsigned g = targetBodyIndex == 11 ? centerBodyIndex : targetBodyIndex;
+		unsigned g = targetBodyIndex == 12 ? centerBodyIndex : targetBodyIndex;
 		
-		if      (g == 12)	get_origin_item (2, JED, resultArray, calculateState);
-		else if (g ==  2)	get_origin_earth(   JED, resultArray, calculateState);
-		else if (g ==  9)	get_origin_moon (   JED, resultArray, calculateState);
-		else				get_origin_item (g, JED, resultArray, calculateState);
+		if      (g == 13)	get_origin_item (2, JED, resultArray, calculateState);
+		else if (g ==  3)	get_origin_earth(   JED, resultArray, calculateState);
+		else if (g == 10)	get_origin_moon (   JED, resultArray, calculateState);
+		else				get_origin_item (g - 1, JED, resultArray, calculateState);
 
-		if (targetBodyIndex == 11)
+		if (targetBodyIndex == 12)
 		{
 			for (unsigned i = 0; i < comp_count; ++i)
 			{
@@ -634,11 +634,11 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 			}
 		}				
 	}
-	else if (targetBodyIndex * centerBodyIndex == 18 && targetBodyIndex + centerBodyIndex == 11)
+	else if (targetBodyIndex * centerBodyIndex == 30 && targetBodyIndex + centerBodyIndex == 13)
 	{
 		get_origin_item(9, JED, resultArray, calculateState);
 		
-		if (targetBodyIndex == 2)
+		if (targetBodyIndex == 3)
 		{
 			for (unsigned i = 0; i < comp_count; ++i)
 			{
@@ -655,10 +655,10 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 			double* G = i ? C : resultArray;
 			int		g = i ? centerBodyIndex : targetBodyIndex;
 
-			if      (g == 12)	get_origin_item (2, JED, G, calculateState);
-			else if (g ==  2)	get_origin_earth(   JED, G, calculateState);
-			else if (g ==  9)	get_origin_moon (   JED, G, calculateState);
-			else				get_origin_item (g, JED, G, calculateState);
+			if      (g == 13)	get_origin_item (2, JED, G, calculateState);
+			else if (g ==  3)	get_origin_earth(   JED, G, calculateState);
+			else if (g == 10)	get_origin_moon (   JED, G, calculateState);
+			else				get_origin_item (g - 1, JED, G, calculateState);
 		}
 
 		for (unsigned i = 0; i < comp_count; ++i)

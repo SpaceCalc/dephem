@@ -150,7 +150,8 @@ namespace dph
 			double* res, unsigned comp_count) const;
 
 		// Интерполяция компонент и их производных выбранного базового элемента.
-		void interpolate_derivative(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const;
+		void interpolateState(const double* set, unsigned item, double norm_time, 
+			double* res, unsigned comp_count) const;
 
 		// Получить значения требуемых компонент базового элемента на выбранный момент времени.
 		void get_origin_item(unsigned item, double JED, double* S, bool state) const;

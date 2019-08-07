@@ -461,7 +461,8 @@ void dph::EphemerisRelease::interpolatePosition(const double* set, unsigned item
 	}
 }
 
-void dph::EphemerisRelease::interpolate_derivative(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const
+void dph::EphemerisRelease::interpolateState(const double* set, unsigned item, double norm_time, 
+	double* res, unsigned comp_count) const
 {
 	// Копирование значения количества коэффициентов на компоненту:
 	uint32_t cpec = m_keys[item][1];
@@ -542,7 +543,7 @@ void dph::EphemerisRelease::get_origin_item(unsigned item, double JED, double *S
 	// В зависимости от того, что требуется вычислить (радиус-вектор
 	// или радиус-вектор и вектор скорости) выбирается соответствующий
 	// метод:
-	if (state)	interpolate_derivative(&m_buffer[coeff_pos], item, norm_time, S, comp_count);
+	if (state)	interpolateState(&m_buffer[coeff_pos], item, norm_time, S, comp_count);
 	else	    interpolatePosition           (&m_buffer[coeff_pos], item, norm_time, S, comp_count);
 }
 

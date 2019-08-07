@@ -40,10 +40,6 @@ dph::EphemerisRelease::EphemerisRelease(const EphemerisRelease& other)
 			// TO DO: Приведение объекта к изначальному состоянию.
 		}
 	}
-	else
-	{
-		return;
-	}
 }
 
 dph::EphemerisRelease::~EphemerisRelease()

@@ -171,7 +171,11 @@ void dph::EphemerisRelease::copy(const EphemerisRelease& other)
 	m_ready = other.m_ready;
 
 	m_binaryFilePath	= other.m_binaryFilePath;
-	m_binaryFileStream	= std::fopen(other.m_binaryFilePath.c_str(), "rb");
+	if (m_binaryFileStream != nullptr)
+	{
+		std::fclose(m_binaryFileStream);
+	}
+	m_binaryFileStream = std::fopen(other.m_binaryFilePath.c_str(), "rb");
 
 	m_releaseLabel =	other.m_releaseLabel;
 	m_releaseIndex =	other.m_releaseIndex;

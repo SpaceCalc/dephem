@@ -159,7 +159,7 @@ namespace dph
 
 		// Получить значение радиус-вектора (или вектора состояния) Земли относительно
 		// барицентра Солнечной Системы.
-		void calculateBaseEarth(double JED, double* resultArray, bool calculateState) const;
+		void calculateBaseEarth(double JED, bool calculateState, double* resultArray) const;
 
 		// Получить значение радиу-вектора (или вектора состояния) Луны относительно
 		// барицентра Солнечной Системы.

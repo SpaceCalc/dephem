@@ -122,6 +122,9 @@ namespace dph
 		// Копирование информации из объекта "other" в текущий объект.
 		void copy(const EphemerisRelease& other);
 
+		// Перемещение информации из объекта "other" в текущий объект.
+		void move(EphemerisRelease& other);
+
 		//  Чтение файла.
 		void readAndPackData();
 

@@ -202,6 +202,45 @@ void dph::EphemerisRelease::copy(const EphemerisRelease& other)
 	m_dpoly =	other.m_poly;
 }
 
+void dph::EphemerisRelease::move(EphemerisRelease& other)
+{
+	// Используется в:
+	//	- Конструктор перемещения.
+	//	- Оператор перемещения.
+	
+	m_ready =				other.m_ready;
+
+	m_binaryFilePath =		std::move(other.m_binaryFilePath);
+
+	// Работа с файлом:
+	if (m_binaryFileStream != nullptr)
+	{
+		std::fclose(m_binaryFileStream);
+	}
+	m_binaryFileStream = other.m_binaryFileStream;
+	other.m_binaryFileStream = nullptr;
+
+	m_releaseLabel =		std::move(other.m_releaseLabel);	// Перемещение.
+	m_releaseIndex =		other.m_releaseIndex;
+	m_startDate =			other.m_startDate;
+	m_endDate =				other.m_endDate;
+	m_blockTimeSpan =		other.m_blockTimeSpan;
+	std::memcpy(m_keys,		other.m_keys, sizeof(m_keys));
+	m_au =					other.m_au;
+	m_emrat =				other.m_emrat;
+	m_constants =			other.m_constants;
+
+	m_blocksCount =			other.m_blocksCount;
+	m_ncoeff =				other.m_ncoeff;
+	m_maxCheby =			other.m_maxCheby;
+	m_emrat2 =				other.m_emrat2;
+	m_dimensionFit =		other.m_dimensionFit;
+
+	m_buffer =				std::move(other.m_buffer);			// Перемещение.
+	m_poly =				std::move(other.m_poly);			// Перемещение.
+	m_dpoly =				std::move(other.m_dpoly);			// Перемещение.
+}
+
 void dph::EphemerisRelease::readAndPackData()
 {
 	// Буфферы для чтения информации из файла:

@@ -143,7 +143,7 @@ namespace dph
 		bool isDataCorrect() const;
 
 		// Заполнение буффера "m_buffer" коэффициентами требуемого блока.
-		void fill_buffer(size_t block_num) const;
+		void fillBuffer(size_t block_num) const;
 
 		// Интерполяция компонент выбранного базового элемента.
 		void interpolate(const double* set, unsigned item, double norm_time, double* res, unsigned comp_count) const;

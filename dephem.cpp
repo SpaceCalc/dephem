@@ -416,7 +416,7 @@ bool dph::EphemerisRelease::isDataCorrect() const
 	return true;
 }
 
-void dph::EphemerisRelease::fill_buffer(size_t block_num) const
+void dph::EphemerisRelease::fillBuffer(size_t block_num) const
 {
 	size_t adress = (2 + block_num) * m_ncoeff * 8;
 
@@ -521,7 +521,7 @@ void dph::EphemerisRelease::get_origin_item(unsigned item, double JED, double *S
 
 	if (JED < m_buffer[0] || JED >= m_buffer[1])
 	{
-		fill_buffer(offset - (JED == m_endDate ? 1 : 0));
+		fillBuffer(offset - (JED == m_endDate ? 1 : 0));
 	}
 
 	norm_time = (norm_time - offset) * m_keys[item][2];	

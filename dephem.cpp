@@ -557,7 +557,7 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED
 		
 }
 
-void dph::EphemerisRelease::get_origin_earth(double JED, double* S, bool state) const
+void dph::EphemerisRelease::calculateBaseEarth(double JED, double* S, bool state) const
 {
 	// Получение ВС барицентра З-Л:
 	calculateBaseItem(2, JED, state, S);
@@ -634,7 +634,7 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 		unsigned notSSBARY = targetBodyIndex == 12 ? centerBodyIndex : targetBodyIndex;
 		
 		if      (notSSBARY == 13)	calculateBaseItem(2, JED, calculateState, resultArray);
-		else if (notSSBARY ==  3)	get_origin_earth(JED, resultArray, calculateState);
+		else if (notSSBARY ==  3)	calculateBaseEarth(JED, resultArray, calculateState);
 		else if (notSSBARY == 10)	get_origin_moon(JED, resultArray, calculateState);
 		else						
 			calculateBaseItem(notSSBARY - 1, JED, calculateState, resultArray);
@@ -670,7 +670,7 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 
 			switch (currentBodyIndex)
 			{
-			case 3:		get_origin_earth(JED, currentArray, calculateState);		break;
+			case 3:		calculateBaseEarth(JED, currentArray, calculateState);		break;
 			case 10:	get_origin_moon(JED, currentArray, calculateState);			break;
 			case 13:	calculateBaseItem(2, JED, calculateState, currentArray);	break;
 			default:	calculateBaseItem(currentBodyIndex - 1, JED, calculateState, currentArray);

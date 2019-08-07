@@ -498,7 +498,8 @@ void dph::EphemerisRelease::interpolateState(unsigned baseItemIndex, double norm
 	}
 }
 
-void dph::EphemerisRelease::calculateBaseItem(unsigned item, double JED, double *S, bool state) const
+void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED,
+	double* resultArray, bool calculateState) const
 {
 	/*
 	0	Mercury
@@ -526,25 +527,34 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned item, double JED, double 
 		fillBuffer(offset - (JED == m_endDate ? 1 : 0));
 	}
 
-	norm_time = (norm_time - offset) * m_keys[item][2];	
+	norm_time = (norm_time - offset) * m_keys[baseItemIndex][2];	
 	offset    = size_t(norm_time);									
 	norm_time = 2 * (norm_time - offset) - 1;	
 	
 	if (JED == m_endDate)
 	{
-		offset    = m_keys[item][2] - 1;
+		offset    = m_keys[baseItemIndex][2] - 1;
 		norm_time = 1;
 	}
 	
 	// Порядковый номер первого коэффициента для выбранного подпромежутка:
-	int comp_count = item == 11 ? 2 : item == 14 ? 1 : 3;
-	int coeff_pos  = m_keys[item][0] - 1 + comp_count * offset * m_keys[item][1];
+	int comp_count = baseItemIndex == 11 ? 2 : baseItemIndex == 14 ? 1 : 3;
+	int coeff_pos  = m_keys[baseItemIndex][0] - 1 + comp_count * offset * m_keys[baseItemIndex][1];
 
 	// В зависимости от того, что требуется вычислить (радиус-вектор
 	// или радиус-вектор и вектор скорости) выбирается соответствующий
 	// метод:
-	if (state)	interpolateState	(item, norm_time, &m_buffer[coeff_pos], comp_count, S);
-	else	    interpolatePosition	(item, norm_time, &m_buffer[coeff_pos], comp_count, S);
+	if (calculateState)
+	{
+		interpolateState(baseItemIndex, norm_time, &m_buffer[coeff_pos], comp_count, 
+			resultArray);
+	}		
+	else
+	{
+		interpolatePosition(baseItemIndex, norm_time, &m_buffer[coeff_pos], comp_count, 
+			resultArray);
+	}
+		
 }
 
 void dph::EphemerisRelease::get_origin_earth(double JED, double* S, bool state) const

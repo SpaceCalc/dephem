@@ -26,7 +26,8 @@ dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) :
 dph::EphemerisRelease::~EphemerisRelease()
 {
 	// Закрытие файла ежегодника:
-	if (m_binaryFileStream != nullptr) std::fclose(m_binaryFileStream);
+	if (m_binaryFileStream != nullptr) 
+		std::fclose(m_binaryFileStream);
 
 	// Освобождение выделенной памяти:
 	delete[] m_buffer;

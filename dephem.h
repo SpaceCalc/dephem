@@ -49,7 +49,7 @@ namespace dph
 			bool calculateState, double* resultArray) const;
 
 		// Получить значение(-я) прочих элементов, хранящихся в выпуске эфемерид.
-		void get_other(unsigned otherItemIndex, double JED, 
+		void calculateOther(unsigned otherItemIndex, double JED, 
 			bool calculateDerivative, double* resultArray) const;
 
 

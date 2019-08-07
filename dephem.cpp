@@ -672,7 +672,7 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 	}
 }
 
-void dph::EphemerisRelease::get_other(unsigned otherItemIndex, double JED,
+void dph::EphemerisRelease::calculateOther(unsigned otherItemIndex, double JED,
 	bool calculateDerivative, double* resultArray) const
 {
 	/*

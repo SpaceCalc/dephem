@@ -35,6 +35,9 @@ namespace dph
 		// Конструктор перемещения.
 		EphemerisRelease(EphemerisRelease&& other) noexcept;
 
+		// Оператор перемещения.
+		EphemerisRelease& operator=(EphemerisRelease&& other) noexcept;
+
 		// Деструктор.
 		~EphemerisRelease();
 

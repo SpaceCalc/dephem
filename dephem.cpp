@@ -83,6 +83,27 @@ dph::EphemerisRelease::EphemerisRelease(EphemerisRelease&& other) noexcept
 	}
 }
 
+dph::EphemerisRelease& dph::EphemerisRelease::operator=(EphemerisRelease&& other) noexcept
+{
+	if (other.m_ready)
+	{
+		move(other);
+
+		if (isDataCorrect())
+		{
+			m_ready = true;
+		}
+		else
+		{
+			m_ready = false;
+
+			clear();
+		}
+	}
+
+	return *this;
+}
+
 dph::EphemerisRelease::~EphemerisRelease()
 {
 	// Закрытие файла ежегодника:

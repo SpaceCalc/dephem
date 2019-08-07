@@ -18,7 +18,7 @@ dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) :
 		}
 		else
 		{
-			// TO DO: Приведение объекта к изначальному состоянию.
+			clear();
 		}
 	}
 }
@@ -37,7 +37,7 @@ dph::EphemerisRelease::EphemerisRelease(const EphemerisRelease& other)
 		{
 			m_ready = false;
 			
-			// TO DO: Приведение объекта к изначальному состоянию.
+			clear();
 		}
 	}
 }

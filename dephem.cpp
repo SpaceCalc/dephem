@@ -682,15 +682,12 @@ void dph::EphemerisRelease::calculateOther(unsigned otherItemIndex, double JED,
 	17	TT - TDB(at geocenter)
 	*/
 
-	// Уменьшение индекса на единицу:
-	--otherItemIndex;
-
 	//Условия недопустимые для данного метода:
 	if (this->m_ready == false)
 	{
 		return;
 	}
-	else if (otherItemIndex < 13 || otherItemIndex > 16)
+	else if (otherItemIndex < 14 || otherItemIndex > 17)
 	{
 		return;
 	}
@@ -700,6 +697,6 @@ void dph::EphemerisRelease::calculateOther(unsigned otherItemIndex, double JED,
 	}
 	else
 	{
-		get_origin_item(otherItemIndex - 2, JED, resultArray, calculateDerivative);
+		get_origin_item(otherItemIndex - 3, JED, resultArray, calculateDerivative);
 	}
 }

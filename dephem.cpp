@@ -642,6 +642,58 @@ bool dph::EphemerisRelease::isDataCorrect() const
 	return true;
 }
 
+bool dph::EphemerisRelease::check_blocksDates() const
+{
+	// Адрес первого блока с коэффициентами в файле:
+	size_t firstBlockAdress = sizeof(double) * (2 * m_ncoeff);
+	
+	// Переход к первому блоку:
+	int correctFseek = std::fseek(m_binaryFileStream, firstBlockAdress, 0);
+
+	// При корректном переходе std::fseek возвращает ноль.
+	if (correctFseek != 0)
+	{
+		return false;
+	}
+
+	// Смещение между блоками после чтения двух первых коэффициентов:
+	size_t subBlockOffset = (m_ncoeff - 2) * sizeof(double);
+
+	for (size_t blockIndex = 0; blockIndex < m_blocksCount; ++blockIndex)
+	{
+		// Массив для чтения первых двух коэффициентов из текущего блока:
+		double blockDates[2]{};
+
+		// Чтение:
+		size_t readedValuesCount = std::fread(blockDates, sizeof(double), 2, m_binaryFileStream);
+
+		// При корректном чтении std::fread возвращает количество считанных элементов:
+		if (readedValuesCount != 2)
+		{
+			return false;
+		}
+
+		// Значения, которые должны быть:
+		double blockStartDate = m_startDate + blockIndex * m_blockTimeSpan;
+		double blockEndDate = blockStartDate + m_blockTimeSpan;
+
+		if (blockDates[0] != blockStartDate || blockDates[1] != blockEndDate)
+		{
+			return false;
+		}
+		
+		// Переход к следующему блоку:
+		correctFseek = std::fseek(m_binaryFileStream, subBlockOffset, 1);
+
+		if (correctFseek != 0)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void dph::EphemerisRelease::fillBuffer(size_t block_num) const
 {
 	size_t adress = (2 + block_num) * m_ncoeff * 8;

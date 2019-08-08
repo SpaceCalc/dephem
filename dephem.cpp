@@ -111,9 +111,11 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(EphemerisRelease&& other
 
 dph::EphemerisRelease::~EphemerisRelease()
 {
-	// Закрытие файла ежегодника:
-	if (m_binaryFileStream != nullptr) 
+	// Закрытие файла эфемерид:
+	if (m_binaryFileStream != nullptr)
+	{
 		std::fclose(m_binaryFileStream);
+	}		
 }
 
 bool dph::EphemerisRelease::isReady() const

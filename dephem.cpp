@@ -6,6 +6,7 @@ dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) :
 	// Открытие файла:
 	m_binaryFileStream = std::fopen(this->m_binaryFilePath.c_str(), "rb");
 
+	// Файл открыт?
 	bool isFileOpen = m_binaryFileStream != nullptr;
 
 	if (isFileOpen)
@@ -20,6 +21,10 @@ dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) :
 		{
 			clear();
 		}
+	}
+	else
+	{
+		m_binaryFilePath.clear();
 	}
 }
 

@@ -605,8 +605,7 @@ void dph::EphemerisRelease::calculateBaseMoon(double JED, unsigned calculationRe
 }
 
 void dph::EphemerisRelease::calculateBody(unsigned calculationResult, 
-	unsigned targetBodyIndex, unsigned centerBodyIndex, double JED, 
-		double* resultArray) const
+	unsigned targetBody, unsigned centerBody, double JED, double* resultArray) const
 {
 	/*
 	1   Mercury
@@ -629,11 +628,11 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
 	{
 		return;
 	}
-	else if (targetBodyIndex == 0 || centerBodyIndex == 0)
+	else if (targetBody == 0 || centerBody == 0)
 	{
 		return;
 	}
-	else if (targetBodyIndex > 13 || centerBodyIndex > 13)
+	else if (targetBody > 13 || centerBody > 13)
 	{
 		return;
 	}
@@ -645,9 +644,9 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
 	// Определить количество требуемых компонент:
 	unsigned componentsCount = calculationResult == Calculate::STATE ? 6 : 3;
 
-	if (targetBodyIndex == Body::SSBARY || centerBodyIndex == Body::SSBARY)
+	if (targetBody == Body::SSBARY || centerBody == Body::SSBARY)
 	{
-		unsigned notSSBARY = targetBodyIndex == Body::SSBARY ? centerBodyIndex : targetBodyIndex;
+		unsigned notSSBARY = targetBody == Body::SSBARY ? centerBody : targetBody;
 		
 		switch (notSSBARY)
 		{
@@ -657,7 +656,7 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
 		default : calculateBaseItem(notSSBARY - 1, JED, calculationResult, resultArray);
 		} 
 
-		if (targetBodyIndex == Body::SSBARY)
+		if (targetBody == Body::SSBARY)
 		{
 			for (unsigned i = 0; i < componentsCount; ++i)
 			{
@@ -665,11 +664,11 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
 			}
 		}				
 	}
-	else if (targetBodyIndex * centerBodyIndex == 30 && targetBodyIndex + centerBodyIndex == 13)
+	else if (targetBody * centerBody == 30 && targetBody + centerBody == 13)
 	{
 		calculateBaseItem(9, JED, calculationResult, resultArray);
 		
-		if (targetBodyIndex == Body::EARTH)
+		if (targetBody == Body::EARTH)
 		{
 			for (unsigned i = 0; i < componentsCount; ++i)
 			{
@@ -684,7 +683,7 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
 		for (unsigned i = 0; i <= 1; ++i)
 		{
 			double*  currentArray =		i == 0 ? centerBodyArray : resultArray;
-			unsigned currentBodyIndex =	i == 0 ? centerBodyIndex : targetBodyIndex;
+			unsigned currentBodyIndex =	i == 0 ? centerBody      : targetBody;
 
 			switch (currentBodyIndex)
 			{

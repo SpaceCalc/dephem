@@ -18,7 +18,6 @@ namespace dph
 {
 	class EphemerisRelease
 	{
-		friend class more_info;
 	public:
 		
 		// -------------------------------- Общие методы класса -------------------------------- //

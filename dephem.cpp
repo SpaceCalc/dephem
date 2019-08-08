@@ -686,7 +686,7 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
 		// Результатом является нулевой вектор.
 
 		// Заполнение массива нулями:
-		std::memset(resultArray, 0.0, sizeof(double) * componentsCount);
+		std::memset(resultArray, 0, sizeof(double) * componentsCount);
 	}
 	else if (targetBody == Body::SSBARY || centerBody == Body::SSBARY)
 	{

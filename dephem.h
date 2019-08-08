@@ -217,10 +217,9 @@ namespace dph
 
 		// ................................. Статические методы ................................ //
 		
-		// Обрезать повторяющиеся символы "symbolToCut" с конца массива символов "charArray" 
+		// Обрезать повторяющиеся пробелы (' ') с конца массива символов "charArray" 
 		// размера "arraySize".
-		static std::string cutBackSpaces(const char* charArray, size_t arraySize,
-			char symbolToCut);
+		static std::string cutBackSpaces(const char* charArray, size_t arraySize);
 
 		// ..................... Дополнения к стандартным публичным методам .................... //
 

@@ -607,24 +607,47 @@ void dph::EphemerisRelease::calculateBaseMoon(double JED, unsigned calculationRe
 void dph::EphemerisRelease::calculateBody(unsigned calculationResult, 
 	unsigned targetBody, unsigned centerBody, double JED, double* resultArray) const
 {
-	/*
-	1   Mercury
-	2   Venus
-	3   Earth
-	4   Mars
-	5   Jupiter
-	6   Saturn
-	7   Uranus
-	8   Neptune
-	9   Pluto
-	10  Moon
-	11  Sun
-	12  Solar System barycenter
-	13  Earth-Moon barycenter
-	 */
+	// Допустимые значения параметров:
+	// -------------------------------
+	//	- calculationResult:
+	//		1 - Получить значение радиус-вектора,
+	//		2 - Получить значение вектора состояния
+	//		Примечание: используй значения из dph::Calculate.
+	//
+	//	- targetBody, centerBody:
+	//		------------------------------------
+	//		Индекс	Название
+	//		------------------------------------
+	//		1		Меркурий 
+	//		2		Венера
+	//		3		Земля
+	//		4		Марс
+	//		5		Юпитер
+	//		6		Сатурн
+	//		7		Уран
+	//		8		Нептун
+	//		9		Плутон
+	//		10		Луна
+	//		11		Солнце
+	//		12		Барицентр Солнечной Системы
+	//		13		Барицентр системы Земля-Луна
+	//		------------------------------------
+	//		Примечание: используй значения из dph::Body.
+	//
+	//	- JED:
+	//		JED должен принадлежать промежутку: [m_startDate : m_endDate].
+	//
+	//	- resultArray:
+	//		От пользователя требуется знать, каков минимальный размер массива для 
+	//		выбранного результата вычислений. Не должен быть нулевым указателем.
+
 
 	//Условия недопустимые для данного метода:
 	if (this->m_ready == false)
+	{
+		return;
+	}
+	else if (calculationResult > 1)
 	{
 		return;
 	}
@@ -640,22 +663,45 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
 	{
 		return;
 	}
-
-	// Определить количество требуемых компонент:
-	unsigned componentsCount = calculationResult == Calculate::STATE ? 6 : 3;
-
-	if (targetBody == Body::SSBARY || centerBody == Body::SSBARY)
+	else if (resultArray == nullptr)
 	{
+		return;
+	}
+
+	// Количество требуемых компонент:
+	unsigned componentsCount = calculationResult == Calculate::STATE ? 6 : 3;
+	
+	// Выбор методики вычисления в зависимости от комбинации искомого и центрального тела:
+	if (targetBody == centerBody)
+	{
+		// Случай #1 : Искомое тело является центральным.
+		//
+		// Результатом является нулевой вектор.
+
+		// Заполнение массива нулями:
+		std::memset(resultArray, 0.0, sizeof(double) * componentsCount);
+	}
+	else if (targetBody == Body::SSBARY || centerBody == Body::SSBARY)
+	{
+		// Случай #2: искомым или центральным телом является барицентр Солнечной Системы.
+		//
+		// Так как все методы calculateBase для тел возвращают вектор относительно барцентра СС,
+		// то достаточно вычислить пололжение второго тела. В случае, если искомым телом является
+		// сам барицентр СС, то возвращается "зеркальный" вектор второго тела.
+		
+		// Индекс тела, что не является барицентром СС:
 		unsigned notSSBARY = targetBody == Body::SSBARY ? centerBody : targetBody;
 		
+		// Выбор метода вычисления в зависимости от тела:
 		switch (notSSBARY)
 		{
 		case Body::EARTH  : calculateBaseEarth(JED, calculationResult, resultArray);	break;
-		case Body::MOON   : calculateBaseMoon(JED, calculationResult, resultArray);	break;
+		case Body::MOON   : calculateBaseMoon(JED, calculationResult, resultArray);		break;
 		case Body::EMBARY : calculateBaseItem(2, JED, calculationResult, resultArray);	break;
 		default : calculateBaseItem(notSSBARY - 1, JED, calculationResult, resultArray);
 		} 
 
+		// Если барицентр СС является искомым телом, то возвращается "зеркальный" вектор:
 		if (targetBody == Body::SSBARY)
 		{
 			for (unsigned i = 0; i < componentsCount; ++i)
@@ -666,8 +712,16 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
 	}
 	else if (targetBody * centerBody == 30 && targetBody + centerBody == 13)
 	{
+		// Случай #3 : Искомым и центральным телами являетса Земля и Луна (или Луна и Земля).
+		//
+		// В этом случае достаточно получить значение положения Луны относительно Земли (базовый 
+		// элемент #9 (от нуля). В случае, если искомым телом является Земля, то возвращается
+		// "зеркальный вектор".
+		
+		// Получение радиус-вектора (или вектора состояния) Луны относительно Земли:
 		calculateBaseItem(9, JED, calculationResult, resultArray);
 		
+		// Если искомым телом является Земля, то возвращается "зеркальный" вектор.
 		if (targetBody == Body::EARTH)
 		{
 			for (unsigned i = 0; i < componentsCount; ++i)
@@ -678,13 +732,25 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
 	}
 	else
 	{
+		// Случай #4 : Все остальные комбинации тел.
+		//
+		// Сначала вычисляется значение центрального тела относительно барицентра СС, 
+		// после - искомого. Результатом является разница между вектором центрального тела и
+		// искомого. 
+		
+		// Массив для центрального тела:
 		double centerBodyArray[6]{};
 
+		// Две итерации:
 		for (unsigned i = 0; i <= 1; ++i)
 		{
+			// Определение индекса и массива в зависимости от номера итерации.
+			// i == 0 : работа с центральным телом.
+			// i == 1 : работа с искомым телом.
+			unsigned currentBodyIndex = i == 0 ? centerBody      : targetBody;
 			double*  currentArray =		i == 0 ? centerBodyArray : resultArray;
-			unsigned currentBodyIndex =	i == 0 ? centerBody      : targetBody;
-
+			
+			// Выбор метода вычисления в зависимости от тела:
 			switch (currentBodyIndex)
 			{
 			case Body::EARTH  : calculateBaseEarth(JED, calculationResult, currentArray);	break;
@@ -694,6 +760,7 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
 			}
 		}
 
+		// Разница между вектором центрального и искомого тела:
 		for (unsigned i = 0; i < componentsCount; ++i)
 		{
 			resultArray[i] -= centerBodyArray[i];

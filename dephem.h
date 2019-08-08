@@ -52,6 +52,20 @@ namespace dph
 	private:
 		Other();
 	};
+
+	// Методика вычисления для методов:
+	// EphemerisRelease::calculateBody(...) 
+	// EphemerisRelease::calculateOther(...)
+	class Calculate
+	{
+	public:
+
+		static constexpr bool POSITION = false;
+		static constexpr bool STATE = true;
+
+	private:
+		Calculate();
+	};
 	
 	class EphemerisRelease
 	{

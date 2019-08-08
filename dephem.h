@@ -219,7 +219,7 @@ namespace dph
 		
 		// Обрезать повторяющиеся символы "symbolToCut" с конца массива символов "charArray" 
 		// размера "arraySize".
-		static std::string cutBackSymbols(const char* charArray, size_t arraySize,
+		static std::string cutBackSpaces(const char* charArray, size_t arraySize,
 			char symbolToCut);
 
 		// ..................... Дополнения к стандартным публичным методам .................... //

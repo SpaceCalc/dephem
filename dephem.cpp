@@ -169,7 +169,7 @@ double dph::EphemerisRelease::constant(const std::string& constantName) const
 	}
 }
 
-std::string dph::EphemerisRelease::cutBackSymbols(const char* charArray, size_t arraySize, char symbolToCut)
+std::string dph::EphemerisRelease::cutBackSpaces(const char* charArray, size_t arraySize, char symbolToCut)
 {
 	for (size_t i = arraySize - 1; i > 0; --i)
 	{
@@ -347,7 +347,7 @@ void dph::EphemerisRelease::readAndPackData()
 	// Формирование строк общей информации о выпуске:
 	for (size_t i = 0; i < RLS_LABELS_COUNT; ++i)
 	{
-		m_releaseLabel += cutBackSymbols(releaseLabel_buffer[i], RLS_LABEL_SIZE, ' ');
+		m_releaseLabel += cutBackSpaces(releaseLabel_buffer[i], RLS_LABEL_SIZE, ' ');
 		m_releaseLabel += '\n';
 	}
 	m_releaseLabel.shrink_to_fit();
@@ -357,7 +357,7 @@ void dph::EphemerisRelease::readAndPackData()
 	{
 		for (uint32_t i = 0; i < constantsCount; ++i)
 		{
-			std::string constantName = cutBackSymbols(constantsNames_buffer[i], CNAME_SIZE, ' ');
+			std::string constantName = cutBackSpaces(constantsNames_buffer[i], CNAME_SIZE, ' ');
 			m_constants[constantName] = constantsValues_buffer[i];
 		}
 	}

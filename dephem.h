@@ -160,7 +160,7 @@ namespace dph
 		// Максимальное значение, хранимое в переменной типа "long". 
 		// Требуется для передачи в функцию std::fseek (<cstdio>) в качестве параметра смещения,
 		// при размерах файла превышающих данное значение.
-		static constexpr size_t FSEEK_MAX_OFFSET = std::numeric_limits<long>::max();
+		static constexpr size_t FSEEK_MAX_OFFSET{ std::numeric_limits<long>::max() };
 
 		// Формат DE-эфемерид //
 		static constexpr size_t RLS_LABELS_COUNT{ 3 };	// Кол-во строк Общей Информации (ОИ).

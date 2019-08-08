@@ -772,15 +772,37 @@ void dph::EphemerisRelease::calculateOther(unsigned calculationResult,
 	unsigned otherItem, double JED,
 		double* resultArray) const
 {
-	/*
-	14	Earth Nutations in longitudeand obliquity(IAU 1980 model)
-	15	Lunar mantle libration
-	16	Lunar mantle angular velocity
-	17	TT - TDB(at geocenter)
-	*/
+	// Допустимые значения параметров:
+	// -------------------------------
+	//	- calculationResult:
+	//		1 - Получить оригинальное значение,
+	//		2 - Получить оригинальное значение и его (их) производные первого порядка.
+	//		Примечание: используй значения из dph::Calculate.
+	//	
+	//	- other Item:
+	//		----------------------------------------------------------------		
+	//		Индекс	Название
+	//		----------------------------------------------------------------
+	//		14		Земные нутации по долдготе и наклонению (модель IAU 1980)	
+	//		15		Либрации лунной мантии
+	//		16		Угловые скорости лунной мантии
+	//		17		TT - TDB (в центре Земли).
+	//		----------------------------------------------------------------
+	//		Примечание: используй значения из dph::Other.
+	//
+	//	- JED:
+	//		JED должен принадлежать промежутку: [m_startDate : m_endDate].
+	//
+	//	- resultArray:
+	//		От пользователя требуется знать, каков минимальный размер массива для 
+	//		выбранного результата вычислений. Не должен быть нулевым указателем.
 
 	//Условия недопустимые для данного метода:
 	if (this->m_ready == false)
+	{
+		return;
+	}
+	else if (calculationResult > 1)
 	{
 		return;
 	}
@@ -789,6 +811,10 @@ void dph::EphemerisRelease::calculateOther(unsigned calculationResult,
 		return;
 	}
 	else if (JED < m_startDate || JED > m_endDate)
+	{
+		return;
+	}
+	else if (resultArray == nullptr)
 	{
 		return;
 	}

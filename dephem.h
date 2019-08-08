@@ -157,6 +157,9 @@ namespace dph
 		// Получить номер выпуска.
 		uint32_t releaseIndex() const;
 
+		// Получить строковую информацию о выпуске.
+		const std::string& releaseLabel() const;
+
 		// Получить значение константы по её имени.
 		double constant(const std::string& constantName) const;
 

@@ -424,7 +424,6 @@ void dph::EphemerisRelease::clear()
 
 	m_blocksCount = 0;
 	m_ncoeff = 0;
-	m_maxCheby = 0;
 	m_dimensionFit = 0;
 	m_blockSize_bytes = 0;
 
@@ -460,7 +459,6 @@ void dph::EphemerisRelease::copy(const EphemerisRelease& other)
 
 	m_blocksCount =		other.m_blocksCount;
 	m_ncoeff =			other.m_ncoeff;
-	m_maxCheby =		other.m_maxCheby;
 	m_emrat2 =			other.m_emrat2;
 	m_dimensionFit =	other.m_dimensionFit;
 	m_blockSize_bytes = other.m_blockSize_bytes;
@@ -500,7 +498,6 @@ void dph::EphemerisRelease::move(EphemerisRelease& other)
 
 	m_blocksCount =			other.m_blocksCount;
 	m_ncoeff =				other.m_ncoeff;
-	m_maxCheby =			other.m_maxCheby;
 	m_emrat2 =				other.m_emrat2;
 	m_dimensionFit =		other.m_dimensionFit;
 	m_blockSize_bytes =		other.m_blockSize_bytes;
@@ -597,10 +594,14 @@ void dph::EphemerisRelease::additionalCalculations()
 	// Определение количества блоков в ежегоднике:
 	m_blocksCount = size_t((m_endDate - m_startDate) / m_blockTimeSpan);
 
-	// Подсчёт max_cheby:
+	// Подсчёт максимального количества полиномов в выпуске:
+	size_t maxPolynomsCount = 0;
 	for (int i = 0; i < 15; ++i)
 	{
-		if (m_keys[i][1] > m_maxCheby) m_maxCheby = m_keys[i][1];
+		if (m_keys[i][1] > maxPolynomsCount)
+		{
+			maxPolynomsCount = m_keys[i][1];
+		}			
 	}
 
 	// Определение размера блока в байтах:
@@ -608,8 +609,8 @@ void dph::EphemerisRelease::additionalCalculations()
 
 	// Резервирование памяти в векторах:
 	m_buffer.resize(m_ncoeff);
-	m_poly.resize(m_maxCheby);
-	m_dpoly.resize(m_maxCheby);
+	m_poly.resize(maxPolynomsCount);
+	m_dpoly.resize(maxPolynomsCount);
 }
 
 bool dph::EphemerisRelease::isDataCorrect() const

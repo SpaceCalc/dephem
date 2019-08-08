@@ -608,36 +608,18 @@ void dph::EphemerisRelease::additionalCalculations()
 
 bool dph::EphemerisRelease::isDataCorrect() const
 {
-	if (m_binaryFileStream == nullptr)	return false;
-	if (m_ncoeff == 0)					return false;
-	if (m_startDate >= m_endDate)		return false;
-	if (m_blockTimeSpan == 0)			return false;
-	if (m_maxCheby == 0)				return false;
-	if (m_emrat == 0)					return false;
-	if (m_au == 0)						return false;
-
-	double time[2];
-	std::fseek(m_binaryFileStream, 16 * m_ncoeff, 0);
-	std::fread(time, 2, 8, m_binaryFileStream);
-
-	if (time[0] != m_startDate)				return false;
-	if (time[1] != m_startDate + m_blockTimeSpan)	return false;
+	// В данном методе проверяются только те параметры, которые
+	// могут повлиять непосредственно на вычисления значений элементов, 
+	// хранящихся в выпуске эфемерид.	
 	
-	unsigned int end_pos = (1 + m_blocksCount) * 8 * m_ncoeff;
+	if (m_binaryFileStream == nullptr)					return false;	// Ошибка открытия файла.
+	if (m_startDate >= m_endDate)						return false;
+	if (m_blockTimeSpan == 0)							return false;
+	if ((m_endDate - m_startDate) < m_blockTimeSpan)	return false;
+	if (m_emrat == 0)									return false;
+	if (m_ncoeff == 0)									return false;
 
-	if (end_pos > FSEEK_MAX_OFFSET)
-	{
-		std::fseek(m_binaryFileStream, FSEEK_MAX_OFFSET, 0);
-		std::fseek(m_binaryFileStream, end_pos - FSEEK_MAX_OFFSET, 1); 
-	}
-	else
-	{
-		std::fseek(m_binaryFileStream, end_pos, 0);
-	}
-	
-	std::fread(time, 2, 8, m_binaryFileStream);
-	if (time[0] != m_endDate - m_blockTimeSpan)	return false;
-	if (time[1] != m_endDate)				return false;
+	if (check_blocksDates() == false)					return false;
 
 	return true;
 }

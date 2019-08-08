@@ -633,19 +633,19 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 	// Определить количество требуемых компонент:
 	unsigned componentsCount = calculateState ? 6 : 3;
 
-	if (targetBodyIndex == 12 || centerBodyIndex == 12)
+	if (targetBodyIndex == Body::SSBARY || centerBodyIndex == Body::SSBARY)
 	{
-		unsigned notSSBARY = targetBodyIndex == 12 ? centerBodyIndex : targetBodyIndex;
+		unsigned notSSBARY = targetBodyIndex == Body::SSBARY ? centerBodyIndex : targetBodyIndex;
 		
 		switch (notSSBARY)
 		{
-		case 3  :	calculateBaseEarth(JED, calculateState, resultArray);	break;
-		case 10 :	calculateBaseMoon(JED, calculateState, resultArray);	break;
-		case 13 :	calculateBaseItem(2, JED, calculateState, resultArray);	break;
-		default :	calculateBaseItem(notSSBARY - 1, JED, calculateState, resultArray);
+		case Body::EARTH  : calculateBaseEarth(JED, calculateState, resultArray);	break;
+		case Body::MOON   : calculateBaseMoon(JED, calculateState, resultArray);	break;
+		case Body::EMBARY : calculateBaseItem(2, JED, calculateState, resultArray);	break;
+		default : calculateBaseItem(notSSBARY - 1, JED, calculateState, resultArray);
 		} 
 
-		if (targetBodyIndex == 12)
+		if (targetBodyIndex == Body::SSBARY)
 		{
 			for (unsigned i = 0; i < componentsCount; ++i)
 			{
@@ -657,7 +657,7 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 	{
 		calculateBaseItem(9, JED, calculateState, resultArray);
 		
-		if (targetBodyIndex == 3)
+		if (targetBodyIndex == Body::EARTH)
 		{
 			for (unsigned i = 0; i < componentsCount; ++i)
 			{
@@ -676,10 +676,10 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 
 			switch (currentBodyIndex)
 			{
-			case 3:		calculateBaseEarth(JED, calculateState, currentArray);		break;
-			case 10:	calculateBaseMoon(JED, calculateState, currentArray);		break;
-			case 13:	calculateBaseItem(2, JED, calculateState, currentArray);	break;
-			default:	calculateBaseItem(currentBodyIndex - 1, JED, calculateState, currentArray);
+			case Body::EARTH  : calculateBaseEarth(JED, calculateState, currentArray);		break;
+			case Body::MOON   : calculateBaseMoon(JED, calculateState, currentArray);		break;
+			case Body::EMBARY : calculateBaseItem(2, JED, calculateState, currentArray);	break;
+			default : calculateBaseItem(currentBodyIndex - 1, JED, calculateState, currentArray);
 			}
 		}
 

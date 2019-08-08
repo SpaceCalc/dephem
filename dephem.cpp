@@ -6,6 +6,7 @@ dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) :
 	// Открытие файла:
 	m_binaryFileStream = std::fopen(this->m_binaryFilePath.c_str(), "rb");
 
+	// Файл открыт?
 	bool isFileOpen = m_binaryFileStream != nullptr;
 
 	if (isFileOpen)
@@ -20,6 +21,10 @@ dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) :
 		{
 			clear();
 		}
+	}
+	else
+	{
+		m_binaryFilePath.clear();
 	}
 }
 
@@ -106,10 +111,233 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(EphemerisRelease&& other
 
 dph::EphemerisRelease::~EphemerisRelease()
 {
-	// Закрытие файла ежегодника:
-	if (m_binaryFileStream != nullptr) 
+	// Закрытие файла эфемерид:
+	if (m_binaryFileStream != nullptr)
+	{
 		std::fclose(m_binaryFileStream);
+	}		
 }
+
+void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
+	unsigned targetBody, unsigned centerBody, double JED, double* resultArray) const
+{
+	// Допустимые значения параметров:
+	// -------------------------------
+	//	- calculationResult:
+	//		1 - Получить значение радиус-вектора,
+	//		2 - Получить значение вектора состояния
+	//		Примечание: используй значения из dph::Calculate.
+	//
+	//	- targetBody, centerBody:
+	//		------------------------------------
+	//		Индекс	Название
+	//		------------------------------------
+	//		1		Меркурий 
+	//		2		Венера
+	//		3		Земля
+	//		4		Марс
+	//		5		Юпитер
+	//		6		Сатурн
+	//		7		Уран
+	//		8		Нептун
+	//		9		Плутон
+	//		10		Луна
+	//		11		Солнце
+	//		12		Барицентр Солнечной Системы
+	//		13		Барицентр системы Земля-Луна
+	//		------------------------------------
+	//		Примечание: используй значения из dph::Body.
+	//
+	//	- JED:
+	//		JED должен принадлежать промежутку: [m_startDate : m_endDate].
+	//
+	//	- resultArray:
+	//		От пользователя требуется знать, каков минимальный размер массива для 
+	//		выбранного результата вычислений. Не должен быть нулевым указателем.
+
+
+	//Условия недопустимые для данного метода:
+	if (this->m_ready == false)
+	{
+		return;
+	}
+	else if (calculationResult > 1)
+	{
+		return;
+	}
+	else if (targetBody == 0 || centerBody == 0)
+	{
+		return;
+	}
+	else if (targetBody > 13 || centerBody > 13)
+	{
+		return;
+	}
+	else if (JED < m_startDate || JED > m_endDate)
+	{
+		return;
+	}
+	else if (resultArray == nullptr)
+	{
+		return;
+	}
+
+	// Количество требуемых компонент:
+	unsigned componentsCount = calculationResult == Calculate::STATE ? 6 : 3;
+
+	// Выбор методики вычисления в зависимости от комбинации искомого и центрального тела:
+	if (targetBody == centerBody)
+	{
+		// Случай #1 : Искомое тело является центральным.
+		//
+		// Результатом является нулевой вектор.
+
+		// Заполнение массива нулями:
+		std::memset(resultArray, 0, sizeof(double) * componentsCount);
+	}
+	else if (targetBody == Body::SSBARY || centerBody == Body::SSBARY)
+	{
+		// Случай #2: искомым или центральным телом является барицентр Солнечной Системы.
+		//
+		// Так как все методы calculateBase для тел возвращают вектор относительно барцентра СС,
+		// то достаточно вычислить пололжение второго тела. В случае, если искомым телом является
+		// сам барицентр СС, то возвращается "зеркальный" вектор второго тела.
+
+		// Индекс тела, что не является барицентром СС:
+		unsigned notSSBARY = targetBody == Body::SSBARY ? centerBody : targetBody;
+
+		// Выбор метода вычисления в зависимости от тела:
+		switch (notSSBARY)
+		{
+		case Body::EARTH: calculateBaseEarth(JED, calculationResult, resultArray);	break;
+		case Body::MOON: calculateBaseMoon(JED, calculationResult, resultArray);		break;
+		case Body::EMBARY: calculateBaseItem(2, JED, calculationResult, resultArray);	break;
+		default: calculateBaseItem(notSSBARY - 1, JED, calculationResult, resultArray);
+		}
+
+		// Если барицентр СС является искомым телом, то возвращается "зеркальный" вектор:
+		if (targetBody == Body::SSBARY)
+		{
+			for (unsigned i = 0; i < componentsCount; ++i)
+			{
+				resultArray[i] = -resultArray[i];
+			}
+		}
+	}
+	else if (targetBody * centerBody == 30 && targetBody + centerBody == 13)
+	{
+		// Случай #3 : Искомым и центральным телами являетса Земля и Луна (или Луна и Земля).
+		//
+		// В этом случае достаточно получить значение положения Луны относительно Земли (базовый 
+		// элемент #9 (от нуля). В случае, если искомым телом является Земля, то возвращается
+		// "зеркальный вектор".
+
+		// Получение радиус-вектора (или вектора состояния) Луны относительно Земли:
+		calculateBaseItem(9, JED, calculationResult, resultArray);
+
+		// Если искомым телом является Земля, то возвращается "зеркальный" вектор.
+		if (targetBody == Body::EARTH)
+		{
+			for (unsigned i = 0; i < componentsCount; ++i)
+			{
+				resultArray[i] = -resultArray[i];
+			}
+		}
+	}
+	else
+	{
+		// Случай #4 : Все остальные комбинации тел.
+		//
+		// Сначала вычисляется значение центрального тела относительно барицентра СС, 
+		// после - искомого. Результатом является разница между вектором центрального тела и
+		// искомого. 
+
+		// Массив для центрального тела:
+		double centerBodyArray[6]{};
+
+		// Две итерации:
+		for (unsigned i = 0; i <= 1; ++i)
+		{
+			// Определение индекса и массива в зависимости от номера итерации.
+			// i == 0 : работа с центральным телом.
+			// i == 1 : работа с искомым телом.
+			unsigned currentBodyIndex = i == 0 ? centerBody : targetBody;
+			double* currentArray = i == 0 ? centerBodyArray : resultArray;
+
+			// Выбор метода вычисления в зависимости от тела:
+			switch (currentBodyIndex)
+			{
+			case Body::EARTH: calculateBaseEarth(JED, calculationResult, currentArray);	break;
+			case Body::MOON: calculateBaseMoon(JED, calculationResult, currentArray);	break;
+			case Body::EMBARY: calculateBaseItem(2, JED, calculationResult, currentArray);	break;
+			default: calculateBaseItem(currentBodyIndex - 1, JED, calculationResult, currentArray);
+			}
+		}
+
+		// Разница между вектором центрального и искомого тела:
+		for (unsigned i = 0; i < componentsCount; ++i)
+		{
+			resultArray[i] -= centerBodyArray[i];
+		}
+	}
+}
+
+void dph::EphemerisRelease::calculateOther(unsigned calculationResult,
+	unsigned otherItem, double JED,
+	double* resultArray) const
+{
+	// Допустимые значения параметров:
+	// -------------------------------
+	//	- calculationResult:
+	//		1 - Получить оригинальное значение,
+	//		2 - Получить оригинальное значение и его (их) производные первого порядка.
+	//		Примечание: используй значения из dph::Calculate.
+	//	
+	//	- other Item:
+	//		----------------------------------------------------------------		
+	//		Индекс	Название
+	//		----------------------------------------------------------------
+	//		14		Земные нутации по долдготе и наклонению (модель IAU 1980)	
+	//		15		Либрации лунной мантии
+	//		16		Угловые скорости лунной мантии
+	//		17		TT - TDB (в центре Земли).
+	//		----------------------------------------------------------------
+	//		Примечание: используй значения из dph::Other.
+	//
+	//	- JED:
+	//		JED должен принадлежать промежутку: [m_startDate : m_endDate].
+	//
+	//	- resultArray:
+	//		От пользователя требуется знать, каков минимальный размер массива для 
+	//		выбранного результата вычислений. Не должен быть нулевым указателем.
+
+	//Условия недопустимые для данного метода:
+	if (this->m_ready == false)
+	{
+		return;
+	}
+	else if (calculationResult > 1)
+	{
+		return;
+	}
+	else if (otherItem < 14 || otherItem > 17)
+	{
+		return;
+	}
+	else if (JED < m_startDate || JED > m_endDate)
+	{
+		return;
+	}
+	else if (resultArray == nullptr)
+	{
+		return;
+	}
+	else
+	{
+		calculateBaseItem(otherItem - 3, JED, calculationResult, resultArray);
+	}
+}
+
 
 bool dph::EphemerisRelease::isReady() const
 {
@@ -162,11 +390,11 @@ double dph::EphemerisRelease::constant(const std::string& constantName) const
 	}
 }
 
-std::string dph::EphemerisRelease::cutBackSymbols(const char* charArray, size_t arraySize, char symbolToCut)
+std::string dph::EphemerisRelease::cutBackSpaces(const char* charArray, size_t arraySize)
 {
 	for (size_t i = arraySize - 1; i > 0; --i)
 	{
-		if (charArray[i] == symbolToCut && charArray[i - 1] != symbolToCut)
+		if (charArray[i] == ' ' && charArray[i - 1] != ' ')
 		{
 			return std::string(charArray, i);
 		}
@@ -340,7 +568,7 @@ void dph::EphemerisRelease::readAndPackData()
 	// Формирование строк общей информации о выпуске:
 	for (size_t i = 0; i < RLS_LABELS_COUNT; ++i)
 	{
-		m_releaseLabel += cutBackSymbols(releaseLabel_buffer[i], RLS_LABEL_SIZE, ' ');
+		m_releaseLabel += cutBackSpaces(releaseLabel_buffer[i], RLS_LABEL_SIZE);
 		m_releaseLabel += '\n';
 	}
 	m_releaseLabel.shrink_to_fit();
@@ -350,7 +578,7 @@ void dph::EphemerisRelease::readAndPackData()
 	{
 		for (uint32_t i = 0; i < constantsCount; ++i)
 		{
-			std::string constantName = cutBackSymbols(constantsNames_buffer[i], CNAME_SIZE, ' ');
+			std::string constantName = cutBackSpaces(constantsNames_buffer[i], CNAME_SIZE);
 			m_constants[constantName] = constantsValues_buffer[i];
 		}
 	}
@@ -602,132 +830,4 @@ void dph::EphemerisRelease::calculateBaseMoon(double JED, unsigned calculationRe
 	{
 		resultArray[i] += MoonRelativeEarth[i] * (1 - m_emrat2);
 	}	
-}
-
-void dph::EphemerisRelease::calculateBody(unsigned calculationResult, 
-	unsigned targetBodyIndex, unsigned centerBodyIndex, double JED, 
-		double* resultArray) const
-{
-	/*
-	1   Mercury
-	2   Venus
-	3   Earth
-	4   Mars
-	5   Jupiter
-	6   Saturn
-	7   Uranus
-	8   Neptune
-	9   Pluto
-	10  Moon
-	11  Sun
-	12  Solar System barycenter
-	13  Earth-Moon barycenter
-	 */
-
-	//Условия недопустимые для данного метода:
-	if (this->m_ready == false)
-	{
-		return;
-	}
-	else if (targetBodyIndex == 0 || centerBodyIndex == 0)
-	{
-		return;
-	}
-	else if (targetBodyIndex > 13 || centerBodyIndex > 13)
-	{
-		return;
-	}
-	else if (JED < m_startDate || JED > m_endDate)
-	{
-		return;
-	}
-
-	// Определить количество требуемых компонент:
-	unsigned componentsCount = calculationResult == Calculate::STATE ? 6 : 3;
-
-	if (targetBodyIndex == Body::SSBARY || centerBodyIndex == Body::SSBARY)
-	{
-		unsigned notSSBARY = targetBodyIndex == Body::SSBARY ? centerBodyIndex : targetBodyIndex;
-		
-		switch (notSSBARY)
-		{
-		case Body::EARTH  : calculateBaseEarth(JED, calculationResult, resultArray);	break;
-		case Body::MOON   : calculateBaseMoon(JED, calculationResult, resultArray);	break;
-		case Body::EMBARY : calculateBaseItem(2, JED, calculationResult, resultArray);	break;
-		default : calculateBaseItem(notSSBARY - 1, JED, calculationResult, resultArray);
-		} 
-
-		if (targetBodyIndex == Body::SSBARY)
-		{
-			for (unsigned i = 0; i < componentsCount; ++i)
-			{
-				resultArray[i] = -resultArray[i];
-			}
-		}				
-	}
-	else if (targetBodyIndex * centerBodyIndex == 30 && targetBodyIndex + centerBodyIndex == 13)
-	{
-		calculateBaseItem(9, JED, calculationResult, resultArray);
-		
-		if (targetBodyIndex == Body::EARTH)
-		{
-			for (unsigned i = 0; i < componentsCount; ++i)
-			{
-				resultArray[i] = -resultArray[i];
-			}
-		}				
-	}
-	else
-	{
-		double centerBodyArray[6]{};
-
-		for (unsigned i = 0; i <= 1; ++i)
-		{
-			double*  currentArray =		i == 0 ? centerBodyArray : resultArray;
-			unsigned currentBodyIndex =	i == 0 ? centerBodyIndex : targetBodyIndex;
-
-			switch (currentBodyIndex)
-			{
-			case Body::EARTH  : calculateBaseEarth(JED, calculationResult, currentArray);	break;
-			case Body::MOON   : calculateBaseMoon(JED, calculationResult, currentArray);	break;
-			case Body::EMBARY : calculateBaseItem(2, JED, calculationResult, currentArray);	break;
-			default : calculateBaseItem(currentBodyIndex - 1, JED, calculationResult, currentArray);
-			}
-		}
-
-		for (unsigned i = 0; i < componentsCount; ++i)
-		{
-			resultArray[i] -= centerBodyArray[i];
-		}	
-	}
-}
-
-void dph::EphemerisRelease::calculateOther(unsigned calculationResult,
-	unsigned otherItemIndex, double JED,
-		double* resultArray) const
-{
-	/*
-	14	Earth Nutations in longitudeand obliquity(IAU 1980 model)
-	15	Lunar mantle libration
-	16	Lunar mantle angular velocity
-	17	TT - TDB(at geocenter)
-	*/
-
-	//Условия недопустимые для данного метода:
-	if (this->m_ready == false)
-	{
-		return;
-	}
-	else if (otherItemIndex < 14 || otherItemIndex > 17)
-	{
-		return;
-	}
-	else if (JED < m_startDate || JED > m_endDate)
-	{
-		return;
-	}
-	else
-	{
-		calculateBaseItem(otherItemIndex - 3, JED, calculationResult, resultArray);
-	}
 }

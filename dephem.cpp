@@ -499,7 +499,7 @@ void dph::EphemerisRelease::interpolateState(unsigned baseItemIndex, double norm
 }
 
 void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED, 
-	bool calculateState, double* resultArray) const
+	unsigned calculationResult, double* resultArray) const
 {
 	/*
 	0	Mercury
@@ -544,57 +544,69 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED
 	// В зависимости от того, что требуется вычислить (радиус-вектор
 	// или радиус-вектор и вектор скорости) выбирается соответствующий
 	// метод:
-	if (calculateState)
+	
+	switch (calculationResult)
 	{
-		interpolateState(baseItemIndex, norm_time, &m_buffer[coeff_pos], comp_count, 
-			resultArray);
-	}		
-	else
-	{
+	case Calculate::POSITION : 
 		interpolatePosition(baseItemIndex, norm_time, &m_buffer[coeff_pos], comp_count, 
 			resultArray);
-	}
+		break;
+
+	case Calculate::STATE :
+		interpolateState(baseItemIndex, norm_time, &m_buffer[coeff_pos], comp_count, 
+			resultArray);
+		break;
 		
+	default:
+		memset(resultArray, 0.0, comp_count * sizeof(double));
+	}		
 }
 
-void dph::EphemerisRelease::calculateBaseEarth(double JED, bool calculateState, 
+void dph::EphemerisRelease::calculateBaseEarth(double JED, unsigned calculationResult, 
 	double* resultArray) const
 {
 	// Получение радиус-вектора (или вектора состояния) барицентра сиситемы Земля-Луна
 	// относительно барицентра Солнечной Системы:
-	calculateBaseItem(2, JED, calculateState, resultArray);
+	calculateBaseItem(2, JED, calculationResult, resultArray);
 
 	// Получение радиус-вектора (или вектора состояния) Луны относитльно Земли:
 	double MoonRelativeEarth[6];
-	calculateBaseItem(9, JED, calculateState, MoonRelativeEarth);
+	calculateBaseItem(9, JED, calculationResult, MoonRelativeEarth);
+
+	// Количество компонент:
+	unsigned componentsCount = calculationResult == Calculate::POSITION ? 3 : 6;
 
 	// Опредление положения Земли относительно барицентра Солнечной Системы:
-	for (int i = 0; i < int(calculateState ? 6 : 3); ++i)
+	for (unsigned i = 0; i < componentsCount; ++i)
 	{
 		resultArray[i] -= MoonRelativeEarth[i] * m_emrat2;
 	}
 }
 
-void dph::EphemerisRelease::calculateBaseMoon(double JED, bool calculateState,
+void dph::EphemerisRelease::calculateBaseMoon(double JED, unsigned calculationResult,
 	double* resultArray) const
 {
 	// Получение радиус-вектора (или вектора состояния) барицентра сиситемы Земля-Луна
 	// относительно барицентра Солнечной Системы:
-	calculateBaseItem(2, JED, calculateState, resultArray);
+	calculateBaseItem(2, JED, calculationResult, resultArray);
 
 	// Получение радиус-вектора (или вектора состояния) Луны относитльно Земли:
 	double MoonRelativeEarth[6];
-	calculateBaseItem(9, JED, calculateState, MoonRelativeEarth);
+	calculateBaseItem(9, JED, calculationResult, MoonRelativeEarth);
+
+	// Количество компонент:
+	unsigned componentsCount = calculationResult == Calculate::POSITION ? 3 : 6;
 
 	// Определение относительного положения:
-	for (int i = 0; i < int(calculateState ? 6 : 3); ++i)
+	for (unsigned i = 0; i < componentsCount; ++i)
 	{
 		resultArray[i] += MoonRelativeEarth[i] * (1 - m_emrat2);
 	}	
 }
 
-void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned centerBodyIndex, double JED,
-	bool calculateState, double* resultArray) const
+void dph::EphemerisRelease::calculateBody(unsigned calculationResult, 
+	unsigned targetBodyIndex, unsigned centerBodyIndex, double JED, 
+		double* resultArray) const
 {
 	/*
 	1   Mercury
@@ -631,21 +643,21 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 	}
 
 	// Определить количество требуемых компонент:
-	unsigned componentsCount = calculateState ? 6 : 3;
+	unsigned componentsCount = calculationResult == Calculate::STATE ? 6 : 3;
 
-	if (targetBodyIndex == 12 || centerBodyIndex == 12)
+	if (targetBodyIndex == Body::SSBARY || centerBodyIndex == Body::SSBARY)
 	{
-		unsigned notSSBARY = targetBodyIndex == 12 ? centerBodyIndex : targetBodyIndex;
+		unsigned notSSBARY = targetBodyIndex == Body::SSBARY ? centerBodyIndex : targetBodyIndex;
 		
 		switch (notSSBARY)
 		{
-		case 3  :	calculateBaseEarth(JED, calculateState, resultArray);	break;
-		case 10 :	calculateBaseMoon(JED, calculateState, resultArray);	break;
-		case 13 :	calculateBaseItem(2, JED, calculateState, resultArray);	break;
-		default :	calculateBaseItem(notSSBARY - 1, JED, calculateState, resultArray);
+		case Body::EARTH  : calculateBaseEarth(JED, calculationResult, resultArray);	break;
+		case Body::MOON   : calculateBaseMoon(JED, calculationResult, resultArray);	break;
+		case Body::EMBARY : calculateBaseItem(2, JED, calculationResult, resultArray);	break;
+		default : calculateBaseItem(notSSBARY - 1, JED, calculationResult, resultArray);
 		} 
 
-		if (targetBodyIndex == 12)
+		if (targetBodyIndex == Body::SSBARY)
 		{
 			for (unsigned i = 0; i < componentsCount; ++i)
 			{
@@ -655,9 +667,9 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 	}
 	else if (targetBodyIndex * centerBodyIndex == 30 && targetBodyIndex + centerBodyIndex == 13)
 	{
-		calculateBaseItem(9, JED, calculateState, resultArray);
+		calculateBaseItem(9, JED, calculationResult, resultArray);
 		
-		if (targetBodyIndex == 3)
+		if (targetBodyIndex == Body::EARTH)
 		{
 			for (unsigned i = 0; i < componentsCount; ++i)
 			{
@@ -676,10 +688,10 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 
 			switch (currentBodyIndex)
 			{
-			case 3:		calculateBaseEarth(JED, calculateState, currentArray);		break;
-			case 10:	calculateBaseMoon(JED, calculateState, currentArray);		break;
-			case 13:	calculateBaseItem(2, JED, calculateState, currentArray);	break;
-			default:	calculateBaseItem(currentBodyIndex - 1, JED, calculateState, currentArray);
+			case Body::EARTH  : calculateBaseEarth(JED, calculationResult, currentArray);	break;
+			case Body::MOON   : calculateBaseMoon(JED, calculationResult, currentArray);	break;
+			case Body::EMBARY : calculateBaseItem(2, JED, calculationResult, currentArray);	break;
+			default : calculateBaseItem(currentBodyIndex - 1, JED, calculationResult, currentArray);
 			}
 		}
 
@@ -690,8 +702,9 @@ void dph::EphemerisRelease::calculateBody(unsigned targetBodyIndex, unsigned cen
 	}
 }
 
-void dph::EphemerisRelease::calculateOther(unsigned otherItemIndex, double JED,
-	bool calculateDerivative, double* resultArray) const
+void dph::EphemerisRelease::calculateOther(unsigned calculationResult,
+	unsigned otherItemIndex, double JED,
+		double* resultArray) const
 {
 	/*
 	14	Earth Nutations in longitudeand obliquity(IAU 1980 model)
@@ -715,6 +728,6 @@ void dph::EphemerisRelease::calculateOther(unsigned otherItemIndex, double JED,
 	}
 	else
 	{
-		calculateBaseItem(otherItemIndex - 3, JED, calculateDerivative, resultArray);
+		calculateBaseItem(otherItemIndex - 3, JED, calculationResult, resultArray);
 	}
 }

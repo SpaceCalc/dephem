@@ -16,6 +16,57 @@
 
 namespace dph
 {
+	// Индексы тел для EphemerisRelease::calculateBody(...).
+	class Body
+	{
+	public:
+
+		static constexpr unsigned MERCURY	= 1;
+		static constexpr unsigned VENUS		= 2;
+		static constexpr unsigned EARTH		= 3;
+		static constexpr unsigned MARS		= 4;
+		static constexpr unsigned JUPITER	= 5;
+		static constexpr unsigned SATURN	= 6;
+		static constexpr unsigned URANUS	= 7;
+		static constexpr unsigned NEPTUNE	= 8;
+		static constexpr unsigned PLUTO		= 9;
+		static constexpr unsigned MOON		= 10;
+		static constexpr unsigned SUN		= 11;
+		static constexpr unsigned SSBARY	= 12;
+		static constexpr unsigned EMBARY	= 13;
+
+	private:
+		Body();
+	};
+
+	// Индексы элементов для EphemerisRelease::calculateOther(...).
+	class Other
+	{
+	public:
+
+		static constexpr unsigned EARTH_NUTATIONS				= 14;
+		static constexpr unsigned LUNAR_MANTLE_LIBRATION		= 15;
+		static constexpr unsigned LUNAR_MANTLE_ANGULAR_VELOCITY	= 16;
+		static constexpr unsigned TTmTDB						= 17;
+
+	private:
+		Other();
+	};
+
+	// Выбор результата вычислений в методах:
+	// EphemerisRelease::calculateBody(...) 
+	// EphemerisRelease::calculateOther(...)
+	class Calculate
+	{
+	public:
+
+		static constexpr unsigned POSITION = 0;
+		static constexpr unsigned STATE = 1;
+
+	private:
+		Calculate();
+	};
+	
 	class EphemerisRelease
 	{
 	public:
@@ -44,12 +95,14 @@ namespace dph
 
 		// Получить значение радиус-вектора (или вектора состояния) выбранного тела относительно 
 		// другого на заданный момент времени.
-		void calculateBody(unsigned targetBodyIndex, unsigned centerBodyIndex, double JED, 
-			bool calculateState, double* resultArray) const;
+		void calculateBody(unsigned calculationResult, 
+			unsigned targetBodyIndex, unsigned centerBodyIndex, double JED, 
+				double* resultArray) const;
 
 		// Получить значение(-я) прочих элементов, хранящихся в выпуске эфемерид.
-		void calculateOther(unsigned otherItemIndex, double JED, 
-			bool calculateDerivative, double* resultArray) const;
+		void calculateOther(unsigned calculationResult, 
+			unsigned otherItemIndex, double JED,
+				double* resultArray) const;
 
 
 		// -------------------------------------- ГЕТТЕРЫ -------------------------------------- //
@@ -153,16 +206,16 @@ namespace dph
 			const double* coeffArray, unsigned componentsCount, double* resultArray) const;
 
 		// Получить значения требуемых компонент базового элемента на выбранный момент времени.
-		void calculateBaseItem(unsigned baseItemIndex, double JED, 
-			bool calculateState, double* resultArray) const;
+		void calculateBaseItem(unsigned baseItemIndex, double JED,
+			unsigned calculationResult , double* resultArray) const;
 
 		// Получить значение радиус-вектора (или вектора состояния) Земли относительно
 		// барицентра Солнечной Системы.
-		void calculateBaseEarth(double JED, bool calculateState, double* resultArray) const;
+		void calculateBaseEarth(double JED, unsigned calculationResult, double* resultArray) const;
 
 		// Получить значение радиу-вектора (или вектора состояния) Луны относительно
 		// барицентра Солнечной Системы.
-		void calculateBaseMoon(double JED, bool calculateState, double* resultArray) const;
+		void calculateBaseMoon(double JED, unsigned calculationResult, double* resultArray) const;
 	};
 }
 

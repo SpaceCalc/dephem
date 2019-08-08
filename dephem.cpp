@@ -426,6 +426,7 @@ void dph::EphemerisRelease::clear()
 	m_ncoeff = 0;
 	m_maxCheby = 0;
 	m_dimensionFit = 0;
+	m_blockSize_bytes = 0;
 
 	std::vector<double>().swap(m_buffer);	// SWAP TRICK
 	std::vector<double>().swap(m_poly);		// SWAP TRICK
@@ -462,6 +463,7 @@ void dph::EphemerisRelease::copy(const EphemerisRelease& other)
 	m_maxCheby =		other.m_maxCheby;
 	m_emrat2 =			other.m_emrat2;
 	m_dimensionFit =	other.m_dimensionFit;
+	m_blockSize_bytes = other.m_blockSize_bytes;
 
 	m_buffer =	other.m_buffer;
 	m_poly =	other.m_poly;
@@ -501,6 +503,7 @@ void dph::EphemerisRelease::move(EphemerisRelease& other)
 	m_maxCheby =			other.m_maxCheby;
 	m_emrat2 =				other.m_emrat2;
 	m_dimensionFit =		other.m_dimensionFit;
+	m_blockSize_bytes =		other.m_blockSize_bytes;
 
 	m_buffer =				std::move(other.m_buffer);			// Перемещение.
 	m_poly =				std::move(other.m_poly);			// Перемещение.
@@ -600,6 +603,9 @@ void dph::EphemerisRelease::additionalCalculations()
 		if (m_keys[i][1] > m_maxCheby) m_maxCheby = m_keys[i][1];
 	}
 
+	// Определение размера блока в байтах:
+	m_blockSize_bytes = m_ncoeff * sizeof(double);
+
 	// Резервирование памяти в векторах:
 	m_buffer.resize(m_ncoeff);
 	m_poly.resize(m_maxCheby);
@@ -627,7 +633,7 @@ bool dph::EphemerisRelease::isDataCorrect() const
 bool dph::EphemerisRelease::check_blocksDates() const
 {
 	// Адрес первого блока с коэффициентами в файле:
-	size_t firstBlockAdress = sizeof(double) * (2 * m_ncoeff);
+	size_t firstBlockAdress = m_blockSize_bytes * 2;
 	
 	// Переход к первому блоку:
 	int correctFseek = std::fseek(m_binaryFileStream, firstBlockAdress, 0);
@@ -678,7 +684,7 @@ bool dph::EphemerisRelease::check_blocksDates() const
 
 void dph::EphemerisRelease::fillBuffer(size_t block_num) const
 {
-	size_t adress = (2 + block_num) * m_ncoeff * 8;
+	size_t adress = (2 + block_num) * m_blockSize_bytes;
 
 	if (adress > FSEEK_MAX_OFFSET)
 	{

@@ -702,7 +702,7 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
 }
 
 void dph::EphemerisRelease::calculateOther(unsigned calculationResult,
-	unsigned otherItemIndex, double JED,
+	unsigned otherItem, double JED,
 		double* resultArray) const
 {
 	/*
@@ -717,7 +717,7 @@ void dph::EphemerisRelease::calculateOther(unsigned calculationResult,
 	{
 		return;
 	}
-	else if (otherItemIndex < 14 || otherItemIndex > 17)
+	else if (otherItem < 14 || otherItem > 17)
 	{
 		return;
 	}
@@ -727,6 +727,6 @@ void dph::EphemerisRelease::calculateOther(unsigned calculationResult,
 	}
 	else
 	{
-		calculateBaseItem(otherItemIndex - 3, JED, calculationResult, resultArray);
+		calculateBaseItem(otherItem - 3, JED, calculationResult, resultArray);
 	}
 }

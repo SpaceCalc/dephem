@@ -230,7 +230,7 @@ namespace dph
 		void clear();
 		
 		// Копирование информации из объекта "other" в текущий объект.
-		void copy(const EphemerisRelease& other);
+		void copyHere(const EphemerisRelease& other);
 
 		// Перемещение информации из объекта "other" в текущий объект.
 		void move(EphemerisRelease& other);

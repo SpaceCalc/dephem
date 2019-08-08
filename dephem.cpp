@@ -32,7 +32,7 @@ dph::EphemerisRelease::EphemerisRelease(const EphemerisRelease& other)
 {
 	if (other.m_ready)
 	{
-		copy(other);
+		copyHere(other);
 
 		if (isDataCorrect())
 		{
@@ -52,7 +52,7 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 	if (other.m_ready)
 	{
 		clear();
-		copy(other);
+		copyHere(other);
 
 		if (isDataCorrect())
 		{
@@ -432,7 +432,7 @@ void dph::EphemerisRelease::clear()
 	std::vector<double>().swap(m_dpoly);	// SWAP TRICK
 }
 
-void dph::EphemerisRelease::copy(const EphemerisRelease& other)
+void dph::EphemerisRelease::copyHere(const EphemerisRelease& other)
 {
 	// Используется в:
 	//	- Конструктор копирования.

@@ -38,6 +38,20 @@ namespace dph
 	private:
 		Body();
 	};
+
+	// Индексы элементов для EphemerisRelease::calculateOther(...).
+	class Other
+	{
+	public:
+
+		static constexpr unsigned EARTH_NUTATIONS				= 14;
+		static constexpr unsigned LUNAR_MANTLE_LIBRATION		= 15;
+		static constexpr unsigned LUNAR_MANTLE_ANGULAR_VELOCITY	= 16;
+		static constexpr unsigned TTmTDB						= 17;
+
+	private:
+		Other();
+	};
 	
 	class EphemerisRelease
 	{

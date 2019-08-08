@@ -53,15 +53,15 @@ namespace dph
 		Other();
 	};
 
-	// Методика вычисления для методов:
+	// Выбор результата вычислений в методах:
 	// EphemerisRelease::calculateBody(...) 
 	// EphemerisRelease::calculateOther(...)
 	class Calculate
 	{
 	public:
 
-		static constexpr bool POSITION = false;
-		static constexpr bool STATE = true;
+		static constexpr unsigned POSITION = 0;
+		static constexpr unsigned STATE = 1;
 
 	private:
 		Calculate();
@@ -95,12 +95,14 @@ namespace dph
 
 		// Получить значение радиус-вектора (или вектора состояния) выбранного тела относительно 
 		// другого на заданный момент времени.
-		void calculateBody(unsigned targetBodyIndex, unsigned centerBodyIndex, double JED, 
-			bool calculateState, double* resultArray) const;
+		void calculateBody(unsigned calculationResult, 
+			unsigned targetBodyIndex, unsigned centerBodyIndex, double JED, 
+				double* resultArray) const;
 
 		// Получить значение(-я) прочих элементов, хранящихся в выпуске эфемерид.
-		void calculateOther(unsigned otherItemIndex, double JED, 
-			bool calculateDerivative, double* resultArray) const;
+		void calculateOther(unsigned calculationResult, 
+			unsigned otherItemIndex, double JED,
+				double* resultArray) const;
 
 
 		// -------------------------------------- ГЕТТЕРЫ -------------------------------------- //
@@ -204,16 +206,16 @@ namespace dph
 			const double* coeffArray, unsigned componentsCount, double* resultArray) const;
 
 		// Получить значения требуемых компонент базового элемента на выбранный момент времени.
-		void calculateBaseItem(unsigned baseItemIndex, double JED, 
-			bool calculateState, double* resultArray) const;
+		void calculateBaseItem(unsigned baseItemIndex, double JED,
+			unsigned calculationResult , double* resultArray) const;
 
 		// Получить значение радиус-вектора (или вектора состояния) Земли относительно
 		// барицентра Солнечной Системы.
-		void calculateBaseEarth(double JED, bool calculateState, double* resultArray) const;
+		void calculateBaseEarth(double JED, unsigned calculationResult, double* resultArray) const;
 
 		// Получить значение радиу-вектора (или вектора состояния) Луны относительно
 		// барицентра Солнечной Системы.
-		void calculateBaseMoon(double JED, bool calculateState, double* resultArray) const;
+		void calculateBaseMoon(double JED, unsigned calculationResult, double* resultArray) const;
 	};
 }
 

@@ -786,7 +786,7 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED
 		break;
 		
 	default:
-		memset(resultArray, 0.0, comp_count * sizeof(double));
+		memset(resultArray, 0, comp_count * sizeof(double));
 	}		
 }
 

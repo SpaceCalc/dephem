@@ -16,6 +16,29 @@
 
 namespace dph
 {
+	// Индексы тел для EphemerisRelease::calculateBody(...).
+	class Body
+	{
+	public:
+
+		static constexpr unsigned MERCURY	= 1;
+		static constexpr unsigned VENUS		= 2;
+		static constexpr unsigned EARTH		= 3;
+		static constexpr unsigned MARS		= 4;
+		static constexpr unsigned JUPITER	= 5;
+		static constexpr unsigned SATURN	= 6;
+		static constexpr unsigned URANUS	= 7;
+		static constexpr unsigned NEPTUNE	= 8;
+		static constexpr unsigned PLUTO		= 9;
+		static constexpr unsigned MOON		= 10;
+		static constexpr unsigned SUN		= 11;
+		static constexpr unsigned SSBARY	= 12;
+		static constexpr unsigned EMBARY	= 13;
+
+	private:
+		Body();
+	};
+	
 	class EphemerisRelease
 	{
 	public:

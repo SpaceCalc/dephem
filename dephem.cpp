@@ -356,14 +356,7 @@ double dph::EphemerisRelease::endDate() const
 
 uint32_t dph::EphemerisRelease::releaseIndex() const
 {
-	if (m_ready == false)
-	{
-		return 0;
-	}
-	else
-	{
-		return m_releaseIndex;
-	}
+	return m_releaseIndex;
 }
 
 const std::string& dph::EphemerisRelease::releaseLabel() const

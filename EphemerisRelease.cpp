@@ -768,64 +768,94 @@ void dph::EphemerisRelease::interpolateState(unsigned baseItemIndex, double norm
 void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED, 
 	unsigned calculationResult, double* resultArray) const
 {
-	/*
-	0	Mercury
-	1   Venus
-	2   Earth-Moon barycenter
-	3   Mars
-	4   Jupiter
-	5   Saturn
-	6   Uranus
-	7   Neptune
-	8   Pluto
-	9   Moon (geocentric)
-	10  Sun
-	11  Earth Nutations in longitude and obliquity (IAU 1980 model)
-	12  Lunar mantle libration
-	13  Lunar mantle angular velocity
-	14	TT-TDB (at geocenter)
-	*/
-	
-	double norm_time = (JED - m_startDate) / m_blockTimeSpan;	// Норм. время отн. всех блоков.
-	size_t offset    = size_t(norm_time);				// Номер треб. блока.
+	// Допустимые значения переданных параметров:
+	//	[1]	baseItemIndex - Индекс базового элемента выпуска (от нуля).
+	// 
+	//						Нумерация базовых элементов выпуска
+	//		-------------------------------------------------------------------
+	//		Индекс	Наименование
+	//		-------------------------------------------------------------------
+	//		0		Mercury
+	//		1		Venus
+	//		2		Earth-Moon barycenter
+	//		3		Mars
+	//		4		Jupiter
+	//		5		Saturn
+	//		6		Uranus
+	//		7		Neptune
+	//		8		Pluto
+	//		9		Moon (geocentric)
+	//		10		Sun
+	//		11		Earth Nutations in longitude and obliquity (IAU 1980 model)
+	//		12		Lunar mantle libration
+	//		13		Lunar mantle angular velocity
+	//		14		TT-TDB (at geocenter)
+	//		-------------------------------------------------------------------
+	//	[2] JED - момент времени на который требуется получить требуемые значения.
+	//	[3] calculationResult - индекс результата вычисления (см. dph::Calculate).
+	//	[4] resultArray - указатель на массив для результата вычислений.
 
+	// Внимание! 
+	// В ходе выполнения функции смысл переменных "normalizedTime" и "offset" будет меняться.
+
+	// Норм. время относительно всех блоков в выпуске:
+	double normalizedTime = (JED - m_startDate) / m_blockTimeSpan;
+
+	// Порядковый номер блока, соотв. заданной дате JED (целая часть от normalizedTime):
+	size_t offset = static_cast<size_t>(normalizedTime);
+
+	// Заполнение буффера коэффициентами требуемого блока.
+	// Если требуемый блок уже в кэше объекта, то он не заполняется повторно.
+	// m_buffer[0] - дата начала блока.
+	// m_buffer[1] - дата окончания блока.
 	if (JED < m_buffer[0] || JED >= m_buffer[1])
 	{
-		fillBuffer(offset - (JED == m_endDate ? 1 : 0));
-	}
+		// Если JED равна последней доступоной дате для вычислений, то заполняется последний блок.
 
-	norm_time = (norm_time - offset) * m_keys[baseItemIndex][2];	
-	offset    = size_t(norm_time);									
-	norm_time = 2 * (norm_time - offset) - 1;	
+		fillBuffer(offset - (JED == m_endDate ? 1 : 0));
+	}		
 	
 	if (JED == m_endDate)
 	{
-		offset    = m_keys[baseItemIndex][2] - 1;
-		norm_time = 1;
+		// Порядковый номер подблока (последний подблок):
+		offset = m_keys[baseItemIndex][2] - 1;
+
+		// Норм. время относительно подблока (в диапазоне от -1 до 1):
+		normalizedTime = 1;
+	}
+	else
+	{
+		// Норм. время относительно всех подблоков:
+		normalizedTime = (normalizedTime - offset) * m_keys[baseItemIndex][2];
+
+		// Порядковый номер подблока (целая часть от normalizedTime):
+		offset = static_cast<size_t>(normalizedTime);
+
+		// Норм. время относительно подблока (в диапазоне от -1 до 1):
+		normalizedTime = 2 * (normalizedTime - offset) - 1;
 	}
 	
-	// Порядковый номер первого коэффициента для выбранного подпромежутка:
-	int comp_count = baseItemIndex == 11 ? 2 : baseItemIndex == 14 ? 1 : 3;
-	int coeff_pos  = m_keys[baseItemIndex][0] - 1 + comp_count * offset * m_keys[baseItemIndex][1];
+	// Количество компонент для выбранного базового элемента:
+	unsigned componentsCount = baseItemIndex == 11 ? 2 : baseItemIndex == 14 ? 1 : 3;
 
-	// В зависимости от того, что требуется вычислить (радиус-вектор
-	// или радиус-вектор и вектор скорости) выбирается соответствующий
-	// метод:
-	
-	switch (calculationResult)
+	// Порядковый номер первого коэффициента в блоке:
+	int coeff_pos  = m_keys[baseItemIndex][0] - 1 + componentsCount * offset * m_keys[baseItemIndex][1];
+
+	// Выбор метода вычисления в зависимости от заданного результата вычислений:
+	switch(calculationResult)
 	{
 	case Calculate::POSITION : 
-		interpolatePosition(baseItemIndex, norm_time, &m_buffer[coeff_pos], comp_count, 
+		interpolatePosition(baseItemIndex, normalizedTime, &m_buffer[coeff_pos], componentsCount,
 			resultArray);
 		break;
 
 	case Calculate::STATE :
-		interpolateState(baseItemIndex, norm_time, &m_buffer[coeff_pos], comp_count, 
+		interpolateState(baseItemIndex, normalizedTime, &m_buffer[coeff_pos], componentsCount,
 			resultArray);
 		break;
 		
 	default:
-		memset(resultArray, 0, comp_count * sizeof(double));
+		memset(resultArray, 0, componentsCount * sizeof(double));
 	}		
 }
 

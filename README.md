@@ -31,38 +31,44 @@ DEPHEM является простым и удобным решением для
 
 ## Быстрый старт
 ````c++
-    #include <iostream>
-    #include "dephem/EphemerisRelease.h"
+#include <iostream>
+#include "dephem/EphemerisRelease.h"
     
-    int main()
+int main()
+{
+    dph::EphemerisRelease de431("lnxm13000p17000.431");
+
+    // Проверка на корректное чтение бинарного файла эфемерид:
+    if(de431.isReady())
     {
-    	dph::EphemerisRelease de431("lnxm13000p17000.431");
-        
-        // Проверка на корректное чтение бинарного файла эфемерид:
-        if(de431.isReady())
-        {
-        	std::cout << "Ephemeris object is ready to work" << std::endl;
-            
-            // 1 января 2000 года 00:00:00.000 :
-           	double JED = 2451544.5;
-           
-           	// Массив для записи результата вычислений:
-            double resultArray[3]{};
-            
-            // Вычислить радиус-вектор Луны относительно Земли на момент времени JED и записать
-            // результат в массив resultArray:
-            de431.calculateBody(dph::Calculate::POSITION, dph::Body::MOON, dph::Body::EARTH,
-            	JED, resultArray);
-            
-            // Получить значение астрономической единицы, хранящейся в выпуске DE431:
-            const double AU = de431.constant("AU");            
-        }
-        else
-        {
-        	std::cout << "Ephemeris file reading error" << std::endl;
-        }
-        
-        return 0;
+        std::cout << "Ephemeris object is ready to work" << std::endl;
+
+        // 1 января 2000 года 00:00:00.000 :
+        double JED = 2451544.5;
+
+        // Массив для записи результата вычислений:
+        double resultArray[3]{};
+
+        // Вычислить радиус-вектор Луны относительно Земли на момент времени JED и записать
+        // результат в массив resultArray:
+        de431.calculateBody(dph::Calculate::POSITION, dph::Body::MOON, dph::Body::EARTH, JED, resultArray);
+
+        std::cout << "Moon position relative to Earth:" << std::endl;
+        std::cout << "x =\t" << resultArray[0]  << "\t[km] << std::endl;
+        std::cout << "y =\t" << resultArray[1]  << "\t[km] << std::endl;
+        std::cout << "z =\t" << resultArray[2]  << "\t[km] << std::endl;
+
+        // Получить значение астрономической единицы, хранящейся в выпуске DE431:
+        const double AU = de431.constant("AU");
+
+        std::cout << "AU =\t" << AU << "\t[km] << std::endl;    
+    }
+    else
+    {
+	    std::cout << "Ephemeris file reading error" << std::endl;
+    }
+
+    return 0;
     }
 ````
 

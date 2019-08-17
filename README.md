@@ -68,15 +68,8 @@ int main()
         std::cout << "Ephemeris file reading error" << std::endl;
     }
 
-        return 0;
-    }
-    else
-    {
-	    std::cout << "Ephemeris file reading error" << std::endl;
-    }
-
     return 0;
-    }
+}
 ````
 
 ## Стандарт C++ и особенности репозитория

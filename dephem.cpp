@@ -32,7 +32,7 @@ dph::EphemerisRelease::EphemerisRelease(const EphemerisRelease& other)
 {
 	if (other.m_ready)
 	{
-		copy(other);
+		copyHere(other);
 
 		if (isDataCorrect())
 		{
@@ -52,7 +52,7 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 	if (other.m_ready)
 	{
 		clear();
-		copy(other);
+		copyHere(other);
 
 		if (isDataCorrect())
 		{
@@ -424,15 +424,15 @@ void dph::EphemerisRelease::clear()
 
 	m_blocksCount = 0;
 	m_ncoeff = 0;
-	m_maxCheby = 0;
 	m_dimensionFit = 0;
+	m_blockSize_bytes = 0;
 
 	std::vector<double>().swap(m_buffer);	// SWAP TRICK
 	std::vector<double>().swap(m_poly);		// SWAP TRICK
 	std::vector<double>().swap(m_dpoly);	// SWAP TRICK
 }
 
-void dph::EphemerisRelease::copy(const EphemerisRelease& other)
+void dph::EphemerisRelease::copyHere(const EphemerisRelease& other)
 {
 	// Используется в:
 	//	- Конструктор копирования.
@@ -459,9 +459,9 @@ void dph::EphemerisRelease::copy(const EphemerisRelease& other)
 
 	m_blocksCount =		other.m_blocksCount;
 	m_ncoeff =			other.m_ncoeff;
-	m_maxCheby =		other.m_maxCheby;
 	m_emrat2 =			other.m_emrat2;
 	m_dimensionFit =	other.m_dimensionFit;
+	m_blockSize_bytes = other.m_blockSize_bytes;
 
 	m_buffer =	other.m_buffer;
 	m_poly =	other.m_poly;
@@ -498,9 +498,9 @@ void dph::EphemerisRelease::move(EphemerisRelease& other)
 
 	m_blocksCount =			other.m_blocksCount;
 	m_ncoeff =				other.m_ncoeff;
-	m_maxCheby =			other.m_maxCheby;
 	m_emrat2 =				other.m_emrat2;
 	m_dimensionFit =		other.m_dimensionFit;
+	m_blockSize_bytes =		other.m_blockSize_bytes;
 
 	m_buffer =				std::move(other.m_buffer);			// Перемещение.
 	m_poly =				std::move(other.m_poly);			// Перемещение.
@@ -594,57 +594,98 @@ void dph::EphemerisRelease::additionalCalculations()
 	// Определение количества блоков в ежегоднике:
 	m_blocksCount = size_t((m_endDate - m_startDate) / m_blockTimeSpan);
 
-	// Подсчёт max_cheby:
+	// Подсчёт максимального количества полиномов в выпуске:
+	size_t maxPolynomsCount = 0;
 	for (int i = 0; i < 15; ++i)
 	{
-		if (m_keys[i][1] > m_maxCheby) m_maxCheby = m_keys[i][1];
+		if (m_keys[i][1] > maxPolynomsCount)
+		{
+			maxPolynomsCount = m_keys[i][1];
+		}			
 	}
+
+	// Определение размера блока в байтах:
+	m_blockSize_bytes = m_ncoeff * sizeof(double);
 
 	// Резервирование памяти в векторах:
 	m_buffer.resize(m_ncoeff);
-	m_poly.resize(m_maxCheby);
-	m_dpoly.resize(m_maxCheby);
+	m_poly.resize(maxPolynomsCount);
+	m_dpoly.resize(maxPolynomsCount);
 }
 
 bool dph::EphemerisRelease::isDataCorrect() const
 {
-	if (m_binaryFileStream == nullptr)	return false;
-	if (m_ncoeff == 0)					return false;
-	if (m_startDate >= m_endDate)		return false;
-	if (m_blockTimeSpan == 0)			return false;
-	if (m_maxCheby == 0)				return false;
-	if (m_emrat == 0)					return false;
-	if (m_au == 0)						return false;
-
-	double time[2];
-	std::fseek(m_binaryFileStream, 16 * m_ncoeff, 0);
-	std::fread(time, 2, 8, m_binaryFileStream);
-
-	if (time[0] != m_startDate)				return false;
-	if (time[1] != m_startDate + m_blockTimeSpan)	return false;
+	// В данном методе проверяются только те параметры, которые
+	// могут повлиять непосредственно на вычисления значений элементов, 
+	// хранящихся в выпуске эфемерид.	
 	
-	unsigned int end_pos = (1 + m_blocksCount) * 8 * m_ncoeff;
+	if (m_binaryFileStream == nullptr)					return false;	// Ошибка открытия файла.
+	if (m_startDate >= m_endDate)						return false;
+	if (m_blockTimeSpan == 0)							return false;
+	if ((m_endDate - m_startDate) < m_blockTimeSpan)	return false;
+	if (m_emrat == 0)									return false;
+	if (m_ncoeff == 0)									return false;
 
-	if (end_pos > FSEEK_MAX_OFFSET)
-	{
-		std::fseek(m_binaryFileStream, FSEEK_MAX_OFFSET, 0);
-		std::fseek(m_binaryFileStream, end_pos - FSEEK_MAX_OFFSET, 1); 
-	}
-	else
-	{
-		std::fseek(m_binaryFileStream, end_pos, 0);
-	}
+	if (check_blocksDates() == false)					return false;
+
+	return true;
+}
+
+bool dph::EphemerisRelease::check_blocksDates() const
+{
+	// Адрес первого блока с коэффициентами в файле:
+	size_t firstBlockAdress = m_blockSize_bytes * 2;
 	
-	std::fread(time, 2, 8, m_binaryFileStream);
-	if (time[0] != m_endDate - m_blockTimeSpan)	return false;
-	if (time[1] != m_endDate)				return false;
+	// Переход к первому блоку:
+	int correctFseek = std::fseek(m_binaryFileStream, firstBlockAdress, 0);
+
+	// При корректном переходе std::fseek возвращает ноль.
+	if (correctFseek != 0)
+	{
+		return false;
+	}
+
+	// Смещение между блоками после чтения двух первых коэффициентов:
+	size_t subBlockOffset = (m_ncoeff - 2) * sizeof(double);
+
+	for (size_t blockIndex = 0; blockIndex < m_blocksCount; ++blockIndex)
+	{
+		// Массив для чтения первых двух коэффициентов из текущего блока:
+		double blockDates[2]{};
+
+		// Чтение:
+		size_t readedValuesCount = std::fread(blockDates, sizeof(double), 2, m_binaryFileStream);
+
+		// При корректном чтении std::fread возвращает количество считанных элементов:
+		if (readedValuesCount != 2)
+		{
+			return false;
+		}
+
+		// Значения, которые должны быть:
+		double blockStartDate = m_startDate + blockIndex * m_blockTimeSpan;
+		double blockEndDate = blockStartDate + m_blockTimeSpan;
+
+		if (blockDates[0] != blockStartDate || blockDates[1] != blockEndDate)
+		{
+			return false;
+		}
+		
+		// Переход к следующему блоку:
+		correctFseek = std::fseek(m_binaryFileStream, subBlockOffset, 1);
+
+		if (correctFseek != 0)
+		{
+			return false;
+		}
+	}
 
 	return true;
 }
 
 void dph::EphemerisRelease::fillBuffer(size_t block_num) const
 {
-	size_t adress = (2 + block_num) * m_ncoeff * 8;
+	size_t adress = (2 + block_num) * m_blockSize_bytes;
 
 	if (adress > FSEEK_MAX_OFFSET)
 	{

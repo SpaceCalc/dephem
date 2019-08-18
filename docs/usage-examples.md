@@ -21,25 +21,35 @@ bool ready = de431.isReady();
 В случае корректного чтения файла метод `isReady()` вернёт значение `true`. Значение `false` будет получено при ошибке открытия файла или его несоответствия формату.
 
 ### 3. Информация о выпуске эфемерид
-Метод `startDate`: получить первую доступную для вычислений дату.
+#### 3.1. Первая доступная для вычислений дата
+Используйте метод `startDate`.
 
 *Пример.*
 ````c++
 double startDate = de431.startDate();
 ````
-> startDate = -3027215.5.
+> startDate = -3027215.5
 
-Метод `endDate` - получить последнюю доступную для вычислений дату:
+#### 3.2. Последняя доступная для вычислений дата
+Используйте метод `endDate`.
+
+*Пример.* 
 ````c++
-double endDate = de431.endDate();   // endDate = 7930192.5.
+double endDate = de431.endDate();
 ````
+> endDate = 7930192.5
 
-Метод `releaseIndex` - получить индекс выпуска:
+#### 3.3. Номерная часть индекса выпуска
+Используйте метод `releaseIndex`.
+
+*Пример.*
 ````c++
-unsigned releaseIndex = de431.releaseIndex(); // releaseIndex = 431. 
+unsigned releaseIndex = de431.releaseIndex();
 ````
+> releaseIndex = 431
 
-Получить общую информацию о выпуске в строковом виде -  метод `releaseLabel`:
+#### 3.4. Общая информация о выпуске
+Используйте метод `releaseLabel`.
 ````c++
 std::string releaseLabel = de431.releaseLabel();
 ````

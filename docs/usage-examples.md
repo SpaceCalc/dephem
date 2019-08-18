@@ -58,7 +58,7 @@ double resultArray[3]{};    // x, y, z (km).
 double JED = 2451544.5;
 
 // Вычисление положения и запись его в массив resultArray:
-ephemerisRelease.calculateBody(dph::Calculate::POSITION, dph::Body::MOON, dph::Body::EARTH, 
+de431.calculateBody(dph::Calculate::POSITION, dph::Body::MOON, dph::Body::EARTH, 
     JED, resultArray);
 ````
 
@@ -78,7 +78,7 @@ double resultArray[2]{}; // (rad).
 double JED = 2451544.5;
 
 // Вычисление значений нутаций и запись их в массив.
-ephemerisRelease(dph::Calculate::POSITION, dph::Other::EARTH_NUTATIONS, JED, resultArray);
+de431.calculateOther(dph::Calculate::POSITION, dph::Other::EARTH_NUTATIONS, JED, resultArray);
 ````
 
 Более подробно о методое `calculateOther` смотри в разделе "[Получение значений дополнительных элементов выпуска](other-elements.md)".
@@ -89,5 +89,5 @@ ephemerisRelease(dph::Calculate::POSITION, dph::Other::EARTH_NUTATIONS, JED, res
 *Пример*  
 Получение значения астрономической единицы:
 ````c++
-const double AU = ephemerisRelease.constant("AU");
+const double AU = de431.constant("AU");
 ````

@@ -76,8 +76,8 @@ double JED = 2451544.5;
 de431.calculateBody(dph::Calculate::POSITION, dph::Body::MOON, dph::Body::EARTH, 
     JED, resultArray);
 ````
->resultArray[0] = -317650.2419832263
->resultArray[1] = -236464.5459279301
+>resultArray[0] = -317650.2419832263  
+>resultArray[1] = -236464.5459279301  
 >resultArray[2] = -62676.28863072305
 
 Более подробно о методе `calculateBody` смотри в разделе "[Получение положения (или состояния) небесного тела](body-pos-state.md)".
@@ -98,7 +98,7 @@ double JED = 2451544.5;
 // Вычисление значений нутаций и запись их в массив.
 de431.calculateOther(dph::Calculate::POSITION, dph::Other::EARTH_NUTATIONS, JED, resultArray);
 ````
->resultArray[0] = -0.000067501478654
+>resultArray[0] = -0.000067501478654  
 >resultArray[1] = -0.000027944643499
 
 Более подробно о методое `calculateOther` смотри в разделе "[Получение значений дополнительных элементов выпуска](other-elements.md)".

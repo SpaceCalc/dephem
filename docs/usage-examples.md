@@ -40,9 +40,9 @@ unsigned releaseIndex = de431.releaseIndex(); // releaseIndex = 431.
 ````c++
 std::string releaseLabel = de431.releaseLabel();
 ````
->JPL Planetary Ephemeris DE431/LE431
-Start Epoch: JED= -3100015.5-13200-AUG-15 00:00:00
-Final Epoch: JED=  8000016.5 17191-MAR-15 00:00:00
+>JPL Planetary Ephemeris DE431/LE431  
+>Start Epoch: JED= -3100015.5-13200-AUG-15 00:00:00
+>Final Epoch: JED=  8000016.5 17191-MAR-15 00:00:00
 
 ### 4. Получение пололжения (или состояния) небесного тела
 Для того, чтобы получить положение (или состояние) небесного тела воспользуйтесь методом `calculateBody`.

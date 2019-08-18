@@ -3,3 +3,4 @@
 * [Введение](getting-started.md)
 * [О файлах эфемерид](about-ephemeris-files.md)
 * [Примеры использования](usage-examples.md)
+* [Положения небесных тел](celestial-bodies-calculations.md)

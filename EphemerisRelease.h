@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #ifndef EPHEMERIS_RELEASE_H
 #define EPHEMERIS_RELEASE_H
 
@@ -8,7 +8,7 @@
 
 #include <cstdio>
 #include <cstring>
-#include <cstdint>
+#include <stdint.h>
 #include <limits>
 #include <string>
 #include <map>

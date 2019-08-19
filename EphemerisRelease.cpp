@@ -1,4 +1,4 @@
-#include "EphemerisRelease.h"
+﻿#include "EphemerisRelease.h"
 
 const size_t dph::EphemerisRelease::FSEEK_MAX_OFFSET = std::numeric_limits<long>::max();
 
@@ -220,7 +220,7 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
 		// искомого. 
 
 		// Массив для центрального тела:
-		double centerBodyArray[6]{};
+		double centerBodyArray[6];
 
 		// Две итерации:
 		for (unsigned i = 0; i <= 1; ++i)
@@ -442,12 +442,12 @@ void dph::EphemerisRelease::copyHere(const EphemerisRelease& other)
 void dph::EphemerisRelease::readAndPackData()
 {
 	// Буфферы для чтения информации из файла:
-	char	releaseLabel_buffer[RLS_LABELS_COUNT][RLS_LABEL_SIZE]{};	// Строк. инф. о выпуске.
-	char	constantsNames_buffer[CCOUNT_MAX_NEW][CNAME_SIZE]{};		// Имена констант.
-	double	constantsValues_buffer[CCOUNT_MAX_NEW]{};					// Значения констант.
+	char	releaseLabel_buffer[RLS_LABELS_COUNT][RLS_LABEL_SIZE];	// Строк. инф. о выпуске.
+	char	constantsNames_buffer[CCOUNT_MAX_NEW][CNAME_SIZE];		// Имена констант.
+	double	constantsValues_buffer[CCOUNT_MAX_NEW];					// Значения констант.
 	
 	// Количество констант в файле эфемерид:
-	uint32_t constantsCount{};
+	uint32_t constantsCount;
 	// ------------------------------------- Чтение файла ------------------------------------- //
 
 	std::fread(&releaseLabel_buffer,	RLS_LABEL_SIZE,	RLS_LABELS_COUNT,	m_binaryFileStream);
@@ -501,7 +501,7 @@ void dph::EphemerisRelease::readAndPackData()
 		m_releaseLabel += cutBackSpaces(releaseLabel_buffer[i], RLS_LABEL_SIZE);
 		m_releaseLabel += '\n';
 	}
-	m_releaseLabel.shrink_to_fit();
+	m_releaseLabel;
 
 	// Заполнение контейнера m_constants именами и значениями констант:
 	if (constantsCount > 0 && constantsCount <= CCOUNT_MAX_NEW)
@@ -583,7 +583,7 @@ bool dph::EphemerisRelease::check_blocksDates() const
 	for (size_t blockIndex = 0; blockIndex < m_blocksCount; ++blockIndex)
 	{
 		// Массив для чтения первых двух коэффициентов из текущего блока:
-		double blockDates[2]{};
+		double blockDates[2] = {0.0, 0.0};
 
 		// Чтение:
 		size_t readedValuesCount = std::fread(blockDates, sizeof(double), 2, m_binaryFileStream);

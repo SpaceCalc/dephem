@@ -1,4 +1,4 @@
-# DEPHEM (Development Ephemeris)
+# DEPHEM
 Простая C++ библиотека для работы с DE-эфемеридами NASA JPL.  
 
 ## Краткое описание

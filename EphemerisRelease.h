@@ -70,10 +70,10 @@ namespace dph
 	{
 	public:
 
-		static constexpr unsigned EARTH_NUTATIONS				= 14;
-		static constexpr unsigned LUNAR_MANTLE_LIBRATION		= 15;
-		static constexpr unsigned LUNAR_MANTLE_ANGULAR_VELOCITY	= 16;
-		static constexpr unsigned TTmTDB						= 17;
+		static const unsigned EARTH_NUTATIONS				= 14;
+		static const unsigned LUNAR_MANTLE_LIBRATION		= 15;
+		static const unsigned LUNAR_MANTLE_ANGULAR_VELOCITY	= 16;
+		static const unsigned TTmTDB						= 17;
 
 	private:
 		Other(); // Запрет на создание объекта типа Other.

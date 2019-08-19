@@ -2,9 +2,14 @@
 
 const size_t dph::EphemerisRelease::FSEEK_MAX_OFFSET = std::numeric_limits<long>::max();
 
-dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) : 
-	m_binaryFilePath(binaryFilePath)
+dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath)
 {			
+	// Инициализация внутренних переменных:
+	clear();
+
+	// Копирование пути к файлу:
+	m_binaryFilePath = binaryFilePath;
+	
 	// Открытие файла:
 	m_binaryFileStream = std::fopen(this->m_binaryFilePath.c_str(), "rb");
 

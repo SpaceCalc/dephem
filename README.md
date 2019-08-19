@@ -19,36 +19,35 @@
     
 int main()
 {
+    // Инициализация файла эфемерид:
     dph::EphemerisRelease de431("lnxm13000p17000.431");
 
-    // Проверка на корректное чтение бинарного файла эфемерид:
+    // Проверка на корректное чтение файла эфемерид:
     if(de431.isReady())
     {
-        std::cout << "Ephemeris object is ready to work" << std::endl;
-
-        // 1 января 2000 года 00:00:00.000 :
+        // 01.01.2000 00:00:00.000 в формате Юлианской Эфемеридной Даты:
         double JED = 2451544.5;
 
-        // Массив для записи результата вычислений:
-        double resultArray[3]{};
+        if(JED >= de431.startDate() && JED <= de431.endDate())
+        {
+            // Массив для записи результата вычислений (x, y, z):
+            double resultArray[3]{};
 
-        // Вычислить радиус-вектор Луны относительно Земли на момент времени JED и записать
-        // результат в массив resultArray:
-        de431.calculateBody(dph::Calculate::POSITION, dph::Body::MOON, dph::Body::EARTH, JED, resultArray);
+            // Вычислить радиус-вектор Луны относительно Земли на момент времени JED и записать
+            // результат в массив resultArray:
+            de431.calculateBody(dph::Calculate::POSITION,
+                dph::Body::MOON, dph::Body::EARTH, JED, resultArray);
 
-        std::cout << "Moon position relative to Earth:" << std::endl;
-        std::cout << "x =\t" << resultArray[0]  << "\t[km]" << std::endl;
-        std::cout << "y =\t" << resultArray[1]  << "\t[km]" << std::endl;
-        std::cout << "z =\t" << resultArray[2]  << "\t[km]" << std::endl;
+            std::cout << "Moon position relative to Earth:" << std::endl
+            std::cout << "x =\t" << resultArray[0]  << "\t[km]" << std::endl
+            std::cout << "y =\t" << resultArray[1]  << "\t[km]" << std::endl
+            std::cout << "z =\t" << resultArray[2]  << "\t[km]" << std::endl;
+        }        
 
         // Получить значение астрономической единицы, хранящейся в выпуске DE431:
         const double AU = de431.constant("AU");
 
         std::cout << "AU =\t" << AU << "\t[km]" << std::endl;    
-    }
-    else
-    {
-        std::cout << "Ephemeris file reading error" << std::endl;
     }
 
     return 0;

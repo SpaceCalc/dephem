@@ -138,14 +138,6 @@ namespace dph
 		// Проверка полученных значений и доступ к файлу. При неудачной проверке объект очищается.
 		EphemerisRelease& operator=(const EphemerisRelease& other);
 
-		// Конструктор перемещения.
-		// Проверка полученных значений и доступ к файлу. При неудачной проверке объект очищается.
-		EphemerisRelease(EphemerisRelease&& other) noexcept;
-
-		// Оператор перемещения.
-		// Проверка полученных значений и доступ к файлу. При неудачной проверке объект очищается.
-		EphemerisRelease& operator=(EphemerisRelease&& other) noexcept;
-
 		// Деструктор.
 		// Просто деструктор.
 		~EphemerisRelease();
@@ -283,9 +275,6 @@ namespace dph
 		
 		// Копирование информации из объекта "other" в текущий объект.
 		void copyHere(const EphemerisRelease& other);
-
-		// Перемещение информации из объекта "other" в текущий объект.
-		void move(EphemerisRelease& other);
 
 		// ................. Чтение файла и инициализация внутренних значений .................. //
 

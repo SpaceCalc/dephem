@@ -629,7 +629,7 @@ void dph::EphemerisRelease::fillBuffer(size_t block_num) const
 		std::fseek(m_binaryFileStream, adress, 0);
 	}
 
-	std::fread(m_buffer.data(), sizeof(double), m_ncoeff, m_binaryFileStream);
+	std::fread(static_cast<void*>(&m_buffer[0]), sizeof(double), m_ncoeff, m_binaryFileStream);
 }
 
 void dph::EphemerisRelease::interpolatePosition(unsigned baseItemIndex, double normalizedTime,

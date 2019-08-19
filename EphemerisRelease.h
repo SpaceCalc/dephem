@@ -98,8 +98,8 @@ namespace dph
 	{
 	public:
 
-		static constexpr unsigned POSITION	= 0;
-		static constexpr unsigned STATE		= 1;
+		static const unsigned POSITION	= 0;
+		static const unsigned STATE		= 1;
 
 	private:
 		Calculate(); // Запрет на создание объекта типа Calculate.

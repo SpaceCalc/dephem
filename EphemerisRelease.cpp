@@ -9,7 +9,7 @@ dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) :
 	m_binaryFileStream = std::fopen(this->m_binaryFilePath.c_str(), "rb");
 
 	// Файл открыт?
-	bool isFileOpen = m_binaryFileStream != nullptr;
+	bool isFileOpen = m_binaryFileStream != NULL;
 
 	if (isFileOpen)
 	{
@@ -74,7 +74,7 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 dph::EphemerisRelease::~EphemerisRelease()
 {
 	// Закрытие файла эфемерид:
-	if (m_binaryFileStream != nullptr)
+	if (m_binaryFileStream != NULL)
 	{
 		std::fclose(m_binaryFileStream);
 	}		
@@ -139,7 +139,7 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
 	{
 		return;
 	}
-	else if (resultArray == nullptr)
+	else if (resultArray == NULL)
 	{
 		return;
 	}
@@ -290,7 +290,7 @@ void dph::EphemerisRelease::calculateOther(unsigned calculationResult,
 	{
 		return;
 	}
-	else if (resultArray == nullptr)
+	else if (resultArray == NULL)
 	{
 		return;
 	}
@@ -368,10 +368,10 @@ void dph::EphemerisRelease::clear()
 	m_ready = false;
 
 	m_binaryFilePath.clear();
-	if (m_binaryFileStream != nullptr)
+	if (m_binaryFileStream != NULL)
 	{
 		fclose(m_binaryFileStream);
-		m_binaryFileStream = nullptr;
+		m_binaryFileStream = NULL;
 	}		
 
 	m_releaseLabel.clear();
@@ -403,7 +403,7 @@ void dph::EphemerisRelease::copyHere(const EphemerisRelease& other)
 	m_ready = other.m_ready;
 
 	m_binaryFilePath	= other.m_binaryFilePath;
-	if (m_binaryFileStream != nullptr)
+	if (m_binaryFileStream != NULL)
 	{
 		std::fclose(m_binaryFileStream);
 	}
@@ -542,7 +542,7 @@ bool dph::EphemerisRelease::isDataCorrect() const
 	// могут повлиять непосредственно на вычисления значений элементов, 
 	// хранящихся в выпуске эфемерид.	
 	
-	if (m_binaryFileStream == nullptr)					return false;	// Ошибка открытия файла.
+	if (m_binaryFileStream == NULL)					return false;	// Ошибка открытия файла.
 	if (m_startDate >= m_endDate)						return false;
 	if (m_blockTimeSpan == 0)							return false;
 	if ((m_endDate - m_startDate) < m_blockTimeSpan)	return false;

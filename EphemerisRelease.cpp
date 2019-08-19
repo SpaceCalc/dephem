@@ -331,7 +331,7 @@ const std::string& dph::EphemerisRelease::releaseLabel() const
 	return m_releaseLabel;
 }
 
-double dph::EphemerisRelease::constant(const std::string& constantName)
+double dph::EphemerisRelease::constant(const std::string& constantName) const
 {
 	if (m_ready == false)
 	{
@@ -351,7 +351,7 @@ double dph::EphemerisRelease::constant(const std::string& constantName)
 	}
 	else
 	{
-		return m_constants[constantName];
+		return m_constants.find(constantName)->second;
 	}
 }
 

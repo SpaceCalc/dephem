@@ -1,5 +1,7 @@
 #include "EphemerisRelease.h"
 
+const size_t dph::EphemerisRelease::FSEEK_MAX_OFFSET = std::numeric_limits<long>::max();
+
 dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) : 
 	m_binaryFilePath(binaryFilePath)
 {			

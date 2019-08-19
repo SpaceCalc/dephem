@@ -390,8 +390,12 @@ void dph::EphemerisRelease::clear()
 	m_blockSize_bytes = 0;
 
 	std::vector<double>().swap(m_buffer);	// SWAP TRICK
-	std::vector<double>().swap(m_poly);		// SWAP TRICK
-	std::vector<double>().swap(m_dpoly);	// SWAP TRICK
+	std::vector<double>(1).swap(m_poly);		// SWAP TRICK
+	std::vector<double>(2).swap(m_dpoly);	// SWAP TRICK
+
+	m_poly[0]  = 1;
+	m_dpoly[0] = 0;
+	m_dpoly[1] = 1;
 }
 
 void dph::EphemerisRelease::copyHere(const EphemerisRelease& other)

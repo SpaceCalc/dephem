@@ -218,11 +218,11 @@ namespace dph
 
 		// ................................. Формат DE-эфемерид ................................ //
 
-		static constexpr size_t RLS_LABELS_COUNT{ 3 };	// Кол-во строк Общей Информации (ОИ).
-		static constexpr size_t RLS_LABEL_SIZE{ 84 };	// Кол-во символов в строке ОИ.
-		static constexpr size_t CNAME_SIZE{ 6 };		// Кол-во символов в имени константы.
-		static constexpr size_t CCOUNT_MAX_OLD{ 400 };	// Кол-во констант (стар. формат).
-		static constexpr size_t CCOUNT_MAX_NEW{ 1000 };	// Кол-во констант (нов. формат).  
+		static const size_t RLS_LABELS_COUNT	= 3;	// Кол-во строк Общей Информации (ОИ).
+		static const size_t RLS_LABEL_SIZE		= 84;	// Кол-во символов в строке ОИ.
+		static const size_t CNAME_SIZE			= 6;	// Кол-во символов в имени константы.
+		static const size_t CCOUNT_MAX_OLD		= 400;	// Кол-во констант (стар. формат).
+		static const size_t CCOUNT_MAX_NEW		= 1000;	// Кол-во констант (нов. формат).  
 
 		// ................................. Состояние объекта ..................................//
 

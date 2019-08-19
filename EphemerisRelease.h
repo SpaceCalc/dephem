@@ -205,7 +205,7 @@ namespace dph
 		const std::string& releaseLabel() const;
 
 		// Получить значение константы по её имени.
-		double constant(const std::string& constantName) const;
+		double constant(const std::string& constantName);
 
 	private:
 		

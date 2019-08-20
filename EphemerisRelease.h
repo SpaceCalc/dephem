@@ -8,7 +8,7 @@
 
 #include <cstdio>
 #include <cstring>
-#include <cstdint>
+#include <stdint.h>
 #include <limits>
 #include <string>
 #include <map>
@@ -34,19 +34,19 @@ namespace dph
 	{
 	public:
 
-		static constexpr unsigned MERCURY	= 1;
-		static constexpr unsigned VENUS		= 2;
-		static constexpr unsigned EARTH		= 3;
-		static constexpr unsigned MARS		= 4;
-		static constexpr unsigned JUPITER	= 5;
-		static constexpr unsigned SATURN	= 6;
-		static constexpr unsigned URANUS	= 7;
-		static constexpr unsigned NEPTUNE	= 8;
-		static constexpr unsigned PLUTO		= 9;
-		static constexpr unsigned MOON		= 10;
-		static constexpr unsigned SUN		= 11;
-		static constexpr unsigned SSBARY	= 12;	// Барицентр Солнечной Системы.
-		static constexpr unsigned EMBARY	= 13;	// Барицентр системы Земля-Луна.
+		static const unsigned MERCURY	= 1;
+		static const unsigned VENUS		= 2;
+		static const unsigned EARTH		= 3;
+		static const unsigned MARS		= 4;
+		static const unsigned JUPITER	= 5;
+		static const unsigned SATURN	= 6;
+		static const unsigned URANUS	= 7;
+		static const unsigned NEPTUNE	= 8;
+		static const unsigned PLUTO		= 9;
+		static const unsigned MOON		= 10;
+		static const unsigned SUN		= 11;
+		static const unsigned SSBARY	= 12;	// Барицентр Солнечной Системы.
+		static const unsigned EMBARY	= 13;	// Барицентр системы Земля-Луна.
 
 	private:
 		Body(); // Запрет на создание объекта типа Body.
@@ -70,10 +70,10 @@ namespace dph
 	{
 	public:
 
-		static constexpr unsigned EARTH_NUTATIONS				= 14;
-		static constexpr unsigned LUNAR_MANTLE_LIBRATION		= 15;
-		static constexpr unsigned LUNAR_MANTLE_ANGULAR_VELOCITY	= 16;
-		static constexpr unsigned TTmTDB						= 17;
+		static const unsigned EARTH_NUTATIONS				= 14;
+		static const unsigned LUNAR_MANTLE_LIBRATION		= 15;
+		static const unsigned LUNAR_MANTLE_ANGULAR_VELOCITY	= 16;
+		static const unsigned TTmTDB						= 17;
 
 	private:
 		Other(); // Запрет на создание объекта типа Other.
@@ -98,8 +98,8 @@ namespace dph
 	{
 	public:
 
-		static constexpr unsigned POSITION	= 0;
-		static constexpr unsigned STATE		= 1;
+		static const unsigned POSITION	= 0;
+		static const unsigned STATE		= 1;
 
 	private:
 		Calculate(); // Запрет на создание объекта типа Calculate.
@@ -137,14 +137,6 @@ namespace dph
 		// Оператор копирования.
 		// Проверка полученных значений и доступ к файлу. При неудачной проверке объект очищается.
 		EphemerisRelease& operator=(const EphemerisRelease& other);
-
-		// Конструктор перемещения.
-		// Проверка полученных значений и доступ к файлу. При неудачной проверке объект очищается.
-		EphemerisRelease(EphemerisRelease&& other) noexcept;
-
-		// Оператор перемещения.
-		// Проверка полученных значений и доступ к файлу. При неудачной проверке объект очищается.
-		EphemerisRelease& operator=(EphemerisRelease&& other) noexcept;
 
 		// Деструктор.
 		// Просто деструктор.
@@ -218,54 +210,54 @@ namespace dph
 	private:
 		
 		// ------------------------------ Внутренние значения ---------------------------------- //
-		
+
 		// Максимальное значение, хранимое в переменной типа "long". 
 		// Требуется для передачи в функцию std::fseek (<cstdio>) в качестве параметра смещения,
 		// при размерах файла превышающих данное значение.
-		static constexpr size_t FSEEK_MAX_OFFSET{ std::numeric_limits<long>::max() };
+		static const size_t FSEEK_MAX_OFFSET;
 
 		// ................................. Формат DE-эфемерид ................................ //
 
-		static constexpr size_t RLS_LABELS_COUNT{ 3 };	// Кол-во строк Общей Информации (ОИ).
-		static constexpr size_t RLS_LABEL_SIZE{ 84 };	// Кол-во символов в строке ОИ.
-		static constexpr size_t CNAME_SIZE{ 6 };		// Кол-во символов в имени константы.
-		static constexpr size_t CCOUNT_MAX_OLD{ 400 };	// Кол-во констант (стар. формат).
-		static constexpr size_t CCOUNT_MAX_NEW{ 1000 };	// Кол-во констант (нов. формат).  
+		static const size_t RLS_LABELS_COUNT	= 3;	// Кол-во строк Общей Информации (ОИ).
+		static const size_t RLS_LABEL_SIZE		= 84;	// Кол-во символов в строке ОИ.
+		static const size_t CNAME_SIZE			= 6;	// Кол-во символов в имени константы.
+		static const size_t CCOUNT_MAX_OLD		= 400;	// Кол-во констант (стар. формат).
+		static const size_t CCOUNT_MAX_NEW		= 1000;	// Кол-во констант (нов. формат).  
 
 		// ................................. Состояние объекта ..................................//
 
-		bool m_ready{ false };							// Готовность объекта к работе.
+		bool m_ready;									// Готовность объекта к работе.
 		
 		// .................................. Работа с файлом ...................................//
 
 		std::string	m_binaryFilePath;					// Путь к бинарному файлу выпуска эфемерид.
-		FILE*		m_binaryFileStream{ nullptr };		// Поток чтения файла.
+		std::FILE*	m_binaryFileStream;					// Поток чтения файла.
 
 		// ............................ Значения, считанные из файла ........................... //
 
 		std::string		m_releaseLabel;					// Строковая информация о выпуске. 
-		uint32_t		m_releaseIndex{};				// Номерная часть индекса выпуска. 
-		double			m_startDate{};					// Дата начала выпуска (JED).         
-		double			m_endDate{};					// Дата окончания выпуска (JED).      
-		double			m_blockTimeSpan{};				// Временная протяжённость блока.     
-		uint32_t		m_keys[15][3]{};				// Ключи поиска коэффициентов.      	
-		double			m_au{};							// Астрономическая единица (км).      
-		double			m_emrat{};						// Отношение массы Земли к массе Луны.     
+		uint32_t		m_releaseIndex;					// Номерная часть индекса выпуска. 
+		double			m_startDate;					// Дата начала выпуска (JED).         
+		double			m_endDate;						// Дата окончания выпуска (JED).      
+		double			m_blockTimeSpan;				// Временная протяжённость блока.     
+		uint32_t		m_keys[15][3];					// Ключи поиска коэффициентов.      	
+		double			m_au;							// Астрономическая единица (км).      
+		double			m_emrat;						// Отношение массы Земли к массе Луны.     
 		std::map<std::string, double> m_constants;		// Константы выпуска.
 
 		// ............... Значения, дополнительно определённные внутри объекта ................ //
 
-		size_t		m_blocksCount{};					// Количество блоков в файле.                
-		uint32_t	m_ncoeff{};							// Количество коэффициентов в блоке.              
-		double		m_emrat2{};							// Отношение массы Луны к массе Земля-Луна.
-		double		m_dimensionFit{};					// Значение для соблюдения размерности.
-		size_t		m_blockSize_bytes{};				// Размер блока в байтах.
+		size_t		m_blocksCount;						// Количество блоков в файле.                
+		uint32_t	m_ncoeff;							// Количество коэффициентов в блоке.              
+		double		m_emrat2;							// Отношение массы Луны к массе Земля-Луна.
+		double		m_dimensionFit;						// Значение для соблюдения размерности.
+		size_t		m_blockSize_bytes;					// Размер блока в байтах.
 
 		// .................... Динамические массивы для работы с выпуском ..................... //
 
-		mutable std::vector<double> m_buffer{};			// Коэффициенты блока, читаемые из файла.
-		mutable std::vector<double> m_poly{ 1 };		// Значения полиномов.
-		mutable std::vector<double> m_dpoly{ 0, 1 };	// Значения производных полиномов.
+		mutable std::vector<double> m_buffer;			// Коэффициенты блока, читаемые из файла.
+		mutable std::vector<double> m_poly;				// Значения полиномов.
+		mutable std::vector<double> m_dpoly;			// Значения производных полиномов.
 
 
 		// -------------------------- Приватные методы работы объекта -------------------------- //
@@ -283,9 +275,6 @@ namespace dph
 		
 		// Копирование информации из объекта "other" в текущий объект.
 		void copyHere(const EphemerisRelease& other);
-
-		// Перемещение информации из объекта "other" в текущий объект.
-		void move(EphemerisRelease& other);
 
 		// ................. Чтение файла и инициализация внутренних значений .................. //
 

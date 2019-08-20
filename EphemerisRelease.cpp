@@ -1,13 +1,21 @@
-#include "EphemerisRelease.h"
+﻿#include "EphemerisRelease.h"
 
-dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) : 
-	m_binaryFilePath(binaryFilePath)
+const size_t dph::EphemerisRelease::FSEEK_MAX_OFFSET = std::numeric_limits<long>::max();
+
+dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) :
+	m_binaryFileStream(NULL)
 {			
+	// Инициализация внутренних переменных:
+	clear();
+
+	// Копирование пути к файлу:
+	m_binaryFilePath = binaryFilePath;
+	
 	// Открытие файла:
 	m_binaryFileStream = std::fopen(this->m_binaryFilePath.c_str(), "rb");
 
 	// Файл открыт?
-	bool isFileOpen = m_binaryFileStream != nullptr;
+	bool isFileOpen = m_binaryFileStream != NULL;
 
 	if (isFileOpen)
 	{
@@ -69,50 +77,10 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 	return *this;
 }
 
-dph::EphemerisRelease::EphemerisRelease(EphemerisRelease&& other) noexcept
-{
-	if (other.m_ready)
-	{
-		move(other);
-
-		if (isDataCorrect())
-		{
-			m_ready = true;
-		}
-		else
-		{
-			m_ready = false;
-
-			clear();
-		}
-	}
-}
-
-dph::EphemerisRelease& dph::EphemerisRelease::operator=(EphemerisRelease&& other) noexcept
-{
-	if (other.m_ready)
-	{
-		move(other);
-
-		if (isDataCorrect())
-		{
-			m_ready = true;
-		}
-		else
-		{
-			m_ready = false;
-
-			clear();
-		}
-	}
-
-	return *this;
-}
-
 dph::EphemerisRelease::~EphemerisRelease()
 {
 	// Закрытие файла эфемерид:
-	if (m_binaryFileStream != nullptr)
+	if (m_binaryFileStream != NULL)
 	{
 		std::fclose(m_binaryFileStream);
 	}		
@@ -177,7 +145,7 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
 	{
 		return;
 	}
-	else if (resultArray == nullptr)
+	else if (resultArray == NULL)
 	{
 		return;
 	}
@@ -253,7 +221,7 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
 		// искомого. 
 
 		// Массив для центрального тела:
-		double centerBodyArray[6]{};
+		double centerBodyArray[6];
 
 		// Две итерации:
 		for (unsigned i = 0; i <= 1; ++i)
@@ -328,7 +296,7 @@ void dph::EphemerisRelease::calculateOther(unsigned calculationResult,
 	{
 		return;
 	}
-	else if (resultArray == nullptr)
+	else if (resultArray == NULL)
 	{
 		return;
 	}
@@ -384,7 +352,7 @@ double dph::EphemerisRelease::constant(const std::string& constantName) const
 	}
 	else
 	{
-		return m_constants.at(constantName);
+		return m_constants.find(constantName)->second;
 	}
 }
 
@@ -406,10 +374,10 @@ void dph::EphemerisRelease::clear()
 	m_ready = false;
 
 	m_binaryFilePath.clear();
-	if (m_binaryFileStream != nullptr)
+	if (m_binaryFileStream != NULL)
 	{
 		fclose(m_binaryFileStream);
-		m_binaryFileStream = nullptr;
+		m_binaryFileStream = NULL;
 	}		
 
 	m_releaseLabel.clear();
@@ -428,8 +396,12 @@ void dph::EphemerisRelease::clear()
 	m_blockSize_bytes = 0;
 
 	std::vector<double>().swap(m_buffer);	// SWAP TRICK
-	std::vector<double>().swap(m_poly);		// SWAP TRICK
-	std::vector<double>().swap(m_dpoly);	// SWAP TRICK
+	std::vector<double>(1).swap(m_poly);		// SWAP TRICK
+	std::vector<double>(2).swap(m_dpoly);	// SWAP TRICK
+
+	m_poly[0]  = 1;
+	m_dpoly[0] = 0;
+	m_dpoly[1] = 1;
 }
 
 void dph::EphemerisRelease::copyHere(const EphemerisRelease& other)
@@ -441,7 +413,7 @@ void dph::EphemerisRelease::copyHere(const EphemerisRelease& other)
 	m_ready = other.m_ready;
 
 	m_binaryFilePath	= other.m_binaryFilePath;
-	if (m_binaryFileStream != nullptr)
+	if (m_binaryFileStream != NULL)
 	{
 		std::fclose(m_binaryFileStream);
 	}
@@ -468,54 +440,15 @@ void dph::EphemerisRelease::copyHere(const EphemerisRelease& other)
 	m_dpoly =	other.m_poly;
 }
 
-void dph::EphemerisRelease::move(EphemerisRelease& other)
-{
-	// Используется в:
-	//	- Конструктор перемещения.
-	//	- Оператор перемещения.
-	
-	m_ready =				other.m_ready;
-
-	m_binaryFilePath =		std::move(other.m_binaryFilePath);
-
-	// Работа с файлом:
-	if (m_binaryFileStream != nullptr)
-	{
-		std::fclose(m_binaryFileStream);
-	}
-	m_binaryFileStream = other.m_binaryFileStream;
-	other.m_binaryFileStream = nullptr;
-
-	m_releaseLabel =		std::move(other.m_releaseLabel);	// Перемещение.
-	m_releaseIndex =		other.m_releaseIndex;
-	m_startDate =			other.m_startDate;
-	m_endDate =				other.m_endDate;
-	m_blockTimeSpan =		other.m_blockTimeSpan;
-	std::memcpy(m_keys,		other.m_keys, sizeof(m_keys));
-	m_au =					other.m_au;
-	m_emrat =				other.m_emrat;
-	m_constants =			other.m_constants;
-
-	m_blocksCount =			other.m_blocksCount;
-	m_ncoeff =				other.m_ncoeff;
-	m_emrat2 =				other.m_emrat2;
-	m_dimensionFit =		other.m_dimensionFit;
-	m_blockSize_bytes =		other.m_blockSize_bytes;
-
-	m_buffer =				std::move(other.m_buffer);			// Перемещение.
-	m_poly =				std::move(other.m_poly);			// Перемещение.
-	m_dpoly =				std::move(other.m_dpoly);			// Перемещение.
-}
-
 void dph::EphemerisRelease::readAndPackData()
 {
 	// Буфферы для чтения информации из файла:
-	char	releaseLabel_buffer[RLS_LABELS_COUNT][RLS_LABEL_SIZE]{};	// Строк. инф. о выпуске.
-	char	constantsNames_buffer[CCOUNT_MAX_NEW][CNAME_SIZE]{};		// Имена констант.
-	double	constantsValues_buffer[CCOUNT_MAX_NEW]{};					// Значения констант.
+	char	releaseLabel_buffer[RLS_LABELS_COUNT][RLS_LABEL_SIZE];	// Строк. инф. о выпуске.
+	char	constantsNames_buffer[CCOUNT_MAX_NEW][CNAME_SIZE];		// Имена констант.
+	double	constantsValues_buffer[CCOUNT_MAX_NEW];					// Значения констант.
 	
 	// Количество констант в файле эфемерид:
-	uint32_t constantsCount{};
+	uint32_t constantsCount;
 	// ------------------------------------- Чтение файла ------------------------------------- //
 
 	std::fread(&releaseLabel_buffer,	RLS_LABEL_SIZE,	RLS_LABELS_COUNT,	m_binaryFileStream);
@@ -569,7 +502,7 @@ void dph::EphemerisRelease::readAndPackData()
 		m_releaseLabel += cutBackSpaces(releaseLabel_buffer[i], RLS_LABEL_SIZE);
 		m_releaseLabel += '\n';
 	}
-	m_releaseLabel.shrink_to_fit();
+	m_releaseLabel;
 
 	// Заполнение контейнера m_constants именами и значениями констант:
 	if (constantsCount > 0 && constantsCount <= CCOUNT_MAX_NEW)
@@ -619,7 +552,7 @@ bool dph::EphemerisRelease::isDataCorrect() const
 	// могут повлиять непосредственно на вычисления значений элементов, 
 	// хранящихся в выпуске эфемерид.	
 	
-	if (m_binaryFileStream == nullptr)					return false;	// Ошибка открытия файла.
+	if (m_binaryFileStream == NULL)					return false;	// Ошибка открытия файла.
 	if (m_startDate >= m_endDate)						return false;
 	if (m_blockTimeSpan == 0)							return false;
 	if ((m_endDate - m_startDate) < m_blockTimeSpan)	return false;
@@ -651,7 +584,7 @@ bool dph::EphemerisRelease::check_blocksDates() const
 	for (size_t blockIndex = 0; blockIndex < m_blocksCount; ++blockIndex)
 	{
 		// Массив для чтения первых двух коэффициентов из текущего блока:
-		double blockDates[2]{};
+		double blockDates[2] = {0.0, 0.0};
 
 		// Чтение:
 		size_t readedValuesCount = std::fread(blockDates, sizeof(double), 2, m_binaryFileStream);
@@ -697,7 +630,7 @@ void dph::EphemerisRelease::fillBuffer(size_t block_num) const
 		std::fseek(m_binaryFileStream, adress, 0);
 	}
 
-	std::fread(m_buffer.data(), sizeof(double), m_ncoeff, m_binaryFileStream);
+	std::fread(static_cast<void*>(&m_buffer[0]), sizeof(double), m_ncoeff, m_binaryFileStream);
 }
 
 void dph::EphemerisRelease::interpolatePosition(unsigned baseItemIndex, double normalizedTime,

@@ -2,7 +2,8 @@
 
 const size_t dph::EphemerisRelease::FSEEK_MAX_OFFSET = std::numeric_limits<long>::max();
 
-dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath)
+dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) :
+	m_binaryFileStream(NULL)
 {			
 	// Инициализация внутренних переменных:
 	clear();

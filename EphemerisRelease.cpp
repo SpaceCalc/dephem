@@ -556,7 +556,8 @@ bool dph::EphemerisRelease::isDataCorrect() const
 	// могут повлиять непосредственно на вычисления значений элементов, 
 	// хранящихся в выпуске эфемерид.	
 	
-	if (m_binaryFileStream == NULL)					return false;	// Ошибка открытия файла.
+	if (m_binaryFileStream == NULL)						return false;	// Ошибка открытия файла.
+	if (m_binaryFileStream2.is_open() == false)			return false;	// Ошибка открытия файла.
 	if (m_startDate >= m_endDate)						return false;
 	if (m_blockTimeSpan == 0)							return false;
 	if ((m_endDate - m_startDate) < m_blockTimeSpan)	return false;

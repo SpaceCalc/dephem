@@ -11,10 +11,10 @@ dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath)
 	m_binaryFilePath = binaryFilePath;
 	
 	// Открытие файла:
-	m_binaryFileStream2.open(m_binaryFilePath.c_str(), std::ios::binary);
+	m_binaryFileStream.open(m_binaryFilePath.c_str(), std::ios::binary);
 
 	// Файл открыт?
-	bool isFileOpen = m_binaryFileStream2.is_open();
+	bool isFileOpen = m_binaryFileStream.is_open();
 
 	if (isFileOpen)
 	{
@@ -369,7 +369,7 @@ void dph::EphemerisRelease::clear()
 	m_ready = false;
 
 	m_binaryFilePath.clear();
-	m_binaryFileStream2.close();
+	m_binaryFileStream.close();
 
 	m_releaseLabel.clear();
 	m_releaseIndex = 0;
@@ -405,8 +405,8 @@ void dph::EphemerisRelease::copyHere(const EphemerisRelease& other)
 
 	m_binaryFilePath	= other.m_binaryFilePath;
 
-	m_binaryFileStream2.close();
-	m_binaryFileStream2.open(other.m_binaryFilePath.c_str(), std::ios::binary);
+	m_binaryFileStream.close();
+	m_binaryFileStream.open(other.m_binaryFilePath.c_str(), std::ios::binary);
 
 	m_releaseLabel =	other.m_releaseLabel;
 	m_releaseIndex =	other.m_releaseIndex;
@@ -440,17 +440,17 @@ void dph::EphemerisRelease::readAndPackData()
 	uint32_t constantsCount;
 	// ------------------------------------- Чтение файла ------------------------------------- //
 
-	m_binaryFileStream2.read((char*)&releaseLabel_buffer, RLS_LABEL_SIZE * RLS_LABELS_COUNT);
-	m_binaryFileStream2.read((char*)&constantsNames_buffer, CNAME_SIZE * CCOUNT_MAX_OLD);
-	m_binaryFileStream2.read((char*)&m_startDate, 8);
-	m_binaryFileStream2.read((char*)&m_endDate, 8);
-	m_binaryFileStream2.read((char*)&m_blockTimeSpan, 8);
-	m_binaryFileStream2.read((char*)&constantsCount, 4);
-	m_binaryFileStream2.read((char*)&m_au, 8);
-	m_binaryFileStream2.read((char*)&m_emrat, 8);
-	m_binaryFileStream2.read((char*)&m_keys, (12 * 3) * 4);
-	m_binaryFileStream2.read((char*)&m_releaseIndex, 4);
-	m_binaryFileStream2.read((char*)&m_keys[12], (3) * 4);	
+	m_binaryFileStream.read((char*)&releaseLabel_buffer, RLS_LABEL_SIZE * RLS_LABELS_COUNT);
+	m_binaryFileStream.read((char*)&constantsNames_buffer, CNAME_SIZE * CCOUNT_MAX_OLD);
+	m_binaryFileStream.read((char*)&m_startDate, 8);
+	m_binaryFileStream.read((char*)&m_endDate, 8);
+	m_binaryFileStream.read((char*)&m_blockTimeSpan, 8);
+	m_binaryFileStream.read((char*)&constantsCount, 4);
+	m_binaryFileStream.read((char*)&m_au, 8);
+	m_binaryFileStream.read((char*)&m_emrat, 8);
+	m_binaryFileStream.read((char*)&m_keys, (12 * 3) * 4);
+	m_binaryFileStream.read((char*)&m_releaseIndex, 4);
+	m_binaryFileStream.read((char*)&m_keys[12], (3) * 4);	
 
 	// Чтение дополнительных констант:
 	if (constantsCount > 400)
@@ -458,12 +458,12 @@ void dph::EphemerisRelease::readAndPackData()
 		// Количество дополнительных констант:
 		size_t extraConstantsCount = constantsCount - CCOUNT_MAX_OLD;
 
-		m_binaryFileStream2.read((char*)&constantsNames_buffer[CCOUNT_MAX_OLD], 
+		m_binaryFileStream.read((char*)&constantsNames_buffer[CCOUNT_MAX_OLD], 
 			extraConstantsCount * CNAME_SIZE);
 	}		
 
 	// Чтение дополнительных ключей:
-	m_binaryFileStream2.read((char*)&m_keys[13], (3 * 2) * 4);
+	m_binaryFileStream.read((char*)&m_keys[13], (3 * 2) * 4);
 
 	// Подсчёт ncoeff (количество коэффициентов в блоке):
 	m_ncoeff = 2;
@@ -477,8 +477,8 @@ void dph::EphemerisRelease::readAndPackData()
 	// Переход к блоку с константами и их чтение:	
 	if (constantsCount <= CCOUNT_MAX_NEW)
 	{
-		m_binaryFileStream2.seekg(m_ncoeff * 8, std::ios::beg);
-		m_binaryFileStream2.read((char*)&constantsValues_buffer, constantsCount * 8);
+		m_binaryFileStream.seekg(m_ncoeff * 8, std::ios::beg);
+		m_binaryFileStream.read((char*)&constantsValues_buffer, constantsCount * 8);
 	}
 	
 
@@ -540,7 +540,7 @@ bool dph::EphemerisRelease::isDataCorrect() const
 	// могут повлиять непосредственно на вычисления значений элементов, 
 	// хранящихся в выпуске эфемерид.	
 	
-	if (m_binaryFileStream2.is_open() == false)			return false;	// Ошибка открытия файла.
+	if (m_binaryFileStream.is_open() == false)			return false;	// Ошибка открытия файла.
 	if (m_startDate >= m_endDate)						return false;
 	if (m_blockTimeSpan == 0)							return false;
 	if ((m_endDate - m_startDate) < m_blockTimeSpan)	return false;
@@ -558,7 +558,7 @@ bool dph::EphemerisRelease::check_blocksDates() const
 	size_t firstBlockAdress = m_blockSize_bytes * 2;
 	
 	// Переход к первому блоку:
-	m_binaryFileStream2.seekg(firstBlockAdress, std::ios::beg);
+	m_binaryFileStream.seekg(firstBlockAdress, std::ios::beg);
 
 	// Смещение между блоками после чтения двух первых коэффициентов:
 	size_t subBlockOffset = (m_ncoeff - 2) * sizeof(double);
@@ -569,7 +569,7 @@ bool dph::EphemerisRelease::check_blocksDates() const
 		double blockDates[2] = {0.0, 0.0};
 
 		// Чтение:
-		m_binaryFileStream2.read((char*)& blockDates, sizeof(blockDates));	
+		m_binaryFileStream.read((char*)& blockDates, sizeof(blockDates));	
 
 		// Значения, которые должны быть:
 		double blockStartDate = m_startDate + blockIndex * m_blockTimeSpan;
@@ -581,7 +581,7 @@ bool dph::EphemerisRelease::check_blocksDates() const
 		}
 		
 		// Переход к следующему блоку:
-		m_binaryFileStream2.seekg(subBlockOffset, std::ios::cur);
+		m_binaryFileStream.seekg(subBlockOffset, std::ios::cur);
 	}
 
 	return true;
@@ -591,9 +591,9 @@ void dph::EphemerisRelease::fillBuffer(size_t block_num) const
 {
 	size_t adress = (2 + block_num) * m_blockSize_bytes;
 
-	m_binaryFileStream2.seekg(adress, std::ios::beg);
+	m_binaryFileStream.seekg(adress, std::ios::beg);
 
-	m_binaryFileStream2.read((char*)&m_buffer[0], (m_ncoeff) * 8);
+	m_binaryFileStream.read((char*)&m_buffer[0], (m_ncoeff) * 8);
 }
 
 void dph::EphemerisRelease::interpolatePosition(unsigned baseItemIndex, double normalizedTime,

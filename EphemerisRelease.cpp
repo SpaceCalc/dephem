@@ -378,7 +378,8 @@ void dph::EphemerisRelease::clear()
 	{
 		fclose(m_binaryFileStream);
 		m_binaryFileStream = NULL;
-	}		
+	}
+	m_binaryFileStream2.close();
 
 	m_releaseLabel.clear();
 	m_releaseIndex = 0;
@@ -418,6 +419,9 @@ void dph::EphemerisRelease::copyHere(const EphemerisRelease& other)
 		std::fclose(m_binaryFileStream);
 	}
 	m_binaryFileStream = std::fopen(other.m_binaryFilePath.c_str(), "rb");
+
+	m_binaryFileStream2.close();
+	m_binaryFileStream2.open(other.m_binaryFilePath);
 
 	m_releaseLabel =	other.m_releaseLabel;
 	m_releaseIndex =	other.m_releaseIndex;

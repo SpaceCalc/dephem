@@ -6,10 +6,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif 
 
-#include <cstdio>
+#include <fstream>
 #include <cstring>
 #include <stdint.h>
-#include <limits>
 #include <string>
 #include <map>
 #include <vector>
@@ -211,11 +210,6 @@ namespace dph
 		
 		// ------------------------------ Внутренние значения ---------------------------------- //
 
-		// Максимальное значение, хранимое в переменной типа "long". 
-		// Требуется для передачи в функцию std::fseek (<cstdio>) в качестве параметра смещения,
-		// при размерах файла превышающих данное значение.
-		static const size_t FSEEK_MAX_OFFSET;
-
 		// ................................. Формат DE-эфемерид ................................ //
 
 		static const size_t RLS_LABELS_COUNT	= 3;	// Кол-во строк Общей Информации (ОИ).
@@ -230,8 +224,8 @@ namespace dph
 		
 		// .................................. Работа с файлом ...................................//
 
-		std::string	m_binaryFilePath;					// Путь к бинарному файлу выпуска эфемерид.
-		std::FILE*	m_binaryFileStream;					// Поток чтения файла.
+		std::string				m_binaryFilePath;		// Путь к бинарному файлу выпуска эфемерид.
+		mutable std::ifstream	m_binaryFileStream;	// Поток чтения файла.
 
 		// ............................ Значения, считанные из файла ........................... //
 

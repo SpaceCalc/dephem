@@ -76,7 +76,7 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 
 dph::EphemerisRelease::~EphemerisRelease()
 {
-			
+	m_binaryFileStream.close();
 }
 
 void dph::EphemerisRelease::calculateBody(unsigned calculationResult,

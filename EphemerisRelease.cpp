@@ -608,17 +608,9 @@ void dph::EphemerisRelease::fillBuffer(size_t block_num) const
 {
 	size_t adress = (2 + block_num) * m_blockSize_bytes;
 
-	if (adress > FSEEK_MAX_OFFSET)
-	{
-		std::fseek(m_binaryFileStream, FSEEK_MAX_OFFSET, 0);
-		std::fseek(m_binaryFileStream, adress - FSEEK_MAX_OFFSET, 1);
-	}
-	else
-	{
-		std::fseek(m_binaryFileStream, adress, 0);
-	}
+	m_binaryFileStream2.seekg(adress, std::ios::beg);
 
-	std::fread(static_cast<void*>(&m_buffer[0]), sizeof(double), m_ncoeff, m_binaryFileStream);
+	m_binaryFileStream2.read((char*)&m_buffer[0], (m_ncoeff) * 8);
 }
 
 void dph::EphemerisRelease::interpolatePosition(unsigned baseItemIndex, double normalizedTime,

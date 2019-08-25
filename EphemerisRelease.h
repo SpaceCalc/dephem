@@ -231,9 +231,9 @@ namespace dph
 		
 		// .................................. Работа с файлом ...................................//
 
-		std::string		m_binaryFilePath;				// Путь к бинарному файлу выпуска эфемерид.
-		std::FILE*		m_binaryFileStream;				// Поток чтения файла.
-		std::ifstream	m_binaryFileStream2;			// Поток чтения файла.
+		std::string				m_binaryFilePath;		// Путь к бинарному файлу выпуска эфемерид.
+		std::FILE*				m_binaryFileStream;		// Поток чтения файла.
+		mutable std::ifstream	m_binaryFileStream2;	// Поток чтения файла.
 
 		// ............................ Значения, считанные из файла ........................... //
 

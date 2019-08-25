@@ -6,6 +6,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif 
 
+#include <fstream>
 #include <cstdio>
 #include <cstring>
 #include <stdint.h>

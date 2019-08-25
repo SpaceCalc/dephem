@@ -1,4 +1,4 @@
-#include "EphemerisRelease.h"
+﻿#include "EphemerisRelease.h"
 
 const size_t dph::EphemerisRelease::FSEEK_MAX_OFFSET = std::numeric_limits<long>::max();
 
@@ -575,13 +575,7 @@ bool dph::EphemerisRelease::check_blocksDates() const
 	size_t firstBlockAdress = m_blockSize_bytes * 2;
 	
 	// Переход к первому блоку:
-	int correctFseek = std::fseek(m_binaryFileStream, firstBlockAdress, 0);
-
-	// При корректном переходе std::fseek возвращает ноль.
-	if (correctFseek != 0)
-	{
-		return false;
-	}
+	m_binaryFileStream2.seekg(firstBlockAdress, std::ios::beg);
 
 	// Смещение между блоками после чтения двух первых коэффициентов:
 	size_t subBlockOffset = (m_ncoeff - 2) * sizeof(double);
@@ -592,13 +586,7 @@ bool dph::EphemerisRelease::check_blocksDates() const
 		double blockDates[2] = {0.0, 0.0};
 
 		// Чтение:
-		size_t readedValuesCount = std::fread(blockDates, sizeof(double), 2, m_binaryFileStream);
-
-		// При корректном чтении std::fread возвращает количество считанных элементов:
-		if (readedValuesCount != 2)
-		{
-			return false;
-		}
+		m_binaryFileStream2.read((char*)& blockDates, sizeof(blockDates));	
 
 		// Значения, которые должны быть:
 		double blockStartDate = m_startDate + blockIndex * m_blockTimeSpan;
@@ -610,12 +598,7 @@ bool dph::EphemerisRelease::check_blocksDates() const
 		}
 		
 		// Переход к следующему блоку:
-		correctFseek = std::fseek(m_binaryFileStream, subBlockOffset, 1);
-
-		if (correctFseek != 0)
-		{
-			return false;
-		}
+		m_binaryFileStream2.seekg(subBlockOffset, std::ios::cur);
 	}
 
 	return true;

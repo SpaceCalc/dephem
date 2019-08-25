@@ -2,8 +2,7 @@
 
 const size_t dph::EphemerisRelease::FSEEK_MAX_OFFSET = std::numeric_limits<long>::max();
 
-dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) :
-	m_binaryFileStream(NULL)
+dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath)
 {			
 	// Инициализация внутренних переменных:
 	clear();
@@ -12,11 +11,10 @@ dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) :
 	m_binaryFilePath = binaryFilePath;
 	
 	// Открытие файла:
-	m_binaryFileStream = std::fopen(this->m_binaryFilePath.c_str(), "rb");
 	m_binaryFileStream2.open(m_binaryFilePath.c_str(), std::ios::binary);
 
 	// Файл открыт?
-	bool isFileOpen = m_binaryFileStream != NULL && m_binaryFileStream2.is_open();
+	bool isFileOpen = m_binaryFileStream2.is_open();
 
 	if (isFileOpen)
 	{
@@ -80,11 +78,7 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 
 dph::EphemerisRelease::~EphemerisRelease()
 {
-	// Закрытие файла эфемерид:
-	if (m_binaryFileStream != NULL)
-	{
-		std::fclose(m_binaryFileStream);
-	}		
+			
 }
 
 void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
@@ -375,11 +369,6 @@ void dph::EphemerisRelease::clear()
 	m_ready = false;
 
 	m_binaryFilePath.clear();
-	if (m_binaryFileStream != NULL)
-	{
-		fclose(m_binaryFileStream);
-		m_binaryFileStream = NULL;
-	}
 	m_binaryFileStream2.close();
 
 	m_releaseLabel.clear();
@@ -415,11 +404,6 @@ void dph::EphemerisRelease::copyHere(const EphemerisRelease& other)
 	m_ready = other.m_ready;
 
 	m_binaryFilePath	= other.m_binaryFilePath;
-	if (m_binaryFileStream != NULL)
-	{
-		std::fclose(m_binaryFileStream);
-	}
-	m_binaryFileStream = std::fopen(other.m_binaryFilePath.c_str(), "rb");
 
 	m_binaryFileStream2.close();
 	m_binaryFileStream2.open(other.m_binaryFilePath.c_str(), std::ios::binary);
@@ -556,7 +540,6 @@ bool dph::EphemerisRelease::isDataCorrect() const
 	// могут повлиять непосредственно на вычисления значений элементов, 
 	// хранящихся в выпуске эфемерид.	
 	
-	if (m_binaryFileStream == NULL)						return false;	// Ошибка открытия файла.
 	if (m_binaryFileStream2.is_open() == false)			return false;	// Ошибка открытия файла.
 	if (m_startDate >= m_endDate)						return false;
 	if (m_blockTimeSpan == 0)							return false;

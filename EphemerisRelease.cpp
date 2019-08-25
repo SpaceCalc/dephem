@@ -1,4 +1,4 @@
-#include "EphemerisRelease.h"
+﻿#include "EphemerisRelease.h"
 
 const size_t dph::EphemerisRelease::FSEEK_MAX_OFFSET = std::numeric_limits<long>::max();
 
@@ -456,17 +456,17 @@ void dph::EphemerisRelease::readAndPackData()
 	uint32_t constantsCount;
 	// ------------------------------------- Чтение файла ------------------------------------- //
 
-	std::fread(&releaseLabel_buffer,	RLS_LABEL_SIZE,	RLS_LABELS_COUNT,	m_binaryFileStream);
-	std::fread(&constantsNames_buffer,	CNAME_SIZE,		CCOUNT_MAX_OLD,		m_binaryFileStream);
-	std::fread(&m_startDate,			8,				1,					m_binaryFileStream);
-	std::fread(&m_endDate,				8,				1,					m_binaryFileStream);
-	std::fread(&m_blockTimeSpan,		8,				1,					m_binaryFileStream);
-	std::fread(&constantsCount,			4,				1,					m_binaryFileStream);
-	std::fread(&m_au,					8,				1,					m_binaryFileStream);
-	std::fread(&m_emrat,				8,				1,					m_binaryFileStream);
-	std::fread(&m_keys,					4,				12 * 3,				m_binaryFileStream);
-	std::fread(&m_releaseIndex,			4,				1,					m_binaryFileStream);
-	std::fread(&m_keys[12],				4,				3,					m_binaryFileStream);		
+	m_binaryFileStream2.read((char*)&releaseLabel_buffer, RLS_LABEL_SIZE * RLS_LABELS_COUNT);
+	m_binaryFileStream2.read((char*)&constantsNames_buffer, CNAME_SIZE * CCOUNT_MAX_OLD);
+	m_binaryFileStream2.read((char*)&m_startDate, 8);
+	m_binaryFileStream2.read((char*)&m_endDate, 8);
+	m_binaryFileStream2.read((char*)&m_blockTimeSpan, 8);
+	m_binaryFileStream2.read((char*)&constantsCount, 4);
+	m_binaryFileStream2.read((char*)&m_au, 8);
+	m_binaryFileStream2.read((char*)&m_emrat, 8);
+	m_binaryFileStream2.read((char*)&m_keys, (12 * 3) * 4);
+	m_binaryFileStream2.read((char*)&m_releaseIndex, 4);
+	m_binaryFileStream2.read((char*)&m_keys[12], (3) * 4);	
 
 	// Чтение дополнительных констант:
 	if (constantsCount > 400)
@@ -474,13 +474,12 @@ void dph::EphemerisRelease::readAndPackData()
 		// Количество дополнительных констант:
 		size_t extraConstantsCount = constantsCount - CCOUNT_MAX_OLD;
 
-		std::fread(constantsNames_buffer[400], CNAME_SIZE, extraConstantsCount, 
-			m_binaryFileStream);
+		m_binaryFileStream2.read((char*)&constantsNames_buffer[CCOUNT_MAX_OLD], 
+			extraConstantsCount * CNAME_SIZE);
 	}		
 
 	// Чтение дополнительных ключей:
-	std::fread(&m_keys[13], sizeof(uint32_t), 3 * 2, m_binaryFileStream);
-
+	m_binaryFileStream2.read((char*)&m_keys[13], (3 * 2) * 4);
 
 	// Подсчёт ncoeff (количество коэффициентов в блоке):
 	m_ncoeff = 2;
@@ -494,8 +493,8 @@ void dph::EphemerisRelease::readAndPackData()
 	// Переход к блоку с константами и их чтение:	
 	if (constantsCount <= CCOUNT_MAX_NEW)
 	{
-		std::fseek(m_binaryFileStream, m_ncoeff * 8, 0);
-		std::fread(constantsValues_buffer, sizeof(double), constantsCount, m_binaryFileStream);
+		m_binaryFileStream2.seekg(m_ncoeff * 8, std::ios::beg);
+		m_binaryFileStream2.read((char*)&constantsValues_buffer, constantsCount * 8);
 	}
 	
 

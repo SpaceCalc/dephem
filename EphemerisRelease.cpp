@@ -1,4 +1,4 @@
-﻿#include "EphemerisRelease.h"
+#include "EphemerisRelease.h"
 
 const size_t dph::EphemerisRelease::FSEEK_MAX_OFFSET = std::numeric_limits<long>::max();
 
@@ -13,7 +13,7 @@ dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath) :
 	
 	// Открытие файла:
 	m_binaryFileStream = std::fopen(this->m_binaryFilePath.c_str(), "rb");
-	m_binaryFileStream2.open(m_binaryFilePath.c_str());
+	m_binaryFileStream2.open(m_binaryFilePath.c_str(), std::ios::binary);
 
 	// Файл открыт?
 	bool isFileOpen = m_binaryFileStream != NULL && m_binaryFileStream2.is_open();
@@ -422,7 +422,7 @@ void dph::EphemerisRelease::copyHere(const EphemerisRelease& other)
 	m_binaryFileStream = std::fopen(other.m_binaryFilePath.c_str(), "rb");
 
 	m_binaryFileStream2.close();
-	m_binaryFileStream2.open(other.m_binaryFilePath.c_str());
+	m_binaryFileStream2.open(other.m_binaryFilePath.c_str(), std::ios::binary);
 
 	m_releaseLabel =	other.m_releaseLabel;
 	m_releaseIndex =	other.m_releaseIndex;

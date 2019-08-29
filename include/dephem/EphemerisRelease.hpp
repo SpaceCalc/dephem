@@ -13,7 +13,7 @@
 #include <map>
 #include <vector>
 
-#include "help.hpp"
+#include "help.hpp" // Body::..., Other::..., Calculate...
 
 namespace dph
 {	

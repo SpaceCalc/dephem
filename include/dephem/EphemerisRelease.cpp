@@ -1,4 +1,4 @@
-﻿#include "EphemerisRelease.h"
+﻿#include "EphemerisRelease.hpp"
 
 dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath)
 {			

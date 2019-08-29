@@ -1,5 +1,5 @@
 # DEPHEM
-Простая C++ библиотека для работы с эфемеридами JPL NASA.  
+Простая "Header-only" C++ библиотека для работы с эфемеридами JPL NASA.  
 
 **Используется С++98.**
 
@@ -17,7 +17,7 @@
 В примере используется выпуск эфемерид **DE431**.
 ````c++
 #include <iostream>
-#include "dephem/EphemerisRelease.h"
+#include "dephem/EphemerisRelease.hpp"
     
 int main()
 {

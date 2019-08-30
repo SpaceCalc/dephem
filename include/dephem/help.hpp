@@ -1,8 +1,7 @@
 #ifndef DEPHEM_HELP_HPP
 #define DEPHEM_HELP_HPP
 
-namespace dph
-{
+namespace dph { namespace help {
 
 // ************************************************************************** //
 //                                   Body                                     //
@@ -92,6 +91,23 @@ private:
 	Calculate(); // Запрет на создание объекта типа Calculate.
 };
 
-} // namespace dph
+// Количество компонет для элемента.
+unsigned ComponentsCount(unsigned itemIndex)
+{   
+   return itemIndex > Other::TTmTDB ? 0 :
+                itemIndex == Other::TTmTDB ? 1 :
+                    itemIndex == Other::EARTH_NUTATIONS ? 2 : 3;   
+}
+
+// Количество компонент с учётом результата вычислений.
+unsigned ComponentsCount(unsigned itemIndex, unsigned calculationsResult)
+{
+    return calculationsResult == Calculate::POSITION ? 
+                                    ComponentsCount(itemIndex) :
+                calculationsResult == Calculate::STATE ? 
+                                        2 * ComponentsCount(itemIndex) : 0;
+}
+
+} } // namespace dph::help
 
 #endif // DEPHEM_HELP_HPP

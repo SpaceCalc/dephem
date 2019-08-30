@@ -7,7 +7,7 @@
 #include "TestpoRecord.hpp"
 #include "TestpoParse.hpp"
 #include "../help.hpp"
-#include "../../../dephem/include/dephem.hpp"
+#include "../EphemerisRelease.hpp"
 
 namespace dph { namespace testpo {
 

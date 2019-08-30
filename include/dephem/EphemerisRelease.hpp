@@ -382,6 +382,7 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
 	//		От пользователя требуется знать, каков минимальный размер массива для 
 	//		выбранного результата вычислений. Не должен быть нулевым указателем.
 
+	using namespace dph::help;
 
 	//Условия недопустимые для данного метода:
 	if (this->m_ready == false)
@@ -958,6 +959,8 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED
 	// Внимание! 
 	// В ходе выполнения функции смысл переменных "normalizedTime" и "offset" будет меняться.
 
+	using namespace dph::help;
+	
 	// Норм. время относительно всех блоков в выпуске:
 	double normalizedTime = (JED - m_startDate) / m_blockTimeSpan;
 
@@ -1022,6 +1025,8 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED
 void dph::EphemerisRelease::calculateBaseEarth(double JED, unsigned calculationResult, 
 	double* resultArray) const
 {
+	using namespace dph::help;
+
 	// Получение радиус-вектора (или вектора состояния) барицентра сиситемы Земля-Луна
 	// относительно барицентра Солнечной Системы:
 	calculateBaseItem(2, JED, calculationResult, resultArray);
@@ -1043,6 +1048,8 @@ void dph::EphemerisRelease::calculateBaseEarth(double JED, unsigned calculationR
 void dph::EphemerisRelease::calculateBaseMoon(double JED, unsigned calculationResult,
 	double* resultArray) const
 {
+	using namespace dph::help;
+	
 	// Получение радиус-вектора (или вектора состояния) барицентра сиситемы Земля-Луна
 	// относительно барицентра Солнечной Системы:
 	calculateBaseItem(2, JED, calculationResult, resultArray);

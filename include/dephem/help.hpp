@@ -1,8 +1,8 @@
 #ifndef DEPHEM_HELP_HPP
 #define DEPHEM_HELP_HPP
 
-namespace dph
-{
+namespace dph { namespace help {
+
 
 // ************************************************************************** //
 //                                   Body                                     //
@@ -92,6 +92,6 @@ private:
 	Calculate(); // Запрет на создание объекта типа Calculate.
 };
 
-} // namespace dph
+} } // namespace dph::help
 
 #endif // DEPHEM_HELP_HPP

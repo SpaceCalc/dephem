@@ -1,5 +1,4 @@
-﻿#pragma once
-#ifndef DEPHEM_EPHEMERIS_RELEASE_H
+﻿#ifndef DEPHEM_EPHEMERIS_RELEASE_H
 #define DEPHEM_EPHEMERIS_RELEASE_H
 
 #ifdef _MSC_VER

@@ -704,6 +704,7 @@ void dph::EphemerisRelease::readAndPackData()
 	uint32_t constantsCount;
 	// ------------------------------------- Чтение файла ------------------------------------- //
 
+	m_binaryFileStream.seekg(0, std::ios::beg);
 	m_binaryFileStream.read((char*)&releaseLabel_buffer, RLS_LABEL_SIZE * RLS_LABELS_COUNT);
 	m_binaryFileStream.read((char*)&constantsNames_buffer, CNAME_SIZE * CCOUNT_MAX_OLD);
 	m_binaryFileStream.read((char*)&m_startDate, 8);

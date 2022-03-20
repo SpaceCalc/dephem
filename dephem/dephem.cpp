@@ -2,86 +2,47 @@
 
 dph::EphemerisRelease::EphemerisRelease(const std::string& filePath)
 {
-    // Инициализация внутренних переменных:
     clear();
 
-    // Копирование пути к файлу:
-    m_filePath = filePath;
-
     // Открытие файла:
-    m_file.open(m_filePath.c_str(), std::ios::binary);
+    m_file.open(filePath, std::ios::binary);
 
-    // Файл открыт?
-    bool isFileOpen = m_file.is_open();
+    if (!m_file.is_open())
+        return;
 
-    if (isFileOpen)
+    readAndPackData();
+
+    if (!isDataCorrect())
     {
-        readAndPackData();
+        clear();
+        return;
+    }
 
-        if (isDataCorrect())
-        {
-            m_ready = true;
-        }
-        else
-        {
-            clear();
-        }
-    }
-    else
-    {
-        m_filePath.clear();
-    }
+    m_filePath = filePath;
+    m_ready = true;
 }
 
 dph::EphemerisRelease::EphemerisRelease(const EphemerisRelease& other)
 {
-    if (other.m_ready)
-    {
-        copyHere(other);
+    copyHere(other);
 
-        if (isDataCorrect())
-        {
-            m_ready = true;
-        }
-        else
-        {
-            m_ready = false;
-
-            clear();
-        }
-    }
+    if (!isDataCorrect())
+        clear();
 }
 
 dph::EphemerisRelease& dph::EphemerisRelease::operator=(const
     EphemerisRelease& other)
 {
-    if (other.m_ready)
-    {
+    copyHere(other);
+
+    if (!isDataCorrect())
         clear();
-        copyHere(other);
-
-        if (isDataCorrect())
-        {
-            m_ready = true;
-        }
-        else
-        {
-            m_ready = false;
-
-            clear();
-        }
-    }
 
     return *this;
 }
 
-dph::EphemerisRelease::~EphemerisRelease()
-{
-    m_file.close();
-}
-
-void dph::EphemerisRelease::calculateBody(unsigned resType, double jed,
-    unsigned target, unsigned center, double* res) const
+void dph::EphemerisRelease::calculateBody(ResType resType, double jed,
+    Body target, Body center, double* res) const
 {
     // Допустимые значения параметров:
     // -------------------------------
@@ -146,7 +107,7 @@ void dph::EphemerisRelease::calculateBody(unsigned resType, double jed,
     }
 
     // Количество требуемых компонент:
-    unsigned componentsCount = resType == CALC_STATE ? 6 : 3;
+    unsigned componentsCount = resType == RES_STATE ? 6 : 3;
 
     // Выбор методики вычисления в зависимости от комбинации искомого и
     // центрального тела:
@@ -175,8 +136,8 @@ void dph::EphemerisRelease::calculateBody(unsigned resType, double jed,
         // Выбор метода вычисления в зависимости от тела:
         switch (notSSBARY)
         {
-        case B_EARTH: calculateBaseEarth(jed, resType, res); break;
-        case B_MOON: calculateBaseMoon(jed, resType, res); break;
+        case B_EARTH: calculateBaseEarth(resType, jed, res); break;
+        case B_MOON: calculateBaseMoon(resType, jed, res); break;
         case B_EMBARY: calculateBaseItem(resType, jed, 2, res); break;
         default: calculateBaseItem(resType, jed, notSSBARY - 1, res);
         }
@@ -237,9 +198,9 @@ void dph::EphemerisRelease::calculateBody(unsigned resType, double jed,
             // Выбор метода вычисления в зависимости от тела:
             switch (currentBodyIndex) {
             case B_EARTH:
-                calculateBaseEarth(jed, resType, currentArray); break;
+                calculateBaseEarth(resType, jed, currentArray); break;
             case B_MOON:
-                calculateBaseMoon(jed, resType, currentArray); break;
+                calculateBaseMoon(resType, jed, currentArray); break;
             case B_EMBARY:
                 calculateBaseItem(resType, jed, 2, currentArray); break;
             default:
@@ -256,8 +217,8 @@ void dph::EphemerisRelease::calculateBody(unsigned resType, double jed,
     }
 }
 
-void dph::EphemerisRelease::calculateOther(unsigned resType, double jed,
-    unsigned item, double* res) const
+void dph::EphemerisRelease::calculateOther(ResType resType, double jed,
+    Other item, double* res) const
 {
     // Допустимые значения параметров:
     // -------------------------------
@@ -333,7 +294,7 @@ uint32_t dph::EphemerisRelease::index() const
     return m_index;
 }
 
-const std::string& dph::EphemerisRelease::label() const
+std::string dph::EphemerisRelease::label() const
 {
     return m_label;
 }
@@ -764,11 +725,11 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned resType,
 
     // Выбор метода вычисления в зависимости от заданного результата вычислений:
     switch(resType) {
-    case CALC_POS:
+    case RES_POS:
         interpolatePosition(normalizedTime, baseItem, &m_buffer[coeff_pos],
             componentsCount, res);
         break;
-    case CALC_STATE:
+    case RES_STATE:
         interpolateState(normalizedTime, baseItem, &m_buffer[coeff_pos], 
             componentsCount, res);
         break;
@@ -777,7 +738,7 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned resType,
     }
 }
 
-void dph::EphemerisRelease::calculateBaseEarth(double jed, unsigned resType,
+void dph::EphemerisRelease::calculateBaseEarth(unsigned resType, double jed,
     double* res) const
 {
     // Получение радиус-вектора (или вектора состояния) барицентра сиситемы
@@ -789,7 +750,7 @@ void dph::EphemerisRelease::calculateBaseEarth(double jed, unsigned resType,
     calculateBaseItem(resType, jed, 9, MoonRelativeEarth);
 
     // Количество компонент:
-    unsigned componentsCount = resType == CALC_POS ? 3 : 6;
+    unsigned componentsCount = resType == RES_POS ? 3 : 6;
 
     // Опредление положения Земли относительно барицентра Солнечной Системы:
     for (unsigned i = 0; i < componentsCount; ++i)
@@ -798,7 +759,7 @@ void dph::EphemerisRelease::calculateBaseEarth(double jed, unsigned resType,
     }
 }
 
-void dph::EphemerisRelease::calculateBaseMoon(double jed, unsigned resType,
+void dph::EphemerisRelease::calculateBaseMoon(unsigned resType, double jed,
     double* res) const
 {
     // Получение радиус-вектора (или вектора состояния) барицентра сиситемы
@@ -810,7 +771,7 @@ void dph::EphemerisRelease::calculateBaseMoon(double jed, unsigned resType,
     calculateBaseItem(resType, jed, 9, MoonRelativeEarth);
 
     // Количество компонент:
-    unsigned componentsCount = resType == CALC_POS ? 3 : 6;
+    unsigned componentsCount = resType == RES_POS ? 3 : 6;
 
     // Определение относительного положения:
     for (unsigned i = 0; i < componentsCount; ++i)

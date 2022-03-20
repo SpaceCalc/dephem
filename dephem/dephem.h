@@ -69,7 +69,7 @@ enum Other
 };
 
 // ************************************************************************** //
-//                                 Calculate                                  //
+//                                 ResType                                  //
 //                                                                            //
 //                      Индексы результатов вычислений                        //
 // -------------------------------------------------------------------------- //
@@ -83,10 +83,10 @@ enum Other
 // которые можно получить.                                                    //
 //                                                                            //
 // ************************************************************************** //
-enum Calculate
+enum ResType
 {
-    CALC_POS   = 0,
-    CALC_STATE = 1
+    RES_POS   = 0,
+    RES_STATE = 1
 };
 
 // ************************************************************************** //
@@ -128,11 +128,6 @@ public:
     // При неудачной проверке объект очищается.
     EphemerisRelease& operator=(const EphemerisRelease& other);
 
-    // Деструктор.
-    // -----------
-    // Просто деструктор.
-    ~EphemerisRelease();
-
 // ---------------------------- Методы вычислений ----------------------------//
 
     // Получить значение радиус-вектора (или вектора состояния) выбранного
@@ -161,8 +156,8 @@ public:
     // Примечание: если в метод поданы неверные параметры, то он просто
     // прервётся.
     // -----------------
-    void calculateBody(unsigned resType, double jed,
-        unsigned target, unsigned center, double* result) const;
+    void calculateBody(ResType resType, double jed,
+        Body target, Body center, double* res) const;
 
     // Получить значение(-я) прочих элементов, хранящихся в выпуске эфемерид,
     // на заданный момент времени.
@@ -189,7 +184,7 @@ public:
     // 2. Не всегда в выпуске эфемерид хранится запрашиваемое тело, убедись
     //    в его наличии перед запросом.
     // -----------------
-    void calculateOther(unsigned resType, double jed, unsigned item,
+    void calculateOther(ResType resType, double jed, Other item,
         double* res) const;
 
 
@@ -208,7 +203,7 @@ public:
     uint32_t index() const;
 
     // Строковая информация о выпуске.
-    const std::string& label() const;
+    std::string label() const;
 
     // Значение константы по её имени.
     double constant(const std::string& constantName) const;
@@ -325,11 +320,11 @@ private:
 
     // Получить значение радиус-вектора (или вектора состояния) Земли
     // относительно барицентра Солнечной Системы.
-    void calculateBaseEarth(double jed, unsigned resType, double* res) const;
+    void calculateBaseEarth(unsigned resType, double jed, double* res) const;
 
     // Получить значение радиу-вектора (или вектора состояния) Луны относительно
     // барицентра Солнечной Системы.
-    void calculateBaseMoon(double jed, unsigned resType, double* res) const;
+    void calculateBaseMoon(unsigned resType, double jed, double* res) const;
 
 }; // class EphemerisRelease
 

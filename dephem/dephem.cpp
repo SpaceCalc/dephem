@@ -84,38 +84,38 @@ void dph::EphemerisRelease::calculateBody(unsigned resType, double jed,
 {
     // Допустимые значения параметров:
     // -------------------------------
-    //	- resType:
-    //		0 - Получить значение радиус-вектора,
-    //		1 - Получить значение вектора состояния
-    //		Примечание: используй значения из dph::Calculate.
+    // - resType:
+    //   0 - Получить значение радиус-вектора,
+    //   1 - Получить значение вектора состояния
+    //   Примечание: используй значения из dph::Calculate.
     //
-    //	- jed:
-    //		jed должен принадлежать промежутку: [m_startDate : m_endDate].
+    // - jed:
+    //   jed должен принадлежать промежутку: [m_startDate : m_endDate].
     //
-    //	- target, center:
-    //		------------------------------------
-    //		Индекс	Название
-    //		------------------------------------
-    //		1		Меркурий
-    //		2		Венера
-    //		3		Земля
-    //		4		Марс
-    //		5		Юпитер
-    //		6		Сатурн
-    //		7		Уран
-    //		8		Нептун
-    //		9		Плутон
-    //		10		Луна
-    //		11		Солнце
-    //		12		Барицентр Солнечной Системы
-    //		13		Барицентр системы Земля-Луна
-    //		------------------------------------
-    //		Примечание: используй значения из dph::Body.
+    // - target, center:
+    //   ------------------------------------
+    //   Индекс Название
+    //   ------------------------------------
+    //   1      Меркурий
+    //   2      Венера
+    //   3      Земля
+    //   4      Марс
+    //   5      Юпитер
+    //   6      Сатурн
+    //   7      Уран
+    //   8      Нептун
+    //   9      Плутон
+    //   10     Луна
+    //   11     Солнце
+    //   12     Барицентр Солнечной Системы
+    //   13     Барицентр системы Земля-Луна
+    //   ------------------------------------
+    //   Примечание: используй значения из dph::Body.
     //
-    //	- res:
-    //		От пользователя требуется знать, каков минимальный размер массива
-    //		для выбранного результата вычислений. Не должен быть нулевым
-    //      указателем.
+    // - res:
+    //   От пользователя требуется знать, каков минимальный размер массива
+    //   для выбранного результата вычислений. Не должен быть нулевым
+    //   указателем.
 
 
     //Условия недопустимые для данного метода:
@@ -171,9 +171,9 @@ void dph::EphemerisRelease::calculateBody(unsigned resType, double jed,
         // Выбор метода вычисления в зависимости от тела:
         switch (notSSBARY)
         {
-        case B_EARTH: calculateBaseEarth(jed, resType, res);	break;
-        case B_MOON: calculateBaseMoon(jed, resType, res);		break;
-        case B_EMBARY: calculateBaseItem(resType, jed, 2, res);	break;
+        case B_EARTH: calculateBaseEarth(jed, resType, res); break;
+        case B_MOON: calculateBaseMoon(jed, resType, res); break;
+        case B_EMBARY: calculateBaseItem(resType, jed, 2, res); break;
         default: calculateBaseItem(resType, jed, notSSBARY - 1, res);
         }
 
@@ -229,9 +229,9 @@ void dph::EphemerisRelease::calculateBody(unsigned resType, double jed,
             // Выбор метода вычисления в зависимости от тела:
             switch (currentBodyIndex)
             {
-            case B_EARTH: calculateBaseEarth(jed, resType, currentArray);	break;
-            case B_MOON: calculateBaseMoon(jed, resType, currentArray);	break;
-            case B_EMBARY: calculateBaseItem(resType, jed, 2, currentArray);	break;
+            case B_EARTH: calculateBaseEarth(jed, resType, currentArray); break;
+            case B_MOON: calculateBaseMoon(jed, resType, currentArray); break;
+            case B_EMBARY: calculateBaseItem(resType, jed, 2, currentArray); break;
             default: calculateBaseItem(resType, jed, currentBodyIndex - 1, currentArray);
             }
         }
@@ -249,28 +249,28 @@ void dph::EphemerisRelease::calculateOther(unsigned resType, double jed,
 {
     // Допустимые значения параметров:
     // -------------------------------
-    //	- resType:
-    //		0 - Получить оригинальное значение,
-    //		1 - Получить оригинальное значение и его (их) производные первого порядка.
-    //		Примечание: используй значения из dph::Calculate.
+    // - resType:
+    //   0 - Получить оригинальное значение,
+    //   1 - Получить оригинальное значение и его (их) производные первого порядка.
+    //   Примечание: используй значения из dph::Calculate.
     //
-    //	- jed:
-    //		jed должен принадлежать промежутку: [m_startDate : m_endDate].
+    // - jed:
+    //   jed должен принадлежать промежутку: [m_startDate : m_endDate].
     //
-    //	- item:
-    //		----------------------------------------------------------------
-    //		Индекс	Название
-    //		----------------------------------------------------------------
-    //		14		Земные нутации по долдготе и наклонению (модель IAU 1980)
-    //		15		Либрации лунной мантии
-    //		16		Угловые скорости лунной мантии
-    //		17		TT - TDB (в центре Земли).
-    //		----------------------------------------------------------------
-    //		Примечание: используй значения из dph::Other.
+    // - item:
+    //   ----------------------------------------------------------------
+    //   Индекс Название
+    //   ----------------------------------------------------------------
+    //   14     Земные нутации по долдготе и наклонению (модель IAU 1980)
+    //   15     Либрации лунной мантии
+    //   16     Угловые скорости лунной мантии
+    //   17     TT - TDB (в центре Земли).
+    //   ----------------------------------------------------------------
+    //   Примечание: используй значения из dph::Other.
     //
-    //	- res:
-    //		От пользователя требуется знать, каков минимальный размер массива для
-    //		выбранного результата вычислений. Не должен быть нулевым указателем.
+    // - res:
+    //   От пользователя требуется знать, каков минимальный размер массива для
+    //   выбранного результата вычислений. Не должен быть нулевым указателем.
 
     //Условия недопустимые для данного метода:
     if (this->m_ready == false)
@@ -377,16 +377,16 @@ void dph::EphemerisRelease::clear()
     std::memset(m_keys, 0, sizeof(m_keys));
     m_au = 0.0;
     m_emrat = 0.0;
-    std::map<std::string, double>().swap(m_constants);	// SWAP TRICK
+    std::map<std::string, double>().swap(m_constants); // SWAP TRICK
 
     m_blocksCount = 0;
     m_ncoeff = 0;
     m_dimensionFit = 0;
     m_blockSize_bytes = 0;
 
-    std::vector<double>().swap(m_buffer);	// SWAP TRICK
-    std::vector<double>(1).swap(m_poly);		// SWAP TRICK
-    std::vector<double>(2).swap(m_dpoly);	// SWAP TRICK
+    std::vector<double>().swap(m_buffer); // SWAP TRICK
+    std::vector<double>(1).swap(m_poly);  // SWAP TRICK
+    std::vector<double>(2).swap(m_dpoly); // SWAP TRICK
 
     m_poly[0]  = 1;
     m_dpoly[0] = 0;
@@ -396,43 +396,43 @@ void dph::EphemerisRelease::clear()
 void dph::EphemerisRelease::copyHere(const EphemerisRelease& other)
 {
     // Используется в:
-    //	- Конструктор копирования.
-    //	- Оператор копирования.
+    // - Конструктор копирования.
+    // - Оператор копирования.
 
     m_ready = other.m_ready;
 
-    m_filePath	= other.m_filePath;
+    m_filePath = other.m_filePath;
 
     m_file.close();
     m_file.open(other.m_filePath.c_str(), std::ios::binary);
 
-    m_label =	other.m_label;
-    m_index =	other.m_index;
-    m_beginJed =		other.m_beginJed;
-    m_endJed =			other.m_endJed;
-    m_blockTimeSpan =	other.m_blockTimeSpan;
+    m_label = other.m_label;
+    m_index = other.m_index;
+    m_beginJed = other.m_beginJed;
+    m_endJed = other.m_endJed;
+    m_blockTimeSpan = other.m_blockTimeSpan;
     std::memcpy(m_keys, other.m_keys, sizeof(m_keys));
-    m_au =				other.m_au;
-    m_emrat =			other.m_emrat;
-    m_constants =		other.m_constants;
+    m_au = other.m_au;
+    m_emrat = other.m_emrat;
+    m_constants = other.m_constants;
 
-    m_blocksCount =		other.m_blocksCount;
-    m_ncoeff =			other.m_ncoeff;
-    m_emrat2 =			other.m_emrat2;
-    m_dimensionFit =	other.m_dimensionFit;
+    m_blocksCount = other.m_blocksCount;
+    m_ncoeff = other.m_ncoeff;
+    m_emrat2 = other.m_emrat2;
+    m_dimensionFit = other.m_dimensionFit;
     m_blockSize_bytes = other.m_blockSize_bytes;
 
-    m_buffer =	other.m_buffer;
-    m_poly =	other.m_poly;
-    m_dpoly =	other.m_poly;
+    m_buffer = other.m_buffer;
+    m_poly = other.m_poly;
+    m_dpoly = other.m_poly;
 }
 
 void dph::EphemerisRelease::readAndPackData()
 {
     // Буфферы для чтения информации из файла:
-    char	releaseLabel_buffer[RLS_LABELS_COUNT][RLS_LABEL_SIZE];	// Строк. инф. о выпуске.
-    char	constantsNames_buffer[CCOUNT_MAX_NEW][CNAME_SIZE];		// Имена констант.
-    double	constantsValues_buffer[CCOUNT_MAX_NEW];					// Значения констант.
+    char releaseLabel_buffer[RLS_LABELS_COUNT][RLS_LABEL_SIZE]; // Строк. инф. о выпуске.
+    char constantsNames_buffer[CCOUNT_MAX_NEW][CNAME_SIZE]; // Имена констант.
+    double constantsValues_buffer[CCOUNT_MAX_NEW]; // Значения констант.
 
     // Количество констант в файле эфемерид:
     uint32_t constantsCount;
@@ -538,14 +538,14 @@ bool dph::EphemerisRelease::isDataCorrect() const
     // могут повлиять непосредственно на вычисления значений элементов,
     // хранящихся в выпуске эфемерид.
 
-    if (m_file.is_open() == false)			return false;	// Ошибка открытия файла.
-    if (m_beginJed >= m_endJed)						return false;
-    if (m_blockTimeSpan == 0)							return false;
-    if ((m_endJed - m_beginJed) < m_blockTimeSpan)	return false;
-    if (m_emrat == 0)									return false;
-    if (m_ncoeff == 0)									return false;
+    if (m_file.is_open() == false) return false; // Ошибка открытия файла.
+    if (m_beginJed >= m_endJed) return false;
+    if (m_blockTimeSpan == 0) return false;
+    if ((m_endJed - m_beginJed) < m_blockTimeSpan) return false;
+    if (m_emrat == 0) return false;
+    if (m_ncoeff == 0) return false;
 
-    if (check_blocksDates() == false)					return false;
+    if (check_blocksDates() == false) return false;
 
     return true;
 }
@@ -665,31 +665,31 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned resType,
     double jed, unsigned baseItem, double* res) const
 {
     // Допустимые значения переданных параметров:
-    //	[1]	baseItem - Индекс базового элемента выпуска (от нуля).
+    // [1] baseItem - Индекс базового элемента выпуска (от нуля).
     //
-    //						Нумерация базовых элементов выпуска
-    //		-------------------------------------------------------------------
-    //		Индекс	Наименование
-    //		-------------------------------------------------------------------
-    //		0		Mercury
-    //		1		Venus
-    //		2		Earth-Moon barycenter
-    //		3		Mars
-    //		4		Jupiter
-    //		5		Saturn
-    //		6		Uranus
-    //		7		Neptune
-    //		8		Pluto
-    //		9		Moon (geocentric)
-    //		10		Sun
-    //		11		Earth Nutations in longitude and obliquity (IAU 1980 model)
-    //		12		Lunar mantle libration
-    //		13		Lunar mantle angular velocity
-    //		14		TT-TDB (at geocenter)
-    //		-------------------------------------------------------------------
-    //	[2] jed - момент времени на который требуется получить требуемые значения.
-    //	[3] resType - индекс результата вычисления (см. dph::Calculate).
-    //	[4] res - указатель на массив для результата вычислений.
+    //     Нумерация базовых элементов выпуска
+    //     -------------------------------------------------------------------
+    //     Индекс Наименование
+    //     -------------------------------------------------------------------
+    //     0      Mercury
+    //     1      Venus
+    //     2      Earth-Moon barycenter
+    //     3      Mars
+    //     4      Jupiter
+    //     5      Saturn
+    //     6      Uranus
+    //     7      Neptune
+    //     8      Pluto
+    //     9      Moon (geocentric)
+    //     10     Sun
+    //     11     Earth Nutations in longitude and obliquity (IAU 1980 model)
+    //     12     Lunar mantle libration
+    //     13     Lunar mantle angular velocity
+    //     14     TT-TDB (at geocenter)
+    //     -------------------------------------------------------------------
+    // [2] jed - момент времени на который требуется получить требуемые значения.
+    // [3] resType - индекс результата вычисления (см. dph::Calculate).
+    // [4] res - указатель на массив для результата вычислений.
 
     // Внимание!
     // В ходе выполнения функции смысл переменных "normalizedTime" и "offset" будет меняться.

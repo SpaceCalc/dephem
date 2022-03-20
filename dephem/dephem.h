@@ -52,19 +52,19 @@ enum Item {
 };
 
 // Класс для работы с выпусками DE-эфемерид JPL в бинарном формате.
-class EphemerisRelease
+class DevelopmentEphemeris
 {
 public:
-    EphemerisRelease();
+    DevelopmentEphemeris();
 
     // Конструктор по пути к бинарному файлу эфемерид.
-    EphemerisRelease(const std::string& filePath);
+    DevelopmentEphemeris(const std::string& filePath);
 
     // Конструктор копирования.
-    EphemerisRelease(const EphemerisRelease& other);
+    DevelopmentEphemeris(const DevelopmentEphemeris& other);
 
     // Оператор копирования.
-    EphemerisRelease& operator=(const EphemerisRelease& other);
+    DevelopmentEphemeris& operator=(const DevelopmentEphemeris& other);
 
     // Открыть файл эфемерид.
     bool open(const std::string& filePath);
@@ -132,7 +132,7 @@ private:
     void clear();
 
     // Копирование информации из объекта "other" в текущий объект.
-    void copyHere(const EphemerisRelease& other);
+    void copyHere(const DevelopmentEphemeris& other);
 
     // Чтение файла.
     bool read();

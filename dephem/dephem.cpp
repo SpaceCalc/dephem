@@ -2,29 +2,29 @@
 
 #include <cmath>
 
-dph::EphemerisRelease::EphemerisRelease()
+dph::DevelopmentEphemeris::DevelopmentEphemeris()
 {
     clear();
 }
 
-dph::EphemerisRelease::EphemerisRelease(const std::string& filePath)
+dph::DevelopmentEphemeris::DevelopmentEphemeris(const std::string& filePath)
 {
     open(filePath);
 }
 
-dph::EphemerisRelease::EphemerisRelease(const EphemerisRelease& other)
+dph::DevelopmentEphemeris::DevelopmentEphemeris(const DevelopmentEphemeris& other)
 {
     copyHere(other);
 }
 
-dph::EphemerisRelease& dph::EphemerisRelease::operator=(const
-    EphemerisRelease& other)
+dph::DevelopmentEphemeris& dph::DevelopmentEphemeris::operator=(const
+    DevelopmentEphemeris& other)
 {
     copyHere(other);
     return *this;
 }
 
-bool dph::EphemerisRelease::open(const std::string& filePath)
+bool dph::DevelopmentEphemeris::open(const std::string& filePath)
 {
     clear();
 
@@ -45,21 +45,21 @@ bool dph::EphemerisRelease::open(const std::string& filePath)
 }
 
 // Положение target относительно center на момент времени jed.
-bool dph::EphemerisRelease::bodyPosition(int target, int center, double jed,
+bool dph::DevelopmentEphemeris::bodyPosition(int target, int center, double jed,
     double pos[3]) const
 {
     return body(0, jed, target, center, pos);
 }
 
 // Положение и скорость target относительно center на момент времени jed.
-bool dph::EphemerisRelease::bodyState(int target, int center, double jed,
+bool dph::DevelopmentEphemeris::bodyState(int target, int center, double jed,
     double state[6]) const
 {
     return body(1, jed, target, center, state);
 }
 
 // Значение отдельного элемента item на момент времени jed.
-bool dph::EphemerisRelease::item(int item, double jed, double* result) const
+bool dph::DevelopmentEphemeris::item(int item, double jed, double* result) const
 {
     if (item < 0 || item > 14)
         return false;
@@ -70,7 +70,7 @@ bool dph::EphemerisRelease::item(int item, double jed, double* result) const
 }
 
 
-bool dph::EphemerisRelease::body(int resType, double jed,
+bool dph::DevelopmentEphemeris::body(int resType, double jed,
     int target, int center, double* res) const
 {
     // Допустимые значения параметров:
@@ -215,32 +215,32 @@ bool dph::EphemerisRelease::body(int resType, double jed,
     return true;
 }
 
-bool dph::EphemerisRelease::isOpen() const
+bool dph::DevelopmentEphemeris::isOpen() const
 {
     return m_file.is_open();
 }
 
-double dph::EphemerisRelease::beginJed() const
+double dph::DevelopmentEphemeris::beginJed() const
 {
     return m_beginJed;
 }
 
-double dph::EphemerisRelease::endJed() const
+double dph::DevelopmentEphemeris::endJed() const
 {
     return m_endJed;
 }
 
-int dph::EphemerisRelease::index() const
+int dph::DevelopmentEphemeris::index() const
 {
     return m_index;
 }
 
-std::string dph::EphemerisRelease::label() const
+std::string dph::DevelopmentEphemeris::label() const
 {
     return m_label;
 }
 
-double dph::EphemerisRelease::constant(const std::string& name, bool* ok) const
+double dph::DevelopmentEphemeris::constant(const std::string& name, bool* ok) const
 {
     auto found = m_constants.find(name);
 
@@ -258,7 +258,7 @@ double dph::EphemerisRelease::constant(const std::string& name, bool* ok) const
     }
 }
 
-std::string dph::EphemerisRelease::cutBackSpaces(const char* s, size_t size)
+std::string dph::DevelopmentEphemeris::cutBackSpaces(const char* s, size_t size)
 {
     for (size_t i = size - 1; i > 0; --i)
         if (s[i] == ' ' && s[i - 1] != ' ')
@@ -267,7 +267,7 @@ std::string dph::EphemerisRelease::cutBackSpaces(const char* s, size_t size)
     return std::string(s, size);
 }
 
-void dph::EphemerisRelease::clear()
+void dph::DevelopmentEphemeris::clear()
 {
     m_filePath.clear();
     m_file.close();
@@ -287,7 +287,7 @@ void dph::EphemerisRelease::clear()
     std::vector<double>().swap(m_buffer); // SWAP TRICK
 }
 
-void dph::EphemerisRelease::copyHere(const EphemerisRelease& other)
+void dph::DevelopmentEphemeris::copyHere(const DevelopmentEphemeris& other)
 {
     // Используется в:
     // - Конструктор копирования.
@@ -313,7 +313,7 @@ void dph::EphemerisRelease::copyHere(const EphemerisRelease& other)
     m_buffer = other.m_buffer;
 }
 
-bool dph::EphemerisRelease::read()
+bool dph::DevelopmentEphemeris::read()
 {
     // Перейти в начало файла.
     m_file.seekg(0, std::ios::beg);
@@ -457,7 +457,7 @@ bool dph::EphemerisRelease::read()
     return true;
 }
 
-bool dph::EphemerisRelease::fillBuffer(size_t blockNum) const
+bool dph::DevelopmentEphemeris::fillBuffer(size_t blockNum) const
 {
     size_t blockSize = m_ncoeff * 8;
     size_t adress = (2 + blockNum) * blockSize;
@@ -472,7 +472,7 @@ bool dph::EphemerisRelease::fillBuffer(size_t blockNum) const
 }
 
 // Базовый элемент.
-bool dph::EphemerisRelease::baseItem(int resType, double jed, int baseItem,
+bool dph::DevelopmentEphemeris::baseItem(int resType, double jed, int baseItem,
     double* res) const
 {
     // Допустимые значения переданных параметров:
@@ -614,7 +614,7 @@ bool dph::EphemerisRelease::baseItem(int resType, double jed, int baseItem,
 }
 
 // Земля относительно барицентра Солнечной Системы.
-bool dph::EphemerisRelease::ssbaryEarth(int resType, double jed,
+bool dph::DevelopmentEphemeris::ssbaryEarth(int resType, double jed,
     double* res) const
 {
     // Барицентр сиситемы Земля-Луна относительно барицентра Солнечной Системы.
@@ -637,7 +637,7 @@ bool dph::EphemerisRelease::ssbaryEarth(int resType, double jed,
 }
 
 // Луна относительно барицентра Солнечной Системы.
-bool dph::EphemerisRelease::ssbaryMoon(int resType, double jed, double* res) const
+bool dph::DevelopmentEphemeris::ssbaryMoon(int resType, double jed, double* res) const
 {
     // Барицентр сиситемы Земля-Луна относительно барицентра Солнечной Системы.
     if (!baseItem(resType, jed, 2, res))

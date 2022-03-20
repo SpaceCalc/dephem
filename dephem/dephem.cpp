@@ -52,7 +52,8 @@ dph::EphemerisRelease::EphemerisRelease(const EphemerisRelease& other)
     }
 }
 
-dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& other)
+dph::EphemerisRelease& dph::EphemerisRelease::operator=(const
+    EphemerisRelease& other)
 {
     if (other.m_ready)
     {
@@ -147,7 +148,8 @@ void dph::EphemerisRelease::calculateBody(unsigned resType, double jed,
     // Количество требуемых компонент:
     unsigned componentsCount = resType == CALC_STATE ? 6 : 3;
 
-    // Выбор методики вычисления в зависимости от комбинации искомого и центрального тела:
+    // Выбор методики вычисления в зависимости от комбинации искомого и
+    // центрального тела:
     if (target == center)
     {
         // Случай #1 : Искомое тело является центральным.
@@ -159,11 +161,13 @@ void dph::EphemerisRelease::calculateBody(unsigned resType, double jed,
     }
     else if (target == B_SSBARY || center == B_SSBARY)
     {
-        // Случай #2: искомым или центральным телом является барицентр Солнечной Системы.
+        // Случай #2: искомым или центральным телом является барицентр Солнечной
+        // Системы.
         //
-        // Так как все методы calculateBase для тел возвращают вектор относительно барцентра СС,
-        // то достаточно вычислить пололжение второго тела. В случае, если искомым телом является
-        // сам барицентр СС, то возвращается "зеркальный" вектор второго тела.
+        // Так как все методы calculateBase для тел возвращают вектор
+        // относительно барцентра СС, то достаточно вычислить пололжение второго
+        // тела. В случае, если искомым телом является сам барицентр СС, то
+        // возвращается "зеркальный" вектор второго тела.
 
         // Индекс тела, что не является барицентром СС:
         unsigned notSSBARY = target == B_SSBARY ? center : target;
@@ -177,7 +181,8 @@ void dph::EphemerisRelease::calculateBody(unsigned resType, double jed,
         default: calculateBaseItem(resType, jed, notSSBARY - 1, res);
         }
 
-        // Если барицентр СС является искомым телом, то возвращается "зеркальный" вектор:
+        // Если барицентр СС является искомым телом, то возвращается
+        // "зеркальный" вектор:
         if (target == B_SSBARY)
         {
             for (unsigned i = 0; i < componentsCount; ++i)
@@ -188,16 +193,19 @@ void dph::EphemerisRelease::calculateBody(unsigned resType, double jed,
     }
     else if (target * center == 30 && target + center == 13)
     {
-        // Случай #3 : Искомым и центральным телами являетса Земля и Луна (или Луна и Земля).
+        // Случай #3 : Искомым и центральным телами являетса Земля и Луна (или
+        // Луна и Земля).
         //
-        // В этом случае достаточно получить значение положения Луны относительно Земли (базовый
-        // элемент #9 (от нуля). В случае, если искомым телом является Земля, то возвращается
-        // "зеркальный вектор".
+        // В этом случае достаточно получить значение положения Луны
+        // относительно Земли (базовый элемент #9 (от нуля). В случае, если
+        // искомым телом является Земля, то возвращается "зеркальный вектор".
 
-        // Получение радиус-вектора (или вектора состояния) Луны относительно Земли:
+        // Получение радиус-вектора (или вектора состояния) Луны относительно
+        // Земли:
         calculateBaseItem(resType, jed, 9, res);
 
-        // Если искомым телом является Земля, то возвращается "зеркальный" вектор.
+        // Если искомым телом является Земля, то возвращается "зеркальный"
+        // вектор.
         if (target == B_EARTH)
         {
             for (unsigned i = 0; i < componentsCount; ++i)
@@ -210,9 +218,9 @@ void dph::EphemerisRelease::calculateBody(unsigned resType, double jed,
     {
         // Случай #4 : Все остальные комбинации тел.
         //
-        // Сначала вычисляется значение центрального тела относительно барицентра СС,
-        // после - искомого. Результатом является разница между вектором центрального тела и
-        // искомого.
+        // Сначала вычисляется значение центрального тела относительно
+        // барицентра СС, после - искомого. Результатом является разница между
+        // вектором центрального тела и искомого.
 
         // Массив для центрального тела:
         double centerBodyArray[6];
@@ -227,12 +235,16 @@ void dph::EphemerisRelease::calculateBody(unsigned resType, double jed,
             double* currentArray = i == 0 ? centerBodyArray : res;
 
             // Выбор метода вычисления в зависимости от тела:
-            switch (currentBodyIndex)
-            {
-            case B_EARTH: calculateBaseEarth(jed, resType, currentArray); break;
-            case B_MOON: calculateBaseMoon(jed, resType, currentArray); break;
-            case B_EMBARY: calculateBaseItem(resType, jed, 2, currentArray); break;
-            default: calculateBaseItem(resType, jed, currentBodyIndex - 1, currentArray);
+            switch (currentBodyIndex) {
+            case B_EARTH:
+                calculateBaseEarth(jed, resType, currentArray); break;
+            case B_MOON:
+                calculateBaseMoon(jed, resType, currentArray); break;
+            case B_EMBARY:
+                calculateBaseItem(resType, jed, 2, currentArray); break;
+            default:
+                calculateBaseItem(resType, jed, currentBodyIndex - 1,
+                    currentArray);
             }
         }
 
@@ -251,7 +263,8 @@ void dph::EphemerisRelease::calculateOther(unsigned resType, double jed,
     // -------------------------------
     // - resType:
     //   0 - Получить оригинальное значение,
-    //   1 - Получить оригинальное значение и его (их) производные первого порядка.
+    //   1 - Получить оригинальное значение и его (их) производные первого
+    //       порядка.
     //   Примечание: используй значения из dph::Calculate.
     //
     // - jed:
@@ -430,13 +443,19 @@ void dph::EphemerisRelease::copyHere(const EphemerisRelease& other)
 void dph::EphemerisRelease::readAndPackData()
 {
     // Буфферы для чтения информации из файла:
-    char releaseLabel_buffer[RLS_LABELS_COUNT][RLS_LABEL_SIZE]; // Строк. инф. о выпуске.
-    char constantsNames_buffer[CCOUNT_MAX_NEW][CNAME_SIZE]; // Имена констант.
-    double constantsValues_buffer[CCOUNT_MAX_NEW]; // Значения констант.
+
+    // Строк. инф. о выпуске.
+    char releaseLabel_buffer[RLS_LABELS_COUNT][RLS_LABEL_SIZE]; 
+
+    // Имена констант.
+    char constantsNames_buffer[CCOUNT_MAX_NEW][CNAME_SIZE];
+    
+    // Значения констант.
+    double constantsValues_buffer[CCOUNT_MAX_NEW];
 
     // Количество констант в файле эфемерид:
     uint32_t constantsCount;
-    // ------------------------------------- Чтение файла ------------------------------------- //
+    // ---------------------------- Чтение файла ---------------------------- //
 
     m_file.seekg(0, std::ios::beg);
     m_file.read((char*)&releaseLabel_buffer, RLS_LABEL_SIZE * RLS_LABELS_COUNT);
@@ -481,7 +500,7 @@ void dph::EphemerisRelease::readAndPackData()
     }
 
 
-    // -------------------- Форматирование и упаковка считанной информации --------------------- //
+    // -------- Форматирование и упаковка считанной информации -------------- //
 
     // Формирование строк общей информации о выпуске:
     for (size_t i = 0; i < RLS_LABELS_COUNT; ++i)
@@ -638,8 +657,9 @@ void dph::EphemerisRelease::interpolateState(double normalizedTime,
     // Заполнение полиномов (вычисление их сумм):
     for (uint32_t i = 3; i < cpec; ++i)
     {
-         m_poly[i] = 2 * normalizedTime *  m_poly[i - 1] -  m_poly[i - 2];
-        m_dpoly[i] = 2 * m_poly[i - 1] + 2 * normalizedTime * m_dpoly[i - 1] - m_dpoly[i - 2];
+        m_poly[i] = 2 * normalizedTime *  m_poly[i - 1] -  m_poly[i - 2];
+        m_dpoly[i] = 2 * m_poly[i - 1] + 2 * normalizedTime * m_dpoly[i - 1] -
+            m_dpoly[i - 2];
     }
 
     // Обнуление массива результата вычислений:
@@ -687,17 +707,20 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned resType,
     //     13     Lunar mantle angular velocity
     //     14     TT-TDB (at geocenter)
     //     -------------------------------------------------------------------
-    // [2] jed - момент времени на который требуется получить требуемые значения.
+    // [2] jed - момент времени на который требуется получить требуемые
+    //           значения.
     // [3] resType - индекс результата вычисления (см. dph::Calculate).
     // [4] res - указатель на массив для результата вычислений.
 
     // Внимание!
-    // В ходе выполнения функции смысл переменных "normalizedTime" и "offset" будет меняться.
+    // В ходе выполнения функции смысл переменных "normalizedTime" и "offset"
+    // будет меняться.
 
     // Норм. время относительно всех блоков в выпуске:
     double normalizedTime = (jed - m_beginJed) / m_blockTimeSpan;
 
-    // Порядковый номер блока, соотв. заданной дате JED (целая часть от normalizedTime):
+    // Порядковый номер блока, соотв. заданной дате JED (целая часть от
+    // normalizedTime):
     size_t offset = static_cast<size_t>(normalizedTime);
 
     // Заполнение буффера коэффициентами требуемого блока.
@@ -706,7 +729,8 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned resType,
     // m_buffer[1] - дата окончания блока.
     if (jed < m_buffer[0] || jed >= m_buffer[1])
     {
-        // Если JED равна последней доступоной дате для вычислений, то заполняется последний блок.
+        // Если JED равна последней доступоной дате для вычислений, то
+        // заполняется последний блок.
 
         fillBuffer(offset - (jed == m_endJed ? 1 : 0));
     }
@@ -735,21 +759,19 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned resType,
     unsigned componentsCount = baseItem == 11 ? 2 : baseItem == 14 ? 1 : 3;
 
     // Порядковый номер первого коэффициента в блоке:
-    int coeff_pos  = m_keys[baseItem][0] - 1 + componentsCount * offset * m_keys[baseItem][1];
+    int coeff_pos  = m_keys[baseItem][0] - 1 + componentsCount * offset *
+        m_keys[baseItem][1];
 
     // Выбор метода вычисления в зависимости от заданного результата вычислений:
-    switch(resType)
-    {
-    case CALC_POS :
-        interpolatePosition(normalizedTime, baseItem, &m_buffer[coeff_pos], componentsCount,
-            res);
+    switch(resType) {
+    case CALC_POS:
+        interpolatePosition(normalizedTime, baseItem, &m_buffer[coeff_pos],
+            componentsCount, res);
         break;
-
-    case CALC_STATE :
-        interpolateState(normalizedTime, baseItem, &m_buffer[coeff_pos], componentsCount,
-            res);
+    case CALC_STATE:
+        interpolateState(normalizedTime, baseItem, &m_buffer[coeff_pos], 
+            componentsCount, res);
         break;
-
     default:
         memset(res, 0, componentsCount * sizeof(double));
     }
@@ -758,8 +780,8 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned resType,
 void dph::EphemerisRelease::calculateBaseEarth(double jed, unsigned resType,
     double* res) const
 {
-    // Получение радиус-вектора (или вектора состояния) барицентра сиситемы Земля-Луна
-    // относительно барицентра Солнечной Системы:
+    // Получение радиус-вектора (или вектора состояния) барицентра сиситемы
+    // Земля-Луна относительно барицентра Солнечной Системы:
     calculateBaseItem(resType, jed, 2, res);
 
     // Получение радиус-вектора (или вектора состояния) Луны относитльно Земли:
@@ -779,8 +801,8 @@ void dph::EphemerisRelease::calculateBaseEarth(double jed, unsigned resType,
 void dph::EphemerisRelease::calculateBaseMoon(double jed, unsigned resType,
     double* res) const
 {
-    // Получение радиус-вектора (или вектора состояния) барицентра сиситемы Земля-Луна
-    // относительно барицентра Солнечной Системы:
+    // Получение радиус-вектора (или вектора состояния) барицентра сиситемы
+    // Земля-Луна относительно барицентра Солнечной Системы:
     calculateBaseItem(resType, jed, 2, res);
 
     // Получение радиус-вектора (или вектора состояния) Луны относитльно Земли:

@@ -29,26 +29,21 @@ namespace dph
 // можно получить результат вычислений.                                       //
 //                                                                            //
 // ************************************************************************** //
-class Body
+enum Body
 {
-public:
-
-    static const unsigned MERCURY	= 1;
-    static const unsigned VENUS		= 2;
-    static const unsigned EARTH		= 3;
-    static const unsigned MARS		= 4;
-    static const unsigned JUPITER	= 5;
-    static const unsigned SATURN	= 6;
-    static const unsigned URANUS	= 7;
-    static const unsigned NEPTUNE	= 8;
-    static const unsigned PLUTO		= 9;
-    static const unsigned MOON		= 10;
-    static const unsigned SUN		= 11;
-    static const unsigned SSBARY	= 12;	// Барицентр Солнечной Системы.
-    static const unsigned EMBARY	= 13;	// Барицентр системы Земля-Луна.
-
-private:
-    Body(); // Запрет на создание объекта типа Body.
+    B_MERCURY	= 1,
+    B_VENUS		= 2,
+    B_EARTH		= 3,
+    B_MARS		= 4,
+    B_JUPITER	= 5,
+    B_SATURN	= 6,
+    B_URANUS	= 7,
+    B_NEPTUNE	= 8,
+    B_PLUTO		= 9,
+    B_MOON		= 10,
+    B_SUN		= 11,
+    B_SSBARY	= 12, // Барицентр Солнечной Системы.
+    B_EMBARY	= 13  // Барицентр системы Земля-Луна.
 };
 
 // ************************************************************************** //
@@ -65,16 +60,12 @@ private:
 // которых можно получить результат вычислений.                               //
 //                                                                            //
 // ************************************************************************** //
-class Other
+enum Other
 {
-public:
-
-    static const unsigned EARTH_NUTATIONS				= 14;
-    static const unsigned LUNAR_MANTLE_LIBRATION		= 15;
-    static const unsigned LUNAR_MANTLE_ANGULAR_VELOCITY	= 16;
-    static const unsigned TTmTDB						= 17;
-private:
-    Other(); // Запрет на создание объекта типа Other.
+    O_EARTH_NUTATIONS				= 14,
+    O_LUNAR_MANTLE_LIBRATION		= 15,
+    O_LUNAR_MANTLE_ANGULAR_VELOCITY	= 16,
+    O_TTmTDB						= 17
 };
 
 // ************************************************************************** //
@@ -92,15 +83,10 @@ private:
 // которые можно получить.                                                    //
 //                                                                            //
 // ************************************************************************** //
-class Calculate
+enum Calculate
 {
-public:
-
-    static const unsigned POSITION	= 0;
-    static const unsigned STATE		= 1;
-
-private:
-    Calculate(); // Запрет на создание объекта типа Calculate.
+    CALC_POS   = 0,
+    CALC_STATE = 1
 };
 
 // ************************************************************************** //

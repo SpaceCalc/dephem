@@ -144,7 +144,7 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
     }
 
     // Количество требуемых компонент:
-    unsigned componentsCount = calculationResult == Calculate::STATE ? 6 : 3;
+    unsigned componentsCount = calculationResult == CALC_STATE ? 6 : 3;
 
     // Выбор методики вычисления в зависимости от комбинации искомого и центрального тела:
     if (targetBody == centerBody)
@@ -156,7 +156,7 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
         // Заполнение массива нулями:
         std::memset(resultArray, 0, sizeof(double) * componentsCount);
     }
-    else if (targetBody == Body::SSBARY || centerBody == Body::SSBARY)
+    else if (targetBody == B_SSBARY || centerBody == B_SSBARY)
     {
         // Случай #2: искомым или центральным телом является барицентр Солнечной Системы.
         //
@@ -165,19 +165,19 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
         // сам барицентр СС, то возвращается "зеркальный" вектор второго тела.
 
         // Индекс тела, что не является барицентром СС:
-        unsigned notSSBARY = targetBody == Body::SSBARY ? centerBody : targetBody;
+        unsigned notSSBARY = targetBody == B_SSBARY ? centerBody : targetBody;
 
         // Выбор метода вычисления в зависимости от тела:
         switch (notSSBARY)
         {
-        case Body::EARTH: calculateBaseEarth(JED, calculationResult, resultArray);	break;
-        case Body::MOON: calculateBaseMoon(JED, calculationResult, resultArray);		break;
-        case Body::EMBARY: calculateBaseItem(2, JED, calculationResult, resultArray);	break;
+        case B_EARTH: calculateBaseEarth(JED, calculationResult, resultArray);	break;
+        case B_MOON: calculateBaseMoon(JED, calculationResult, resultArray);		break;
+        case B_EMBARY: calculateBaseItem(2, JED, calculationResult, resultArray);	break;
         default: calculateBaseItem(notSSBARY - 1, JED, calculationResult, resultArray);
         }
 
         // Если барицентр СС является искомым телом, то возвращается "зеркальный" вектор:
-        if (targetBody == Body::SSBARY)
+        if (targetBody == B_SSBARY)
         {
             for (unsigned i = 0; i < componentsCount; ++i)
             {
@@ -197,7 +197,7 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
         calculateBaseItem(9, JED, calculationResult, resultArray);
 
         // Если искомым телом является Земля, то возвращается "зеркальный" вектор.
-        if (targetBody == Body::EARTH)
+        if (targetBody == B_EARTH)
         {
             for (unsigned i = 0; i < componentsCount; ++i)
             {
@@ -228,9 +228,9 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
             // Выбор метода вычисления в зависимости от тела:
             switch (currentBodyIndex)
             {
-            case Body::EARTH: calculateBaseEarth(JED, calculationResult, currentArray);	break;
-            case Body::MOON: calculateBaseMoon(JED, calculationResult, currentArray);	break;
-            case Body::EMBARY: calculateBaseItem(2, JED, calculationResult, currentArray);	break;
+            case B_EARTH: calculateBaseEarth(JED, calculationResult, currentArray);	break;
+            case B_MOON: calculateBaseMoon(JED, calculationResult, currentArray);	break;
+            case B_EMBARY: calculateBaseItem(2, JED, calculationResult, currentArray);	break;
             default: calculateBaseItem(currentBodyIndex - 1, JED, calculationResult, currentArray);
             }
         }
@@ -489,7 +489,6 @@ void dph::EphemerisRelease::readAndPackData()
         m_releaseLabel += cutBackSpaces(releaseLabel_buffer[i], RLS_LABEL_SIZE);
         m_releaseLabel += '\n';
     }
-    m_releaseLabel;
 
     // Заполнение контейнера m_constants именами и значениями констант:
     if (constantsCount > 0 && constantsCount <= CCOUNT_MAX_NEW)
@@ -739,12 +738,12 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED
     // Выбор метода вычисления в зависимости от заданного результата вычислений:
     switch(calculationResult)
     {
-    case Calculate::POSITION :
+    case CALC_POS :
         interpolatePosition(baseItemIndex, normalizedTime, &m_buffer[coeff_pos], componentsCount,
             resultArray);
         break;
 
-    case Calculate::STATE :
+    case CALC_STATE :
         interpolateState(baseItemIndex, normalizedTime, &m_buffer[coeff_pos], componentsCount,
             resultArray);
         break;
@@ -766,7 +765,7 @@ void dph::EphemerisRelease::calculateBaseEarth(double JED, unsigned calculationR
     calculateBaseItem(9, JED, calculationResult, MoonRelativeEarth);
 
     // Количество компонент:
-    unsigned componentsCount = calculationResult == Calculate::POSITION ? 3 : 6;
+    unsigned componentsCount = calculationResult == CALC_POS ? 3 : 6;
 
     // Опредление положения Земли относительно барицентра Солнечной Системы:
     for (unsigned i = 0; i < componentsCount; ++i)
@@ -787,7 +786,7 @@ void dph::EphemerisRelease::calculateBaseMoon(double JED, unsigned calculationRe
     calculateBaseItem(9, JED, calculationResult, MoonRelativeEarth);
 
     // Количество компонент:
-    unsigned componentsCount = calculationResult == Calculate::POSITION ? 3 : 6;
+    unsigned componentsCount = calculationResult == CALC_POS ? 3 : 6;
 
     // Определение относительного положения:
     for (unsigned i = 0; i < componentsCount; ++i)

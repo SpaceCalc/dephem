@@ -1,18 +1,18 @@
 #include "dephem.h"
 
-dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath)
+dph::EphemerisRelease::EphemerisRelease(const std::string& filePath)
 {
     // Инициализация внутренних переменных:
     clear();
 
     // Копирование пути к файлу:
-    m_binaryFilePath = binaryFilePath;
+    m_filePath = filePath;
 
     // Открытие файла:
-    m_binaryFileStream.open(m_binaryFilePath.c_str(), std::ios::binary);
+    m_file.open(m_filePath.c_str(), std::ios::binary);
 
     // Файл открыт?
-    bool isFileOpen = m_binaryFileStream.is_open();
+    bool isFileOpen = m_file.is_open();
 
     if (isFileOpen)
     {
@@ -29,7 +29,7 @@ dph::EphemerisRelease::EphemerisRelease(const std::string& binaryFilePath)
     }
     else
     {
-        m_binaryFilePath.clear();
+        m_filePath.clear();
     }
 }
 
@@ -76,20 +76,23 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const EphemerisRelease& 
 
 dph::EphemerisRelease::~EphemerisRelease()
 {
-    m_binaryFileStream.close();
+    m_file.close();
 }
 
-void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
-    unsigned targetBody, unsigned centerBody, double JED, double* resultArray) const
+void dph::EphemerisRelease::calculateBody(unsigned resType, double jed,
+    unsigned target, unsigned center, double* res) const
 {
     // Допустимые значения параметров:
     // -------------------------------
-    //	- calculationResult:
-    //		1 - Получить значение радиус-вектора,
-    //		2 - Получить значение вектора состояния
+    //	- resType:
+    //		0 - Получить значение радиус-вектора,
+    //		1 - Получить значение вектора состояния
     //		Примечание: используй значения из dph::Calculate.
     //
-    //	- targetBody, centerBody:
+    //	- jed:
+    //		jed должен принадлежать промежутку: [m_startDate : m_endDate].
+    //
+    //	- target, center:
     //		------------------------------------
     //		Индекс	Название
     //		------------------------------------
@@ -109,12 +112,10 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
     //		------------------------------------
     //		Примечание: используй значения из dph::Body.
     //
-    //	- JED:
-    //		JED должен принадлежать промежутку: [m_startDate : m_endDate].
-    //
-    //	- resultArray:
-    //		От пользователя требуется знать, каков минимальный размер массива для
-    //		выбранного результата вычислений. Не должен быть нулевым указателем.
+    //	- res:
+    //		От пользователя требуется знать, каков минимальный размер массива
+    //		для выбранного результата вычислений. Не должен быть нулевым
+    //      указателем.
 
 
     //Условия недопустимые для данного метода:
@@ -122,41 +123,41 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
     {
         return;
     }
-    else if (calculationResult > 1)
+    else if (resType > 1)
     {
         return;
     }
-    else if (targetBody == 0 || centerBody == 0)
+    else if (target == 0 || center == 0)
     {
         return;
     }
-    else if (targetBody > 13 || centerBody > 13)
+    else if (target > 13 || center > 13)
     {
         return;
     }
-    else if (JED < m_startDate || JED > m_endDate)
+    else if (jed < m_beginJed || jed > m_endJed)
     {
         return;
     }
-    else if (resultArray == NULL)
+    else if (res == NULL)
     {
         return;
     }
 
     // Количество требуемых компонент:
-    unsigned componentsCount = calculationResult == CALC_STATE ? 6 : 3;
+    unsigned componentsCount = resType == CALC_STATE ? 6 : 3;
 
     // Выбор методики вычисления в зависимости от комбинации искомого и центрального тела:
-    if (targetBody == centerBody)
+    if (target == center)
     {
         // Случай #1 : Искомое тело является центральным.
         //
         // Результатом является нулевой вектор.
 
         // Заполнение массива нулями:
-        std::memset(resultArray, 0, sizeof(double) * componentsCount);
+        std::memset(res, 0, sizeof(double) * componentsCount);
     }
-    else if (targetBody == B_SSBARY || centerBody == B_SSBARY)
+    else if (target == B_SSBARY || center == B_SSBARY)
     {
         // Случай #2: искомым или центральным телом является барицентр Солнечной Системы.
         //
@@ -165,27 +166,27 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
         // сам барицентр СС, то возвращается "зеркальный" вектор второго тела.
 
         // Индекс тела, что не является барицентром СС:
-        unsigned notSSBARY = targetBody == B_SSBARY ? centerBody : targetBody;
+        unsigned notSSBARY = target == B_SSBARY ? center : target;
 
         // Выбор метода вычисления в зависимости от тела:
         switch (notSSBARY)
         {
-        case B_EARTH: calculateBaseEarth(JED, calculationResult, resultArray);	break;
-        case B_MOON: calculateBaseMoon(JED, calculationResult, resultArray);		break;
-        case B_EMBARY: calculateBaseItem(2, JED, calculationResult, resultArray);	break;
-        default: calculateBaseItem(notSSBARY - 1, JED, calculationResult, resultArray);
+        case B_EARTH: calculateBaseEarth(jed, resType, res);	break;
+        case B_MOON: calculateBaseMoon(jed, resType, res);		break;
+        case B_EMBARY: calculateBaseItem(resType, jed, 2, res);	break;
+        default: calculateBaseItem(resType, jed, notSSBARY - 1, res);
         }
 
         // Если барицентр СС является искомым телом, то возвращается "зеркальный" вектор:
-        if (targetBody == B_SSBARY)
+        if (target == B_SSBARY)
         {
             for (unsigned i = 0; i < componentsCount; ++i)
             {
-                resultArray[i] = -resultArray[i];
+                res[i] = -res[i];
             }
         }
     }
-    else if (targetBody * centerBody == 30 && targetBody + centerBody == 13)
+    else if (target * center == 30 && target + center == 13)
     {
         // Случай #3 : Искомым и центральным телами являетса Земля и Луна (или Луна и Земля).
         //
@@ -194,14 +195,14 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
         // "зеркальный вектор".
 
         // Получение радиус-вектора (или вектора состояния) Луны относительно Земли:
-        calculateBaseItem(9, JED, calculationResult, resultArray);
+        calculateBaseItem(resType, jed, 9, res);
 
         // Если искомым телом является Земля, то возвращается "зеркальный" вектор.
-        if (targetBody == B_EARTH)
+        if (target == B_EARTH)
         {
             for (unsigned i = 0; i < componentsCount; ++i)
             {
-                resultArray[i] = -resultArray[i];
+                res[i] = -res[i];
             }
         }
     }
@@ -222,39 +223,41 @@ void dph::EphemerisRelease::calculateBody(unsigned calculationResult,
             // Определение индекса и массива в зависимости от номера итерации.
             // i == 0 : работа с центральным телом.
             // i == 1 : работа с искомым телом.
-            unsigned currentBodyIndex = i == 0 ? centerBody : targetBody;
-            double* currentArray = i == 0 ? centerBodyArray : resultArray;
+            unsigned currentBodyIndex = i == 0 ? center : target;
+            double* currentArray = i == 0 ? centerBodyArray : res;
 
             // Выбор метода вычисления в зависимости от тела:
             switch (currentBodyIndex)
             {
-            case B_EARTH: calculateBaseEarth(JED, calculationResult, currentArray);	break;
-            case B_MOON: calculateBaseMoon(JED, calculationResult, currentArray);	break;
-            case B_EMBARY: calculateBaseItem(2, JED, calculationResult, currentArray);	break;
-            default: calculateBaseItem(currentBodyIndex - 1, JED, calculationResult, currentArray);
+            case B_EARTH: calculateBaseEarth(jed, resType, currentArray);	break;
+            case B_MOON: calculateBaseMoon(jed, resType, currentArray);	break;
+            case B_EMBARY: calculateBaseItem(resType, jed, 2, currentArray);	break;
+            default: calculateBaseItem(resType, jed, currentBodyIndex - 1, currentArray);
             }
         }
 
         // Разница между вектором центрального и искомого тела:
         for (unsigned i = 0; i < componentsCount; ++i)
         {
-            resultArray[i] -= centerBodyArray[i];
+            res[i] -= centerBodyArray[i];
         }
     }
 }
 
-void dph::EphemerisRelease::calculateOther(unsigned calculationResult,
-    unsigned otherItem, double JED,
-    double* resultArray) const
+void dph::EphemerisRelease::calculateOther(unsigned resType, double jed,
+    unsigned item, double* res) const
 {
     // Допустимые значения параметров:
     // -------------------------------
-    //	- calculationResult:
-    //		1 - Получить оригинальное значение,
-    //		2 - Получить оригинальное значение и его (их) производные первого порядка.
+    //	- resType:
+    //		0 - Получить оригинальное значение,
+    //		1 - Получить оригинальное значение и его (их) производные первого порядка.
     //		Примечание: используй значения из dph::Calculate.
     //
-    //	- other Item:
+    //	- jed:
+    //		jed должен принадлежать промежутку: [m_startDate : m_endDate].
+    //
+    //	- item:
     //		----------------------------------------------------------------
     //		Индекс	Название
     //		----------------------------------------------------------------
@@ -265,10 +268,7 @@ void dph::EphemerisRelease::calculateOther(unsigned calculationResult,
     //		----------------------------------------------------------------
     //		Примечание: используй значения из dph::Other.
     //
-    //	- JED:
-    //		JED должен принадлежать промежутку: [m_startDate : m_endDate].
-    //
-    //	- resultArray:
+    //	- res:
     //		От пользователя требуется знать, каков минимальный размер массива для
     //		выбранного результата вычислений. Не должен быть нулевым указателем.
 
@@ -277,25 +277,25 @@ void dph::EphemerisRelease::calculateOther(unsigned calculationResult,
     {
         return;
     }
-    else if (calculationResult > 1)
+    else if (resType > 1)
     {
         return;
     }
-    else if (otherItem < 14 || otherItem > 17)
+    else if (item < 14 || item > 17)
     {
         return;
     }
-    else if (JED < m_startDate || JED > m_endDate)
+    else if (jed < m_beginJed || jed > m_endJed)
     {
         return;
     }
-    else if (resultArray == NULL)
+    else if (res == NULL)
     {
         return;
     }
     else
     {
-        calculateBaseItem(otherItem - 3, JED, calculationResult, resultArray);
+        calculateBaseItem(resType, jed, item - 3, res);
     }
 }
 
@@ -305,24 +305,24 @@ bool dph::EphemerisRelease::isReady() const
     return m_ready;
 }
 
-double dph::EphemerisRelease::startDate() const
+double dph::EphemerisRelease::beginJed() const
 {
-    return m_startDate;
+    return m_beginJed;
 }
 
-double dph::EphemerisRelease::endDate() const
+double dph::EphemerisRelease::endJed() const
 {
-    return m_endDate;
+    return m_endJed;
 }
 
-uint32_t dph::EphemerisRelease::releaseIndex() const
+uint32_t dph::EphemerisRelease::index() const
 {
-    return m_releaseIndex;
+    return m_index;
 }
 
-const std::string& dph::EphemerisRelease::releaseLabel() const
+const std::string& dph::EphemerisRelease::label() const
 {
-    return m_releaseLabel;
+    return m_label;
 }
 
 double dph::EphemerisRelease::constant(const std::string& constantName) const
@@ -341,7 +341,7 @@ double dph::EphemerisRelease::constant(const std::string& constantName) const
     }
     else if (constantName == "DENUM")
     {
-        return m_releaseIndex;
+        return m_index;
     }
     else
     {
@@ -349,30 +349,30 @@ double dph::EphemerisRelease::constant(const std::string& constantName) const
     }
 }
 
-std::string dph::EphemerisRelease::cutBackSpaces(const char* charArray, size_t arraySize)
+std::string dph::EphemerisRelease::cutBackSpaces(const char* s, size_t size)
 {
-    for (size_t i = arraySize - 1; i > 0; --i)
+    for (size_t i = size - 1; i > 0; --i)
     {
-        if (charArray[i] == ' ' && charArray[i - 1] != ' ')
+        if (s[i] == ' ' && s[i - 1] != ' ')
         {
-            return std::string(charArray, i);
+            return std::string(s, i);
         }
     }
 
-    return std::string(charArray, arraySize);
+    return std::string(s, size);
 }
 
 void dph::EphemerisRelease::clear()
 {
     m_ready = false;
 
-    m_binaryFilePath.clear();
-    m_binaryFileStream.close();
+    m_filePath.clear();
+    m_file.close();
 
-    m_releaseLabel.clear();
-    m_releaseIndex = 0;
-    m_startDate = 0.0;
-    m_endDate = 0.0;
+    m_label.clear();
+    m_index = 0;
+    m_beginJed = 0.0;
+    m_endJed = 0.0;
     m_blockTimeSpan = 0.0;
     std::memset(m_keys, 0, sizeof(m_keys));
     m_au = 0.0;
@@ -401,15 +401,15 @@ void dph::EphemerisRelease::copyHere(const EphemerisRelease& other)
 
     m_ready = other.m_ready;
 
-    m_binaryFilePath	= other.m_binaryFilePath;
+    m_filePath	= other.m_filePath;
 
-    m_binaryFileStream.close();
-    m_binaryFileStream.open(other.m_binaryFilePath.c_str(), std::ios::binary);
+    m_file.close();
+    m_file.open(other.m_filePath.c_str(), std::ios::binary);
 
-    m_releaseLabel =	other.m_releaseLabel;
-    m_releaseIndex =	other.m_releaseIndex;
-    m_startDate =		other.m_startDate;
-    m_endDate =			other.m_endDate;
+    m_label =	other.m_label;
+    m_index =	other.m_index;
+    m_beginJed =		other.m_beginJed;
+    m_endJed =			other.m_endJed;
     m_blockTimeSpan =	other.m_blockTimeSpan;
     std::memcpy(m_keys, other.m_keys, sizeof(m_keys));
     m_au =				other.m_au;
@@ -438,18 +438,18 @@ void dph::EphemerisRelease::readAndPackData()
     uint32_t constantsCount;
     // ------------------------------------- Чтение файла ------------------------------------- //
 
-    m_binaryFileStream.seekg(0, std::ios::beg);
-    m_binaryFileStream.read((char*)&releaseLabel_buffer, RLS_LABEL_SIZE * RLS_LABELS_COUNT);
-    m_binaryFileStream.read((char*)&constantsNames_buffer, CNAME_SIZE * CCOUNT_MAX_OLD);
-    m_binaryFileStream.read((char*)&m_startDate, 8);
-    m_binaryFileStream.read((char*)&m_endDate, 8);
-    m_binaryFileStream.read((char*)&m_blockTimeSpan, 8);
-    m_binaryFileStream.read((char*)&constantsCount, 4);
-    m_binaryFileStream.read((char*)&m_au, 8);
-    m_binaryFileStream.read((char*)&m_emrat, 8);
-    m_binaryFileStream.read((char*)&m_keys, (12 * 3) * 4);
-    m_binaryFileStream.read((char*)&m_releaseIndex, 4);
-    m_binaryFileStream.read((char*)&m_keys[12], (3) * 4);
+    m_file.seekg(0, std::ios::beg);
+    m_file.read((char*)&releaseLabel_buffer, RLS_LABEL_SIZE * RLS_LABELS_COUNT);
+    m_file.read((char*)&constantsNames_buffer, CNAME_SIZE * CCOUNT_MAX_OLD);
+    m_file.read((char*)&m_beginJed, 8);
+    m_file.read((char*)&m_endJed, 8);
+    m_file.read((char*)&m_blockTimeSpan, 8);
+    m_file.read((char*)&constantsCount, 4);
+    m_file.read((char*)&m_au, 8);
+    m_file.read((char*)&m_emrat, 8);
+    m_file.read((char*)&m_keys, (12 * 3) * 4);
+    m_file.read((char*)&m_index, 4);
+    m_file.read((char*)&m_keys[12], (3) * 4);
 
     // Чтение дополнительных констант:
     if (constantsCount > 400)
@@ -457,12 +457,12 @@ void dph::EphemerisRelease::readAndPackData()
         // Количество дополнительных констант:
         size_t extraConstantsCount = constantsCount - CCOUNT_MAX_OLD;
 
-        m_binaryFileStream.read((char*)&constantsNames_buffer[CCOUNT_MAX_OLD],
+        m_file.read((char*)&constantsNames_buffer[CCOUNT_MAX_OLD],
             extraConstantsCount * CNAME_SIZE);
     }
 
     // Чтение дополнительных ключей:
-    m_binaryFileStream.read((char*)&m_keys[13], (3 * 2) * 4);
+    m_file.read((char*)&m_keys[13], (3 * 2) * 4);
 
     // Подсчёт ncoeff (количество коэффициентов в блоке):
     m_ncoeff = 2;
@@ -476,8 +476,8 @@ void dph::EphemerisRelease::readAndPackData()
     // Переход к блоку с константами и их чтение:
     if (constantsCount <= CCOUNT_MAX_NEW)
     {
-        m_binaryFileStream.seekg(m_ncoeff * 8, std::ios::beg);
-        m_binaryFileStream.read((char*)&constantsValues_buffer, constantsCount * 8);
+        m_file.seekg(m_ncoeff * 8, std::ios::beg);
+        m_file.read((char*)&constantsValues_buffer, constantsCount * 8);
     }
 
 
@@ -486,8 +486,8 @@ void dph::EphemerisRelease::readAndPackData()
     // Формирование строк общей информации о выпуске:
     for (size_t i = 0; i < RLS_LABELS_COUNT; ++i)
     {
-        m_releaseLabel += cutBackSpaces(releaseLabel_buffer[i], RLS_LABEL_SIZE);
-        m_releaseLabel += '\n';
+        m_label += cutBackSpaces(releaseLabel_buffer[i], RLS_LABEL_SIZE);
+        m_label += '\n';
     }
 
     // Заполнение контейнера m_constants именами и значениями констант:
@@ -511,7 +511,7 @@ void dph::EphemerisRelease::additionalCalculations()
     m_dimensionFit = 1 / (43200 * m_blockTimeSpan);
 
     // Определение количества блоков в ежегоднике:
-    m_blocksCount = size_t((m_endDate - m_startDate) / m_blockTimeSpan);
+    m_blocksCount = size_t((m_endJed - m_beginJed) / m_blockTimeSpan);
 
     // Подсчёт максимального количества полиномов в выпуске:
     size_t maxPolynomsCount = 0;
@@ -538,10 +538,10 @@ bool dph::EphemerisRelease::isDataCorrect() const
     // могут повлиять непосредственно на вычисления значений элементов,
     // хранящихся в выпуске эфемерид.
 
-    if (m_binaryFileStream.is_open() == false)			return false;	// Ошибка открытия файла.
-    if (m_startDate >= m_endDate)						return false;
+    if (m_file.is_open() == false)			return false;	// Ошибка открытия файла.
+    if (m_beginJed >= m_endJed)						return false;
     if (m_blockTimeSpan == 0)							return false;
-    if ((m_endDate - m_startDate) < m_blockTimeSpan)	return false;
+    if ((m_endJed - m_beginJed) < m_blockTimeSpan)	return false;
     if (m_emrat == 0)									return false;
     if (m_ncoeff == 0)									return false;
 
@@ -556,7 +556,7 @@ bool dph::EphemerisRelease::check_blocksDates() const
     size_t firstBlockAdress = m_blockSize_bytes * 2;
 
     // Переход к первому блоку:
-    m_binaryFileStream.seekg(firstBlockAdress, std::ios::beg);
+    m_file.seekg(firstBlockAdress, std::ios::beg);
 
     // Смещение между блоками после чтения двух первых коэффициентов:
     size_t subBlockOffset = (m_ncoeff - 2) * sizeof(double);
@@ -567,10 +567,10 @@ bool dph::EphemerisRelease::check_blocksDates() const
         double blockDates[2] = {0.0, 0.0};
 
         // Чтение:
-        m_binaryFileStream.read((char*)& blockDates, sizeof(blockDates));
+        m_file.read((char*)& blockDates, sizeof(blockDates));
 
         // Значения, которые должны быть:
-        double blockStartDate = m_startDate + blockIndex * m_blockTimeSpan;
+        double blockStartDate = m_beginJed + blockIndex * m_blockTimeSpan;
         double blockEndDate = blockStartDate + m_blockTimeSpan;
 
         if (blockDates[0] != blockStartDate || blockDates[1] != blockEndDate)
@@ -579,26 +579,27 @@ bool dph::EphemerisRelease::check_blocksDates() const
         }
 
         // Переход к следующему блоку:
-        m_binaryFileStream.seekg(subBlockOffset, std::ios::cur);
+        m_file.seekg(subBlockOffset, std::ios::cur);
     }
 
     return true;
 }
 
-void dph::EphemerisRelease::fillBuffer(size_t block_num) const
+void dph::EphemerisRelease::fillBuffer(size_t blockNum) const
 {
-    size_t adress = (2 + block_num) * m_blockSize_bytes;
+    size_t adress = (2 + blockNum) * m_blockSize_bytes;
 
-    m_binaryFileStream.seekg(adress, std::ios::beg);
+    m_file.seekg(adress, std::ios::beg);
 
-    m_binaryFileStream.read((char*)&m_buffer[0], (m_ncoeff) * 8);
+    m_file.read((char*)&m_buffer[0], (m_ncoeff) * 8);
 }
 
-void dph::EphemerisRelease::interpolatePosition(unsigned baseItemIndex, double normalizedTime,
-    const double* coeffArray, unsigned componentsCount, double* resultArray) const
+void dph::EphemerisRelease::interpolatePosition(double normalizedTime,
+    unsigned baseItem, const double* coeffs, unsigned componentsCount,
+    double* res) const
 {
     // Копирование значения количества коэффициентов на компоненту:
-    uint32_t cpec = m_keys[baseItemIndex][1];
+    uint32_t cpec = m_keys[baseItem][1];
 
     // Предварительное заполнение полиномов (вычисление их сумм):
     m_poly[1] = normalizedTime;
@@ -610,23 +611,24 @@ void dph::EphemerisRelease::interpolatePosition(unsigned baseItemIndex, double n
     }
 
     // Обнуление массива результата вычислений:
-    memset(resultArray, 0, sizeof(double) * componentsCount);
+    memset(res, 0, sizeof(double) * componentsCount);
 
     // Вычисление координат:
     for (unsigned i = 0; i < componentsCount; ++i)
     {
         for (uint32_t j = 0; j < cpec; ++j)
         {
-            resultArray[i] += m_poly[j] * coeffArray[i * cpec + j];
+            res[i] += m_poly[j] * coeffs[i * cpec + j];
         }
     }
 }
 
-void dph::EphemerisRelease::interpolateState(unsigned baseItemIndex, double normalizedTime,
-    const double* coeffArray, unsigned componentsCount, double* resultArray) const
+void dph::EphemerisRelease::interpolateState(double normalizedTime,
+    unsigned baseItem, const double* coeffs, unsigned componentsCount,
+    double* res) const
 {
     // Копирование значения количества коэффициентов на компоненту:
-    uint32_t cpec = m_keys[baseItemIndex][1];
+    uint32_t cpec = m_keys[baseItem][1];
 
     // Предварительное заполнение полиномов (вычисление их сумм):
     m_poly[1]  = normalizedTime;
@@ -641,29 +643,29 @@ void dph::EphemerisRelease::interpolateState(unsigned baseItemIndex, double norm
     }
 
     // Обнуление массива результата вычислений:
-    memset(resultArray, 0, sizeof(double) * componentsCount * 2);
+    memset(res, 0, sizeof(double) * componentsCount * 2);
 
     // Определение переменной для соблюдения размерности:
-    double derivative_units = m_keys[baseItemIndex][2] * m_dimensionFit;
+    double derivative_units = m_keys[baseItem][2] * m_dimensionFit;
 
     // Вычисление координат:
     for (unsigned i = 0; i < componentsCount; ++i)
     {
-        for (uint32_t j = 0; j < cpec; ++j, ++coeffArray)
+        for (uint32_t j = 0; j < cpec; ++j, ++coeffs)
         {
-            resultArray[i]                   +=  m_poly[j] * *coeffArray;
-            resultArray[i + componentsCount] += m_dpoly[j] * *coeffArray;
+            res[i]                   +=  m_poly[j] * *coeffs;
+            res[i + componentsCount] += m_dpoly[j] * *coeffs;
         }
 
-        resultArray[i + componentsCount] *= derivative_units;
+        res[i + componentsCount] *= derivative_units;
     }
 }
 
-void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED,
-    unsigned calculationResult, double* resultArray) const
+void dph::EphemerisRelease::calculateBaseItem(unsigned resType,
+    double jed, unsigned baseItem, double* res) const
 {
     // Допустимые значения переданных параметров:
-    //	[1]	baseItemIndex - Индекс базового элемента выпуска (от нуля).
+    //	[1]	baseItem - Индекс базового элемента выпуска (от нуля).
     //
     //						Нумерация базовых элементов выпуска
     //		-------------------------------------------------------------------
@@ -685,15 +687,15 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED
     //		13		Lunar mantle angular velocity
     //		14		TT-TDB (at geocenter)
     //		-------------------------------------------------------------------
-    //	[2] JED - момент времени на который требуется получить требуемые значения.
-    //	[3] calculationResult - индекс результата вычисления (см. dph::Calculate).
-    //	[4] resultArray - указатель на массив для результата вычислений.
+    //	[2] jed - момент времени на который требуется получить требуемые значения.
+    //	[3] resType - индекс результата вычисления (см. dph::Calculate).
+    //	[4] res - указатель на массив для результата вычислений.
 
     // Внимание!
     // В ходе выполнения функции смысл переменных "normalizedTime" и "offset" будет меняться.
 
     // Норм. время относительно всех блоков в выпуске:
-    double normalizedTime = (JED - m_startDate) / m_blockTimeSpan;
+    double normalizedTime = (jed - m_beginJed) / m_blockTimeSpan;
 
     // Порядковый номер блока, соотв. заданной дате JED (целая часть от normalizedTime):
     size_t offset = static_cast<size_t>(normalizedTime);
@@ -702,17 +704,17 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED
     // Если требуемый блок уже в кэше объекта, то он не заполняется повторно.
     // m_buffer[0] - дата начала блока.
     // m_buffer[1] - дата окончания блока.
-    if (JED < m_buffer[0] || JED >= m_buffer[1])
+    if (jed < m_buffer[0] || jed >= m_buffer[1])
     {
         // Если JED равна последней доступоной дате для вычислений, то заполняется последний блок.
 
-        fillBuffer(offset - (JED == m_endDate ? 1 : 0));
+        fillBuffer(offset - (jed == m_endJed ? 1 : 0));
     }
 
-    if (JED == m_endDate)
+    if (jed == m_endJed)
     {
         // Порядковый номер подблока (последний подблок):
-        offset = m_keys[baseItemIndex][2] - 1;
+        offset = m_keys[baseItem][2] - 1;
 
         // Норм. время относительно подблока (в диапазоне от -1 до 1):
         normalizedTime = 1;
@@ -720,7 +722,7 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED
     else
     {
         // Норм. время относительно всех подблоков:
-        normalizedTime = (normalizedTime - offset) * m_keys[baseItemIndex][2];
+        normalizedTime = (normalizedTime - offset) * m_keys[baseItem][2];
 
         // Порядковый номер подблока (целая часть от normalizedTime):
         offset = static_cast<size_t>(normalizedTime);
@@ -730,67 +732,67 @@ void dph::EphemerisRelease::calculateBaseItem(unsigned baseItemIndex, double JED
     }
 
     // Количество компонент для выбранного базового элемента:
-    unsigned componentsCount = baseItemIndex == 11 ? 2 : baseItemIndex == 14 ? 1 : 3;
+    unsigned componentsCount = baseItem == 11 ? 2 : baseItem == 14 ? 1 : 3;
 
     // Порядковый номер первого коэффициента в блоке:
-    int coeff_pos  = m_keys[baseItemIndex][0] - 1 + componentsCount * offset * m_keys[baseItemIndex][1];
+    int coeff_pos  = m_keys[baseItem][0] - 1 + componentsCount * offset * m_keys[baseItem][1];
 
     // Выбор метода вычисления в зависимости от заданного результата вычислений:
-    switch(calculationResult)
+    switch(resType)
     {
     case CALC_POS :
-        interpolatePosition(baseItemIndex, normalizedTime, &m_buffer[coeff_pos], componentsCount,
-            resultArray);
+        interpolatePosition(normalizedTime, baseItem, &m_buffer[coeff_pos], componentsCount,
+            res);
         break;
 
     case CALC_STATE :
-        interpolateState(baseItemIndex, normalizedTime, &m_buffer[coeff_pos], componentsCount,
-            resultArray);
+        interpolateState(normalizedTime, baseItem, &m_buffer[coeff_pos], componentsCount,
+            res);
         break;
 
     default:
-        memset(resultArray, 0, componentsCount * sizeof(double));
+        memset(res, 0, componentsCount * sizeof(double));
     }
 }
 
-void dph::EphemerisRelease::calculateBaseEarth(double JED, unsigned calculationResult,
-    double* resultArray) const
+void dph::EphemerisRelease::calculateBaseEarth(double jed, unsigned resType,
+    double* res) const
 {
     // Получение радиус-вектора (или вектора состояния) барицентра сиситемы Земля-Луна
     // относительно барицентра Солнечной Системы:
-    calculateBaseItem(2, JED, calculationResult, resultArray);
+    calculateBaseItem(resType, jed, 2, res);
 
     // Получение радиус-вектора (или вектора состояния) Луны относитльно Земли:
     double MoonRelativeEarth[6];
-    calculateBaseItem(9, JED, calculationResult, MoonRelativeEarth);
+    calculateBaseItem(resType, jed, 9, MoonRelativeEarth);
 
     // Количество компонент:
-    unsigned componentsCount = calculationResult == CALC_POS ? 3 : 6;
+    unsigned componentsCount = resType == CALC_POS ? 3 : 6;
 
     // Опредление положения Земли относительно барицентра Солнечной Системы:
     for (unsigned i = 0; i < componentsCount; ++i)
     {
-        resultArray[i] -= MoonRelativeEarth[i] * m_emrat2;
+        res[i] -= MoonRelativeEarth[i] * m_emrat2;
     }
 }
 
-void dph::EphemerisRelease::calculateBaseMoon(double JED, unsigned calculationResult,
-    double* resultArray) const
+void dph::EphemerisRelease::calculateBaseMoon(double jed, unsigned resType,
+    double* res) const
 {
     // Получение радиус-вектора (или вектора состояния) барицентра сиситемы Земля-Луна
     // относительно барицентра Солнечной Системы:
-    calculateBaseItem(2, JED, calculationResult, resultArray);
+    calculateBaseItem(resType, jed, 2, res);
 
     // Получение радиус-вектора (или вектора состояния) Луны относитльно Земли:
     double MoonRelativeEarth[6];
-    calculateBaseItem(9, JED, calculationResult, MoonRelativeEarth);
+    calculateBaseItem(resType, jed, 9, MoonRelativeEarth);
 
     // Количество компонент:
-    unsigned componentsCount = calculationResult == CALC_POS ? 3 : 6;
+    unsigned componentsCount = resType == CALC_POS ? 3 : 6;
 
     // Определение относительного положения:
     for (unsigned i = 0; i < componentsCount; ++i)
     {
-        resultArray[i] += MoonRelativeEarth[i] * (1 - m_emrat2);
+        res[i] += MoonRelativeEarth[i] * (1 - m_emrat2);
     }
 }

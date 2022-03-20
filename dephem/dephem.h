@@ -114,7 +114,7 @@ public:
     // Конструктор по пути к бинарному файлу эфемерид.
     // -----------------------------------------------
     // Чтение файла, проверка полученных значений.
-    explicit EphemerisRelease(const std::string& binaryFilePath);
+    explicit EphemerisRelease(const std::string& filePath);
 
     // Конструктор копирования.
     // ------------------------
@@ -140,57 +140,57 @@ public:
     // -------------------------------------------------------------------
     // Параметры метода:
     //
-    //	- calculationResult	: Индекс результата вычислений.
-    //                        Используй dph::Calculate.
+    //	- resType	: Индекс результата вычислений.
+    //                Используй dph::Calculate.
     //
-    //	- targetBody		: Порядковый номер искомого тела
-    //						  Используй dph::Body.
+    //	- jed		: Момент времени на который требется произвести
+    //				  вычисления в формате Юлианской Эфемеридной Даты
+    //				  (Julian Epehemris Date).
+    //				  Принадлежит промежутку: [startDate : endDate].
     //
-    //	- centerBody		: Порядковый номер центрального тела.
-    //						  Используй dph::Body.
+    //	- targety	: Порядковый номер искомого тела
+    //                Используй dph::Body.
     //
-    //	- JED				: Момент времени на который требется произвести
-    //						  вычисления в формате Юлианской Эфемеридной Даты
-    //						  (Julian Epehemris Date).
-    //						  Принадлежит промежутку: [startDate : endDate].
+    //	- center	: Порядковый номер центрального тела.
+    //				  Используй dph::Body.
     //
-    //	- resultArray		: Указатель на массив для результата вычислений.
-    //                        Убедись, что он имеент минимальный допустимый
-    //                        размер для выбранного результата вычислений.
+    //	- res		: Указатель на массив для результата вычислений.
+    //                Убедись, что он имеент минимальный допустимый
+    //                размер для выбранного результата вычислений.
     // -----------------
     // Примечание: если в метод поданы неверные параметры, то он просто
     // прервётся.
     // -----------------
-    void calculateBody(unsigned calculationResult, unsigned targetBody,
-        unsigned centerBody, double JED, double* resultArray) const;
+    void calculateBody(unsigned resType, double jed,
+        unsigned target, unsigned center, double* result) const;
 
     // Получить значение(-я) прочих элементов, хранящихся в выпуске эфемерид,
     // на заданный момент времени.
     // -----------------
     // Параметры метода:
     //
-    //	- calculationResult	: Индекс результата вычислений
-    //						  Используй dph::Calculate.
+    //	- resType	: Индекс результата вычислений
+    //				  Используй dph::Calculate.
     //
-    //	- otherItem			: Порядковый номер искомого элемента
-    //                        Используй dph::Other.
+    //	- jed		: Момент времени на который требется произвести
+    //                вычисления в формате Юлианской Эфемеридной Даты
+    //				  (Julian Epehemris Date).
+    //				  Принадлежит промежутку: [startDate : endDate].
     //
-    //	- JED				: Момент времени на который требется произвести
-    //                        вычисления в формате Юлианской Эфемеридной Даты
-    //						  (Julian Epehemris Date).
-    //						  Принадлежит промежутку: [startDate : endDate].
+    //	- item		: Порядковый номер искомого элемента
+    //                Используй dph::Other.
     //
-    //	- resultArray		: Указатель на массив для результата вычислений.
-    //                        Убедись, что  он имеент минимальный допустимый
-    //						  размер для выбранного результата вычислений.
+    //	- res		: Указатель на массив для результата вычислений.
+    //                Убедись, что  он имеент минимальный допустимый
+    //				  размер для выбранного результата вычислений.
     // -----------------
     // Примечания:
     //	1. Если в метод поданы неверные параметры, то он просто прервётся.
     //  2. Не всегда в выпуске эфемерид хранится запрашиваемое тело, убедись
     //	   в его наличии перед запросом.
     // -----------------
-    void calculateOther(unsigned calculationResult, unsigned otherItem,
-        double JED, double* resultArray) const;
+    void calculateOther(unsigned resType, double jed, unsigned item,
+        double* res) const;
 
 
 // --------------------------------- ГЕТТЕРЫ -------------------------------- //
@@ -199,16 +199,16 @@ public:
     bool isReady() const;
 
     // Первая доступная дата для рассчётов.
-    double startDate() const;
+    double beginJed() const;
 
     // Последняя доступная дата для рассчётов.
-    double endDate() const;
+    double endJed() const;
 
     // Номер выпуска.
-    uint32_t releaseIndex() const;
+    uint32_t index() const;
 
     // Строковая информация о выпуске.
-    const std::string& releaseLabel() const;
+    const std::string& label() const;
 
     // Значение константы по её имени.
     double constant(const std::string& constantName) const;
@@ -240,15 +240,15 @@ private:
 
 // ........................... Работа с файлом ...............................//
 
-    std::string	 m_binaryFilePath;				// Путь к файлу эфемерид.
-    mutable std::ifstream m_binaryFileStream;	// Поток чтения файла.
+    std::string m_filePath;     	// Путь к файлу эфемерид.
+    mutable std::ifstream m_file;	// Поток чтения файла.
 
 // ..................... Значения, считанные из файла ....................... //
 
-    std::string		m_releaseLabel;		// Строковая информация о выпуске.
-    uint32_t		m_releaseIndex;		// Номерная часть индекса выпуска.
-    double			m_startDate;		// Дата начала выпуска (JED).
-    double			m_endDate;			// Дата окончания выпуска (JED).
+    std::string		m_label;		    // Строковая информация о выпуске.
+    uint32_t		m_index;		    // Номерная часть индекса выпуска.
+    double			m_beginJed;		    // Дата начала выпуска (JED).
+    double			m_endJed;			// Дата окончания выпуска (JED).
     double			m_blockTimeSpan;	// Временная протяжённость блока.
     uint32_t		m_keys[15][3];		// Ключи поиска коэффициентов.
     double			m_au;				// Астрономическая единица (км).
@@ -275,9 +275,9 @@ private:
 
 // .......................... Статические методы ............................ //
 
-    // Обрезать повторяющиеся пробелы (' ') с конца массива символов "charArray"
+    // Обрезать повторяющиеся пробелы (' ') с конца массива символов "s"
     // размера "arraySize".
-    static std::string cutBackSpaces(const char* charArray, size_t arraySize);
+    static std::string cutBackSpaces(const char* s, size_t size);
 
 // .............. Дополнения к стандартным публичным методам ................ //
 
@@ -304,34 +304,32 @@ private:
     bool check_blocksDates() const;
 
     // Заполнение буффера "m_buffer" коэффициентами требуемого блока.
-    void fillBuffer(size_t block_num) const;
+    void fillBuffer(size_t blockNum) const;
 
 // .............................. Вычисления ................................ //
 
     // Интерполяция компонент выбранного базового элемента.
-    void interpolatePosition(unsigned baseItemIndex, double normalizedTime,
-        const double* coeffArray, unsigned componentsCount,
-            double* resultArray) const;
+    void interpolatePosition(double normalizedTime, unsigned baseItem,
+        const double* coeffs, unsigned componentsCount,
+        double* res) const;
 
     // Интерполяция компонент и их производных выбранного базового элемента.
-    void interpolateState(unsigned baseItemIndex, double normalizedTime,
-        const double* coeffArray, unsigned componentsCount,
-            double* resultArray) const;
+    void interpolateState(double normalizedTime, unsigned baseItem,
+        const double* coeffs, unsigned componentsCount,
+        double* res) const;
 
     // Получить значения требуемых компонент базового элемента на выбранный
     // момент времени.
-    void calculateBaseItem(unsigned baseItemIndex, double JED,
-        unsigned calculationResult , double* resultArray) const;
+    void calculateBaseItem(unsigned resType, double jed, unsigned baseItem,
+        double* res) const;
 
     // Получить значение радиус-вектора (или вектора состояния) Земли
     // относительно барицентра Солнечной Системы.
-    void calculateBaseEarth(double JED, unsigned calculationResult,
-        double* resultArray) const;
+    void calculateBaseEarth(double jed, unsigned resType, double* res) const;
 
     // Получить значение радиу-вектора (или вектора состояния) Луны относительно
     // барицентра Солнечной Системы.
-    void calculateBaseMoon(double JED, unsigned calculationResult,
-        double* resultArray) const;
+    void calculateBaseMoon(double jed, unsigned resType, double* res) const;
 
 }; // class EphemerisRelease
 

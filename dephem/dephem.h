@@ -55,15 +55,19 @@ enum Item {
 class EphemerisRelease
 {
 public:
+    EphemerisRelease();
 
     // Конструктор по пути к бинарному файлу эфемерид.
-    explicit EphemerisRelease(const std::string& filePath);
+    EphemerisRelease(const std::string& filePath);
 
     // Конструктор копирования.
     EphemerisRelease(const EphemerisRelease& other);
 
     // Оператор копирования.
     EphemerisRelease& operator=(const EphemerisRelease& other);
+
+    // Открыть файл эфемерид.
+    bool open(const std::string& filePath);
 
     // Положение target относительно center на момент времени jed.
     bool bodyPosition(int target, int center, double jed, double pos[3]) const;
@@ -75,7 +79,7 @@ public:
     bool item(int item, double jed, double* result) const;
 
     // Готовность объекта к использованию.
-    bool isReady() const;
+    bool isOpen() const;
 
     // Первая доступная дата для рассчётов.
     double beginJed() const;
@@ -139,24 +143,14 @@ private:
     bool body(int resType, double jed, int target, int center,
         double* res) const;
 
-    // Интерполяция компонент выбранного базового элемента.
-    void interpolatePosition(double normalizedTime, int baseItem,
-        const double* coeffs, int componentsCount,
-        double* res) const;
-
-    // Интерполяция компонент и их производных выбранного базового элемента.
-    void interpolateState(double normalizedTime, int baseItem,
-        const double* coeffs, int componentsCount,
-        double* res) const;
-
     // Базовый элемент.
     bool baseItem(int resType, double jed, int baseItem, double* res) const;
 
     // Земля относительно барицентра Солнечной Системы.
-    bool baseEarth(int resType, double jed, double* res) const;
+    bool ssbaryEarth(int resType, double jed, double* res) const;
 
     // Луна относительно барицентра Солнечной Системы.
-    bool baseMoon(int resType, double jed, double* res) const;
+    bool ssbaryMoon(int resType, double jed, double* res) const;
 
 }; // class EphemerisRelease
 

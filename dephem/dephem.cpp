@@ -2,23 +2,14 @@
 
 #include <cmath>
 
-dph::EphemerisRelease::EphemerisRelease(const std::string& filePath)
+dph::EphemerisRelease::EphemerisRelease()
 {
     clear();
+}
 
-    m_file.open(filePath, std::ios::binary);
-
-    if (!m_file.is_open())
-        return;
-
-    else if (!read())
-    {
-        m_file.close();
-        clear();
-        return;
-    }
-
-    m_filePath = filePath;
+dph::EphemerisRelease::EphemerisRelease(const std::string& filePath)
+{
+    open(filePath);
 }
 
 dph::EphemerisRelease::EphemerisRelease(const EphemerisRelease& other)
@@ -31,6 +22,26 @@ dph::EphemerisRelease& dph::EphemerisRelease::operator=(const
 {
     copyHere(other);
     return *this;
+}
+
+bool dph::EphemerisRelease::open(const std::string& filePath)
+{
+    clear();
+
+    m_file.open(filePath, std::ios::binary);
+
+    if (!m_file.is_open())
+        return false;
+
+    else if (!read())
+    {
+        m_file.close();
+        clear();
+        return false;
+    }
+
+    m_filePath = filePath;
+    return true;
 }
 
 // Положение target относительно center на момент времени jed.
@@ -115,7 +126,7 @@ bool dph::EphemerisRelease::body(int resType, double jed,
     }
 
     // Количество требуемых компонент.
-    int componentsCount = resType == 0 ? 6 : 3;
+    int componentsCount = resType == 0 ? 3 : 6;
 
     // Выбор методики вычисления в зависимости от комбинации искомого и
     // центрального тела.
@@ -135,8 +146,8 @@ bool dph::EphemerisRelease::body(int resType, double jed,
         // Выбор метода вычисления в зависимости от тела.
         bool ok = false;
         switch (notSSBARY) {
-        case B_EARTH:  ok = baseEarth(resType, jed, res);   break;
-        case B_MOON:   ok = baseMoon(resType, jed, res);    break;
+        case B_EARTH:  ok = ssbaryEarth(resType, jed, res);   break;
+        case B_MOON:   ok = ssbaryMoon(resType, jed, res);    break;
         case B_EMBARY: ok = baseItem(resType, jed, 2, res); break;
         default:       ok = baseItem(resType, jed, notSSBARY - 1, res);
         }
@@ -186,8 +197,8 @@ bool dph::EphemerisRelease::body(int resType, double jed,
             // Выбор метода вычисления в зависимости от тела.
             bool ok = false;
             switch (bodyIndex) {
-            case B_EARTH:  ok = baseEarth(resType, jed, arr);   break;
-            case B_MOON:   ok = baseMoon(resType, jed, arr);    break;
+            case B_EARTH:  ok = ssbaryEarth(resType, jed, arr);   break;
+            case B_MOON:   ok = ssbaryMoon(resType, jed, arr);    break;
             case B_EMBARY: ok = baseItem(resType, jed, 2, arr); break;
             default:       ok = baseItem(resType, jed, bodyIndex - 1, arr);
             }
@@ -204,7 +215,7 @@ bool dph::EphemerisRelease::body(int resType, double jed,
     return true;
 }
 
-bool dph::EphemerisRelease::isReady() const
+bool dph::EphemerisRelease::isOpen() const
 {
     return m_file.is_open();
 }
@@ -460,81 +471,6 @@ bool dph::EphemerisRelease::fillBuffer(size_t blockNum) const
     return true;
 }
 
-void dph::EphemerisRelease::interpolatePosition(double normalizedTime,
-    int baseItem, const double* coeffs, int componentsCount,
-    double* res) const
-{
-    // Копирование значения количества коэффициентов на компоненту.
-    int cpec = m_keys[baseItem][1];
-
-    // Заполнение полиномов.
-    double poly[MAX_POLY_SIZE];
-    poly[0] = 0;
-    poly[1] = normalizedTime;
-
-    for (int i = 2; i < cpec; ++i)
-    {
-        poly[i] = 2 * normalizedTime * poly[i - 1] - poly[i - 2];
-    }
-
-    // Обнуление массива результата вычислений.
-    memset(res, 0, sizeof(double) * componentsCount);
-
-    // Вычисление координат.
-    for (int i = 0; i < componentsCount; ++i)
-    {
-        for (int j = 0; j < cpec; ++j)
-        {
-            res[i] += poly[j] * coeffs[i * cpec + j];
-        }
-    }
-}
-
-void dph::EphemerisRelease::interpolateState(double normalizedTime,
-    int baseItem, const double* coeffs, int componentsCount,
-    double* res) const
-{
-    // Кол-во коэффициентов на компоненту.
-    int cpec = m_keys[baseItem][1];
-
-    // Заполнение полиномов.
-    double poly[MAX_POLY_SIZE];
-    poly[0] = 1;
-    poly[1] = normalizedTime;
-    poly[2] = 2 * normalizedTime * normalizedTime - 1;
-
-    double dpoly[MAX_POLY_SIZE];
-    dpoly[0] = 0;
-    dpoly[1] = 1;
-    dpoly[2] = 4 * normalizedTime;
-
-    // Заполнение полиномов (вычисление их сумм).
-    for (int i = 3; i < cpec; ++i)
-    {
-        poly[i] = 2 * normalizedTime *  poly[i - 1] -  poly[i - 2];
-        dpoly[i] = 2 * poly[i - 1] + 2 * normalizedTime * dpoly[i - 1] -
-            dpoly[i - 2];
-    }
-
-    // Обнуление массива результата вычислений.
-    memset(res, 0, sizeof(double) * componentsCount * 2);
-
-    // Коэффициент размерности для 1-й производной.
-    double dunits = double(m_keys[baseItem][2]) / (43200 * m_blockSpan);
-
-    // Вычисление координат.
-    for (int i = 0; i < componentsCount; ++i)
-    {
-        for (int j = 0; j < cpec; ++j, ++coeffs)
-        {
-            res[i] += poly[j] * *coeffs;
-            res[i + componentsCount] += dpoly[j] * *coeffs;
-        }
-
-        res[i + componentsCount] *= dunits;
-    }
-}
-
 // Базовый элемент.
 bool dph::EphemerisRelease::baseItem(int resType, double jed, int baseItem,
     double* res) const
@@ -614,29 +550,71 @@ bool dph::EphemerisRelease::baseItem(int resType, double jed, int baseItem,
     // Количество компонент для выбранного базового элемента.
     int componentsCount = baseItem == 11 ? 2 : baseItem == 14 ? 1 : 3;
 
-    // Порядковый номер первого коэффициента в блоке.
-    int coeff_pos = m_keys[baseItem][0] - 1 + componentsCount * offset *
-        m_keys[baseItem][1];
+    // Кол-во коэффициентов на компоненту.
+    int cpec = m_keys[baseItem][1];
 
-    // Выбор метода вычисления в зависимости от заданного результата вычислений.
-    switch(resType) {
-    case 0:
-        interpolatePosition(normalizedTime, baseItem, &m_buffer[coeff_pos],
-            componentsCount, res);
-        break;
-    case 1:
-        interpolateState(normalizedTime, baseItem, &m_buffer[coeff_pos], 
-            componentsCount, res);
-        break;
-    default:
-        memset(res, 0, componentsCount * sizeof(double));
+    // Порядковый номер первого коэффициента в блоке.
+    int coeff_pos = m_keys[baseItem][0] - 1 + componentsCount * offset * cpec;
+
+    // Указатель на массив коэффициентов.
+    const double* coeffs = &m_buffer[coeff_pos];
+
+    // Обнуление массива результата вычислений.
+    if (resType == 0)
+    {
+        memset(res, 0, sizeof(double) * componentsCount);
+    }
+    else
+    {
+        memset(res, 0, sizeof(double) * componentsCount * 2);
+    }
+
+    // 1. Оригинальное значение элемента.
+
+    // Заполнение полиномов.
+    double poly[MAX_POLY_SIZE];
+    poly[0] = 1;
+    poly[1] = normalizedTime;
+
+    for (int i = 2; i < cpec; ++i)
+        poly[i] = 2 * normalizedTime * poly[i - 1] - poly[i - 2];
+
+    // Массив с оригинальным значением.
+    for (int i = 0; i < componentsCount; ++i)
+        for (int j = 0; j < cpec; ++j)
+            res[i] += poly[j] * coeffs[i * cpec + j];
+
+    // 2. Первая производная элемента.
+    if (resType == 1)
+    {
+        double dpoly[MAX_POLY_SIZE];
+        dpoly[0] = 0;
+        dpoly[1] = 1;
+        dpoly[2] = 4 * normalizedTime;
+
+        // Заполнение полиномов.
+        for (int i = 3; i < cpec; ++i)
+            dpoly[i] = 2 * poly[i - 1] + 2 * normalizedTime * dpoly[i - 1] -
+                dpoly[i - 2];
+
+        // Коэффициент размерности для 1-й производной.
+        double dunits = double(m_keys[baseItem][2]) / (43200 * m_blockSpan);
+
+        // Вычисление координат.
+        for (int i = 0; i < componentsCount; ++i)
+        {
+            for (int j = 0; j < cpec; ++j)
+                res[i + componentsCount] += dpoly[j] * coeffs[i * cpec + j];
+
+            res[i + componentsCount] *= dunits;
+        }
     }
 
     return true;
 }
 
 // Земля относительно барицентра Солнечной Системы.
-bool dph::EphemerisRelease::baseEarth(int resType, double jed,
+bool dph::EphemerisRelease::ssbaryEarth(int resType, double jed,
     double* res) const
 {
     // Барицентр сиситемы Земля-Луна относительно барицентра Солнечной Системы.
@@ -659,7 +637,7 @@ bool dph::EphemerisRelease::baseEarth(int resType, double jed,
 }
 
 // Луна относительно барицентра Солнечной Системы.
-bool dph::EphemerisRelease::baseMoon(int resType, double jed, double* res) const
+bool dph::EphemerisRelease::ssbaryMoon(int resType, double jed, double* res) const
 {
     // Барицентр сиситемы Земля-Луна относительно барицентра Солнечной Системы.
     if (!baseItem(resType, jed, 2, res))

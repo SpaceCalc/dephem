@@ -12,48 +12,60 @@
 #include <map>
 #include <vector>
 
+/// @brief Пространство имён библиотеки dephem.
 namespace dph {
 
-// Индексы тел.
+/**
+ * @brief Индексы небесных тел.
+ *
+ * @see
+ *  DevelopmentEphemeris::bodyPosition
+ *  DevelopmentEphemeris::bodyState
+ */
 enum Body
 {
-    B_MERCURY = 1,
-    B_VENUS   = 2,
-    B_EARTH   = 3,
-    B_MARS    = 4,
-    B_JUPITER = 5,
-    B_SATURN  = 6,
-    B_URANUS  = 7,
-    B_NEPTUNE = 8,
-    B_PLUTO   = 9,
-    B_MOON    = 10,
-    B_SUN     = 11,
-    B_SSBARY  = 12, // Барицентр Солнечной Системы.
-    B_EMBARY  = 13  // Барицентр системы Земля-Луна.
+    B_MERCURY = 1,  ///< Меркурий
+    B_VENUS   = 2,  ///< Венера
+    B_EARTH   = 3,  ///< Земля
+    B_MARS    = 4,  ///< Марс
+    B_JUPITER = 5,  ///< Юпитер
+    B_SATURN  = 6,  ///< Сатур
+    B_URANUS  = 7,  ///< Уран
+    B_NEPTUNE = 8,  ///< Нептун
+    B_PLUTO   = 9,  ///< Плутон
+    B_MOON    = 10, ///< Луна
+    B_SUN     = 11, ///< Солнце
+    B_SSBARY  = 12, ///< Барицентр Солнечной Системы
+    B_EMBARY  = 13  ///< Барицентр системы Земля-Луна
 };
 
-// Индексы элементов.
+/**
+ * @brief Индексы элементов.
+ *
+ * @see
+ *  DevelopmentEphemeris::item
+ */
 enum Item {
-    I_MERCURY = 0,
-    I_VENUS   = 1,
-    I_EMBARY  = 2,
-    I_MARS    = 3,
-    I_JUPITER = 4,
-    I_SATURN  = 5,
-    I_URANUS  = 6,
-    I_NEPTUNE = 7,
-    I_PLUTO   = 8,
-    I_MOON    = 9,
-    I_SUN     = 10,
-    I_EN      = 11,
-    I_LML     = 12,
-    I_LMAV    = 13,
-    I_TTMTDB  = 14
+    I_MERCURY = 0,  ///< Меркурий
+    I_VENUS   = 1,  ///< Венера
+    I_EMBARY  = 2,  ///< Барицентр системы Земля-Луна
+    I_MARS    = 3,  ///< Марс
+    I_JUPITER = 4,  ///< Юпитер
+    I_SATURN  = 5,  ///< Сатурн
+    I_URANUS  = 6,  ///< Уран
+    I_NEPTUNE = 7,  ///< Нептун
+    I_PLUTO   = 8,  ///< Плутон
+    I_MOON    = 9,  ///< Луна (относительно Земли)
+    I_SUN     = 10, ///< Солнце
+    I_EN      = 11, ///< Земные нутации в долготе и наклоне (модель IAU 1980)
+    I_LML     = 12, ///< Либрации мантии Луны
+    I_LMAV    = 13, ///< Угловая скорость мантии Луны
+    I_TTMTDB  = 14  ///< TT-TDB (в геоцентре)
 };
 
 /**
  *
- * @brief Представление бинарного файла DE-эфемерид NASA JPL.
+ * @brief Представление бинарного файла эфемерид.
  *
  * Позволяет получить доступ к данным, хранимым в файле.
  */
@@ -61,86 +73,92 @@ class DevelopmentEphemeris
 {
 public:
 
-    /// Конструктор по умолчанию.
+    /// @details Создаёт неинициализированный объет эфемерид.
     DevelopmentEphemeris();
 
     /**
-     * @brief Конструктор по пути к бинарному файлу эфемерид.
+     * Создаёт объект эфемерид по файлу `filePath`.
      *
-     * Создаёт новый объект эфемерид по файлу `filePath`.
-     *
-     * Успешность открытия можно проверить методом isReady().
+     * Успешность открытия можно проверить методом isOpen().
      */
     DevelopmentEphemeris(const std::string& filePath);
 
-    /// Конструктор копирования.
+    /// @details Конструктор копирования.
     DevelopmentEphemeris(const DevelopmentEphemeris& other);
 
-    /// Оператор копирования.
+    /// @details Оператор копирования.
     DevelopmentEphemeris& operator=(const DevelopmentEphemeris& other);
 
     /**
-     * @brief Открыть файл эфемерид.
-     *
      * Инициализирует объект эфемерид файлом `filePath`.
      *
      * @return `true`, при успешном открытии, иначе - `false`.
+     *
+     * @see isOpen()
      */
     bool open(const std::string& filePath);
 
     /**
-     * @brief Положение небесного тела.
+     * Положение тела `target` относительно `center` на момент времени `jed`.\n
+     * Результат записывается в массив `pos` (x, y, z, км).
      *
-     * Положение `pos` (x, y, z, км) тела `target` относительно `center` на
-     * момент времени `jed`.
+     * @return `true`, при успешном выполнении, иначе - `false`.
      *
-     * @return `true`, при успешном выполнении, иначе - `false`:
-     *  - объект класса не инициализирован файлом эфемерид;
-     *  - передан неверный индекс центрального или небесного тела;
-     *  - передано неверное время `jed`.
+     * @code{.cpp}
+     *  using namespace dph;
+     *  DevelopmentEphemeris ephem("path/to/file");
+     *  double moon[3];
+     *  bool ok = ephem.bodyPosition(B_MOON, B_EARTH, 2451544.5, moon);
+     * @endcode
      *
-     * @note `jed` должен удовлетворять интервалу [beginJed(), endJed()].
+     * @note
+     *  Чтобы не ошибиться с индексами тел используйте dph::Body.
      *
-     * @warning
-     * 1. метод не является потокобезопасным;
-     * 2. указатель `pos` не проверяется на `nullptr`.
+     * @see
+     *  dph::Body
      */
     bool bodyPosition(int target, int center, double jed, double pos[3]) const;
 
     /**
-     * @brief Положение и скорость небесного тела.
+     * Положение и скорость тела `target` относительно `center` на момент
+     * времени `jed`.\n
+     * Результат записывается в массив `state` (x, y, z, vx, vy, vz, км, км/с).
      *
-     * Положение и скорость `state` (x, y, z, vx, vy, vz, км, км/с) тела
-     * `target` относительно `center` на момент времени `jed`.
+     * @return `true`, при успешном выполнении, иначе - `false`.
      *
-     * @return `true`, при успешном выполнении, иначе - `false`:
-     *  - объект класса не инициализирован файлом эфемерид;
-     *  - передан неверный индекс центрального или небесного тела;
-     *  - передано неверное время `jed`.
+     * @code{.cpp}
+     *  using namespace dph;
+     *  DevelopmentEphemeris ephem("path/to/file");
+     *  double moon[6];
+     *  bool ok = ephem.bodyState(B_MOON, B_EARTH, 2451544.5, moon);
+     * @endcode
      *
-     * @note `jed` должен удовлетворять интервалу [beginJed(), endJed()].
+     * @note
+     *  Чтобы не ошибиться с индексами тел используйте dph::Body.
      *
-     * @warning
-     * 1. метод не является потокобезопасным;
-     * 2. указатель `state` не проверяется на `nullptr`.
+     * @see
+     *  dph::Body
      */
     bool bodyState(int target, int center, double jed, double state[6]) const;
 
     /**
-     * @brief Отдельный элемент выпуска эфемерид.
+     * Значение элемента `item` на момент времени `jed`.\n
+     * Результат записывается в массив `result`.
      *
-     * Значение `result` элемента `item` на момент времени `jed`.
+     * @return `true`, при успешном выполнении, иначе - `false`.
      *
-     * @return `true`, при успешном выполнении, иначе - `false`:
-     *  - объект класса не инициализирован файлом эфемерид;
-     *  - передан неверный индекс центрального или небесного тела;
-     *  - передано неверное время `jed`.
+     * @code{.cpp}
+     *  using namespace dph;
+     *  DevelopmentEphemeris ephem("path/to/file");
+     *  double earthNutations[2];
+     *  bool ok = ephem.item(I_EN, 2451544.5, earthNutations);
+     * @endcode
      *
-     * @note `jed` должен удовлетворять интервалу [beginJed(), endJed()].
+     * @note
+     *  Чтобы не ошибиться с индексом элемента используйте dph::Item.
      *
-     * @warning
-     * 1. метод не является потокобезопасным;
-     * 2. указатель `result` не проверяется на `nullptr`.
+     * @see
+     *  dph::Item
      */
     bool item(int item, double jed, double* result) const;
 
@@ -161,6 +179,15 @@ public:
 
     /// @return значение константы `name`.
     double constant(const std::string& name, bool* ok = nullptr) const;
+
+    /// @return путь к файлу эфемерид.
+    std::string filePath() const;
+
+    /**
+     * @return список доступных элементов.
+     * @see dph::Item
+     */
+    std::vector<Item> itemList() const;
 
 private:
     // Формат эфемерид.
@@ -188,7 +215,6 @@ private:
     int m_ncoeff;        // Количество коэффициентов в блоке.
 
     std::map<std::string, double> m_constants; // Константы выпуска.
-
 
     // Обрезать повторяющиеся пробелы (' ') с конца массива символов "s"
     // размера "arraySize".

@@ -258,6 +258,22 @@ double dph::DevelopmentEphemeris::constant(const std::string& name, bool* ok) co
     }
 }
 
+std::string dph::DevelopmentEphemeris::filePath() const
+{
+    return m_filePath;
+}
+
+std::vector<dph::Item> dph::DevelopmentEphemeris::itemList() const
+{
+    std::vector<dph::Item> itemList;
+
+    for (int i = 0; i < 15; ++i)
+        if (m_keys[i][1] != 0)
+            itemList.push_back(Item(i));
+
+    return itemList;
+}
+
 std::string dph::DevelopmentEphemeris::cutBackSpaces(const char* s, size_t size)
 {
     for (size_t i = size - 1; i > 0; --i)

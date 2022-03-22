@@ -1,0 +1,233 @@
+\hypertarget{classdph_1_1_development_ephemeris}{}\doxysection{dph\+::Development\+Ephemeris Class Reference}
+\label{classdph_1_1_development_ephemeris}\index{dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}}
+
+
+Представление бинарного файла DE-\/эфемерид NASA JPL.  
+
+
+
+
+{\ttfamily \#include $<$dephem.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classdph_1_1_development_ephemeris_a7ba77317d0524237310fa39be81663bd}\label{classdph_1_1_development_ephemeris_a7ba77317d0524237310fa39be81663bd}} 
+{\bfseries Development\+Ephemeris} ()
+\begin{DoxyCompactList}\small\item\em Конструктор по умолчанию. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classdph_1_1_development_ephemeris_a05b3eaf56810a533d091fb0ab2f1c4e2}{Development\+Ephemeris}} (const std\+::string \&file\+Path)
+\begin{DoxyCompactList}\small\item\em Конструктор по пути к бинарному файлу эфемерид. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classdph_1_1_development_ephemeris_ac5e43f3b98f4c6eaf2ab6c474891a626}\label{classdph_1_1_development_ephemeris_ac5e43f3b98f4c6eaf2ab6c474891a626}} 
+{\bfseries Development\+Ephemeris} (const \mbox{\hyperlink{classdph_1_1_development_ephemeris}{Development\+Ephemeris}} \&other)
+\begin{DoxyCompactList}\small\item\em Конструктор копирования. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classdph_1_1_development_ephemeris_a03fbb9da92c64c13d10ce0dee5280293}\label{classdph_1_1_development_ephemeris_a03fbb9da92c64c13d10ce0dee5280293}} 
+\mbox{\hyperlink{classdph_1_1_development_ephemeris}{Development\+Ephemeris}} \& {\bfseries operator=} (const \mbox{\hyperlink{classdph_1_1_development_ephemeris}{Development\+Ephemeris}} \&other)
+\begin{DoxyCompactList}\small\item\em Оператор копирования. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classdph_1_1_development_ephemeris_a72e58f0d44158ec84747fd87612bc974}{open}} (const std\+::string \&file\+Path)
+\begin{DoxyCompactList}\small\item\em Открыть файл эфемерид. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classdph_1_1_development_ephemeris_aa5e087da46f9fe7c6bb4b282b0ae42e9}{body\+Position}} (int target, int center, double jed, double pos\mbox{[}3\mbox{]}) const
+\begin{DoxyCompactList}\small\item\em Положение небесного тела. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classdph_1_1_development_ephemeris_a9315e17fa45812ac0d465d1efb687678}{body\+State}} (int target, int center, double jed, double state\mbox{[}6\mbox{]}) const
+\begin{DoxyCompactList}\small\item\em Положение и скорость небесного тела. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classdph_1_1_development_ephemeris_a77da1cd381db4e473b919c0af161e7b1}{item}} (int item, double jed, double $\ast$result) const
+\begin{DoxyCompactList}\small\item\em Отдельный элемент выпуска эфемерид. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classdph_1_1_development_ephemeris_a1602730e68d626832246d729415d2243}{is\+Open}} () const
+\item 
+double \mbox{\hyperlink{classdph_1_1_development_ephemeris_a051938436ea3ec384e80fa5bf68328ff}{begin\+Jed}} () const
+\item 
+double \mbox{\hyperlink{classdph_1_1_development_ephemeris_a583c4a67c15e5a0d39f1b987a2963b81}{end\+Jed}} () const
+\item 
+int \mbox{\hyperlink{classdph_1_1_development_ephemeris_a407c02ebad4e90fcc8c8f48914c54376}{index}} () const
+\item 
+std\+::string \mbox{\hyperlink{classdph_1_1_development_ephemeris_aed97208ef8563c5db51afd9c033dd56f}{label}} () const
+\item 
+double \mbox{\hyperlink{classdph_1_1_development_ephemeris_a6f4c0404e113b70b157b14c3f5dfca28}{constant}} (const std\+::string \&name, bool $\ast$ok=nullptr) const
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Представление бинарного файла DE-\/эфемерид NASA JPL. 
+
+Позволяет получить доступ к данным, хранимым в файле. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classdph_1_1_development_ephemeris_a05b3eaf56810a533d091fb0ab2f1c4e2}\label{classdph_1_1_development_ephemeris_a05b3eaf56810a533d091fb0ab2f1c4e2}} 
+\index{dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}!DevelopmentEphemeris@{DevelopmentEphemeris}}
+\index{DevelopmentEphemeris@{DevelopmentEphemeris}!dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}}
+\doxysubsubsection{\texorpdfstring{DevelopmentEphemeris()}{DevelopmentEphemeris()}}
+{\footnotesize\ttfamily dph\+::\+Development\+Ephemeris\+::\+Development\+Ephemeris (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{file\+Path }\end{DoxyParamCaption})}
+
+
+
+Конструктор по пути к бинарному файлу эфемерид. 
+
+Создаёт новый объект эфемерид по файлу {\ttfamily file\+Path}.
+
+Успешность открытия можно проверить методом is\+Ready(). 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classdph_1_1_development_ephemeris_a051938436ea3ec384e80fa5bf68328ff}\label{classdph_1_1_development_ephemeris_a051938436ea3ec384e80fa5bf68328ff}} 
+\index{dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}!beginJed@{beginJed}}
+\index{beginJed@{beginJed}!dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}}
+\doxysubsubsection{\texorpdfstring{beginJed()}{beginJed()}}
+{\footnotesize\ttfamily double dph\+::\+Development\+Ephemeris\+::begin\+Jed (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+\begin{DoxyReturn}{Returns}
+начало интервала, доступного для расчёта. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classdph_1_1_development_ephemeris_aa5e087da46f9fe7c6bb4b282b0ae42e9}\label{classdph_1_1_development_ephemeris_aa5e087da46f9fe7c6bb4b282b0ae42e9}} 
+\index{dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}!bodyPosition@{bodyPosition}}
+\index{bodyPosition@{bodyPosition}!dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}}
+\doxysubsubsection{\texorpdfstring{bodyPosition()}{bodyPosition()}}
+{\footnotesize\ttfamily bool dph\+::\+Development\+Ephemeris\+::body\+Position (\begin{DoxyParamCaption}\item[{int}]{target,  }\item[{int}]{center,  }\item[{double}]{jed,  }\item[{double}]{pos\mbox{[}3\mbox{]} }\end{DoxyParamCaption}) const}
+
+
+
+Положение небесного тела. 
+
+Положение {\ttfamily pos} (x, y, z, км) тела {\ttfamily target} относительно {\ttfamily center} на момент времени {\ttfamily jed}.
+
+\begin{DoxyReturn}{Returns}
+{\ttfamily true}, при успешном выполнении, иначе -\/ {\ttfamily false}\+:
+\begin{DoxyItemize}
+\item объект класса не инициализирован файлом эфемерид;
+\item передан неверный индекс центрального или небесного тела;
+\item передано неверное время {\ttfamily jed}.
+\end{DoxyItemize}
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+{\ttfamily jed} должен удовлетворять интервалу \mbox{[}\mbox{\hyperlink{classdph_1_1_development_ephemeris_a051938436ea3ec384e80fa5bf68328ff}{begin\+Jed()}}, \mbox{\hyperlink{classdph_1_1_development_ephemeris_a583c4a67c15e5a0d39f1b987a2963b81}{end\+Jed()}}\mbox{]}.
+\end{DoxyNote}
+\begin{DoxyWarning}{Warning}
+
+\begin{DoxyEnumerate}
+\item метод не является потокобезопасным;
+\item указатель {\ttfamily pos} не проверяется на {\ttfamily nullptr}. 
+\end{DoxyEnumerate}
+\end{DoxyWarning}
+\mbox{\Hypertarget{classdph_1_1_development_ephemeris_a9315e17fa45812ac0d465d1efb687678}\label{classdph_1_1_development_ephemeris_a9315e17fa45812ac0d465d1efb687678}} 
+\index{dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}!bodyState@{bodyState}}
+\index{bodyState@{bodyState}!dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}}
+\doxysubsubsection{\texorpdfstring{bodyState()}{bodyState()}}
+{\footnotesize\ttfamily bool dph\+::\+Development\+Ephemeris\+::body\+State (\begin{DoxyParamCaption}\item[{int}]{target,  }\item[{int}]{center,  }\item[{double}]{jed,  }\item[{double}]{state\mbox{[}6\mbox{]} }\end{DoxyParamCaption}) const}
+
+
+
+Положение и скорость небесного тела. 
+
+Положение и скорость {\ttfamily state} (x, y, z, vx, vy, vz, км, км/с) тела {\ttfamily target} относительно {\ttfamily center} на момент времени {\ttfamily jed}.
+
+\begin{DoxyReturn}{Returns}
+{\ttfamily true}, при успешном выполнении, иначе -\/ {\ttfamily false}\+:
+\begin{DoxyItemize}
+\item объект класса не инициализирован файлом эфемерид;
+\item передан неверный индекс центрального или небесного тела;
+\item передано неверное время {\ttfamily jed}.
+\end{DoxyItemize}
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+{\ttfamily jed} должен удовлетворять интервалу \mbox{[}\mbox{\hyperlink{classdph_1_1_development_ephemeris_a051938436ea3ec384e80fa5bf68328ff}{begin\+Jed()}}, \mbox{\hyperlink{classdph_1_1_development_ephemeris_a583c4a67c15e5a0d39f1b987a2963b81}{end\+Jed()}}\mbox{]}.
+\end{DoxyNote}
+\begin{DoxyWarning}{Warning}
+
+\begin{DoxyEnumerate}
+\item метод не является потокобезопасным;
+\item указатель {\ttfamily state} не проверяется на {\ttfamily nullptr}. 
+\end{DoxyEnumerate}
+\end{DoxyWarning}
+\mbox{\Hypertarget{classdph_1_1_development_ephemeris_a6f4c0404e113b70b157b14c3f5dfca28}\label{classdph_1_1_development_ephemeris_a6f4c0404e113b70b157b14c3f5dfca28}} 
+\index{dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}!constant@{constant}}
+\index{constant@{constant}!dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}}
+\doxysubsubsection{\texorpdfstring{constant()}{constant()}}
+{\footnotesize\ttfamily double dph\+::\+Development\+Ephemeris\+::constant (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name,  }\item[{bool $\ast$}]{ok = {\ttfamily nullptr} }\end{DoxyParamCaption}) const}
+
+\begin{DoxyReturn}{Returns}
+значение константы {\ttfamily name}. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classdph_1_1_development_ephemeris_a583c4a67c15e5a0d39f1b987a2963b81}\label{classdph_1_1_development_ephemeris_a583c4a67c15e5a0d39f1b987a2963b81}} 
+\index{dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}!endJed@{endJed}}
+\index{endJed@{endJed}!dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}}
+\doxysubsubsection{\texorpdfstring{endJed()}{endJed()}}
+{\footnotesize\ttfamily double dph\+::\+Development\+Ephemeris\+::end\+Jed (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+\begin{DoxyReturn}{Returns}
+конец интервала, доступного для расчёта. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classdph_1_1_development_ephemeris_a407c02ebad4e90fcc8c8f48914c54376}\label{classdph_1_1_development_ephemeris_a407c02ebad4e90fcc8c8f48914c54376}} 
+\index{dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}!index@{index}}
+\index{index@{index}!dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}}
+\doxysubsubsection{\texorpdfstring{index()}{index()}}
+{\footnotesize\ttfamily int dph\+::\+Development\+Ephemeris\+::index (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+\begin{DoxyReturn}{Returns}
+индекс выпуска эфемерид. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classdph_1_1_development_ephemeris_a1602730e68d626832246d729415d2243}\label{classdph_1_1_development_ephemeris_a1602730e68d626832246d729415d2243}} 
+\index{dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}!isOpen@{isOpen}}
+\index{isOpen@{isOpen}!dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}}
+\doxysubsubsection{\texorpdfstring{isOpen()}{isOpen()}}
+{\footnotesize\ttfamily bool dph\+::\+Development\+Ephemeris\+::is\+Open (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+\begin{DoxyReturn}{Returns}
+{\ttfamily true}, если эфемериды открыты успешно, иначе -\/ {\ttfamily false}. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classdph_1_1_development_ephemeris_a77da1cd381db4e473b919c0af161e7b1}\label{classdph_1_1_development_ephemeris_a77da1cd381db4e473b919c0af161e7b1}} 
+\index{dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}!item@{item}}
+\index{item@{item}!dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}}
+\doxysubsubsection{\texorpdfstring{item()}{item()}}
+{\footnotesize\ttfamily bool dph\+::\+Development\+Ephemeris\+::item (\begin{DoxyParamCaption}\item[{int}]{item,  }\item[{double}]{jed,  }\item[{double $\ast$}]{result }\end{DoxyParamCaption}) const}
+
+
+
+Отдельный элемент выпуска эфемерид. 
+
+Значение {\ttfamily result} элемента {\ttfamily item} на момент времени {\ttfamily jed}.
+
+\begin{DoxyReturn}{Returns}
+{\ttfamily true}, при успешном выполнении, иначе -\/ {\ttfamily false}\+:
+\begin{DoxyItemize}
+\item объект класса не инициализирован файлом эфемерид;
+\item передан неверный индекс центрального или небесного тела;
+\item передано неверное время {\ttfamily jed}.
+\end{DoxyItemize}
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+{\ttfamily jed} должен удовлетворять интервалу \mbox{[}\mbox{\hyperlink{classdph_1_1_development_ephemeris_a051938436ea3ec384e80fa5bf68328ff}{begin\+Jed()}}, \mbox{\hyperlink{classdph_1_1_development_ephemeris_a583c4a67c15e5a0d39f1b987a2963b81}{end\+Jed()}}\mbox{]}.
+\end{DoxyNote}
+\begin{DoxyWarning}{Warning}
+
+\begin{DoxyEnumerate}
+\item метод не является потокобезопасным;
+\item указатель {\ttfamily result} не проверяется на {\ttfamily nullptr}. 
+\end{DoxyEnumerate}
+\end{DoxyWarning}
+\mbox{\Hypertarget{classdph_1_1_development_ephemeris_aed97208ef8563c5db51afd9c033dd56f}\label{classdph_1_1_development_ephemeris_aed97208ef8563c5db51afd9c033dd56f}} 
+\index{dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}!label@{label}}
+\index{label@{label}!dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}}
+\doxysubsubsection{\texorpdfstring{label()}{label()}}
+{\footnotesize\ttfamily std\+::string dph\+::\+Development\+Ephemeris\+::label (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+\begin{DoxyReturn}{Returns}
+подпись выпуска эфемерид. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classdph_1_1_development_ephemeris_a72e58f0d44158ec84747fd87612bc974}\label{classdph_1_1_development_ephemeris_a72e58f0d44158ec84747fd87612bc974}} 
+\index{dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}!open@{open}}
+\index{open@{open}!dph::DevelopmentEphemeris@{dph::DevelopmentEphemeris}}
+\doxysubsubsection{\texorpdfstring{open()}{open()}}
+{\footnotesize\ttfamily bool dph\+::\+Development\+Ephemeris\+::open (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{file\+Path }\end{DoxyParamCaption})}
+
+
+
+Открыть файл эфемерид. 
+
+Инициализирует объект эфемерид файлом {\ttfamily file\+Path}.
+
+\begin{DoxyReturn}{Returns}
+{\ttfamily true}, при успешном открытии, иначе -\/ {\ttfamily false}. 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+dephem/dephem.\+h\item 
+dephem/dephem.\+cpp\end{DoxyCompactItemize}

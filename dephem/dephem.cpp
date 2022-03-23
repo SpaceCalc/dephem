@@ -261,6 +261,14 @@ std::vector<dph::Item> dph::DevelopmentEphemeris::itemList() const
     return itemList;
 }
 
+bool dph::DevelopmentEphemeris::hasItem(int item) const
+{
+    if (item < 0 || item > 14)
+        return false;
+
+    return !m_keys[item].empty();
+}
+
 std::string dph::DevelopmentEphemeris::cutBackSpaces(const char* s, size_t size)
 {
     for (size_t i = size - 1; i > 0; --i)

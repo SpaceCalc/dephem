@@ -61,7 +61,7 @@ enum Item {
 
 /**
  * @brief Представление бинарного файла эфемерид.
- * Позволяет получить доступ к данным, хранимым в файле.
+ * @details Позволяет получить доступ к данным, хранимым в файле.
  */
 class DevelopmentEphemeris
 {
@@ -72,7 +72,7 @@ public:
 
     /**
      * Создаёт объект и открывает файл эфемерид по пути `filePath`.
-     * Успешность открытия можно проверить методом isOpen().
+     * @see isOpen()
      */
     DevelopmentEphemeris(const std::string& filePath);
 
@@ -148,6 +148,12 @@ public:
      * @see dph::Item
      */
     std::vector<Item> itemList() const;
+
+    /**
+     * @return `true`, если элемент есть в файле эфемерид, иначе - `false`.
+     * @see dph::Item
+     */
+    bool hasItem(int item) const;
 
 private:
     // Формат эфемерид.

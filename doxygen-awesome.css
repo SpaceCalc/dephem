@@ -1175,6 +1175,24 @@ div.fragment .line:first-child .lineno {
 }
 
 /*
+ dl return - place dt and dd on same line
+ author: Maksim Philippov
+ */
+
+dl.return {
+    overflow: hidden;
+}
+
+dl.return dt {
+    float: left;
+}
+
+dl.return dd {
+    float: left;
+    padding-left: 6px;
+}
+
+/*
  dl warning, attention, note, deprecated, bug, ...
  */
 

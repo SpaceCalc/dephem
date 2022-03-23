@@ -39,7 +39,8 @@ enum Body
 /**
  * @brief Индексы элементов.
  * @see
- *  DevelopmentEphemeris::item
+ *  DevelopmentEphemeris::itemBase
+ *  DevelopmentEphemeris::itemDerivative
  */
 enum Item {
     I_MERCURY = 0,  ///< Меркурий

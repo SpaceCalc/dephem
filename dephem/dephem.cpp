@@ -45,34 +45,49 @@ bool dph::DevelopmentEphemeris::open(const std::string& filePath)
     return true;
 }
 
+void dph::DevelopmentEphemeris::close()
+{
+    m_file.close();
+}
+
 // Положение target относительно center на момент времени jed.
 bool dph::DevelopmentEphemeris::bodyPosition(int target, int center, double jed,
     double pos[3])
 {
-    return body(0, jed, target, center, pos);
+    return body(target, center, jed, 0, pos);
 }
 
 // Положение и скорость target относительно center на момент времени jed.
 bool dph::DevelopmentEphemeris::bodyState(int target, int center, double jed,
     double state[6])
 {
-    return body(1, jed, target, center, state);
+    return body(target, center, jed, 1, state);
 }
 
 // Значение отдельного элемента item на момент времени jed.
-bool dph::DevelopmentEphemeris::item(int item, double jed, double* result)
+bool dph::DevelopmentEphemeris::itemBase(int item, double jed, double* res)
 {
     if (item < 0 || item > 14)
         return false;
     else if (jed < m_beginJed || jed > m_endJed)
         return false;
 
-    return baseItem(9, jed, item, result);
+    return baseItem(item, jed, 0, res);
 }
 
+bool dph::DevelopmentEphemeris::itemDerivative(int item, double jed,
+    double* res)
+{
+    if (item < 0 || item > 14)
+        return false;
+    else if (jed < m_beginJed || jed > m_endJed)
+        return false;
 
-bool dph::DevelopmentEphemeris::body(int resType, double jed,
-    int target, int center, double* res)
+    return baseItem(item, jed, 1, res);
+}
+
+bool dph::DevelopmentEphemeris::body(int target, int center, double jed,
+    int resType, double* res)
 {
     // Допустимые значения параметров:
     // -------------------------------
@@ -147,10 +162,10 @@ bool dph::DevelopmentEphemeris::body(int resType, double jed,
         // Выбор метода вычисления в зависимости от тела.
         bool ok = false;
         switch (notSSBARY) {
-        case B_EARTH:  ok = ssbaryEarth(resType, jed, res);   break;
-        case B_MOON:   ok = ssbaryMoon(resType, jed, res);    break;
-        case B_EMBARY: ok = baseItem(resType, jed, 2, res); break;
-        default:       ok = baseItem(resType, jed, notSSBARY - 1, res);
+        case B_EARTH:  ok = ssbaryEarth(jed, resType, res); break;
+        case B_MOON:   ok = ssbaryMoon(jed, resType, res); break;
+        case B_EMBARY: ok = baseItem(I_EMBARY, jed, resType, res); break;
+        default:       ok = baseItem(notSSBARY - 1, jed, resType, res);
         }
 
         if (!ok)
@@ -167,7 +182,7 @@ bool dph::DevelopmentEphemeris::body(int resType, double jed,
         // Случай 3: Искомым и центральным телами являетса Земля и Луна.
 
         // Луна относительно Земли.
-        if (!baseItem(resType, jed, 9, res))
+        if (!baseItem(I_MOON, jed, resType, res))
             return false;
 
         // Если искомым телом является Земля, то возвращается "зеркальный"
@@ -198,10 +213,10 @@ bool dph::DevelopmentEphemeris::body(int resType, double jed,
             // Выбор метода вычисления в зависимости от тела.
             bool ok = false;
             switch (bodyIndex) {
-            case B_EARTH:  ok = ssbaryEarth(resType, jed, arr);   break;
-            case B_MOON:   ok = ssbaryMoon(resType, jed, arr);    break;
-            case B_EMBARY: ok = baseItem(resType, jed, 2, arr); break;
-            default:       ok = baseItem(resType, jed, bodyIndex - 1, arr);
+            case B_EARTH:  ok = ssbaryEarth(jed, resType, arr); break;
+            case B_MOON:   ok = ssbaryMoon(jed, resType, arr); break;
+            case B_EMBARY: ok = baseItem(I_EMBARY, jed, resType, arr); break;
+            default:       ok = baseItem(bodyIndex - 1, jed, resType, arr);
             }
 
             if (!ok)
@@ -241,7 +256,8 @@ std::string dph::DevelopmentEphemeris::label() const
     return m_label;
 }
 
-double dph::DevelopmentEphemeris::constant(const std::string& name, bool* ok) const
+double dph::DevelopmentEphemeris::constant(const std::string& name,
+    bool* ok) const
 {
     auto found = m_constants.find(name);
 
@@ -489,7 +505,7 @@ bool dph::DevelopmentEphemeris::fillBuffer(size_t blockNum)
 }
 
 // Базовый элемент.
-bool dph::DevelopmentEphemeris::baseItem(int resType, double jed, int baseItem,
+bool dph::DevelopmentEphemeris::baseItem(int baseItem, double jed, int resType,
     double* res)
 {
     // Допустимые значения переданных параметров:
@@ -631,16 +647,16 @@ bool dph::DevelopmentEphemeris::baseItem(int resType, double jed, int baseItem,
 }
 
 // Земля относительно барицентра Солнечной Системы.
-bool dph::DevelopmentEphemeris::ssbaryEarth(int resType, double jed,
+bool dph::DevelopmentEphemeris::ssbaryEarth(double jed, int resType,
     double* res)
 {
     // Барицентр сиситемы Земля-Луна относительно барицентра Солнечной Системы.
-    if (!baseItem(resType, jed, 2, res))
+    if (!baseItem(I_EMBARY, jed, resType, res))
         return false;
 
     // Луна относитльно Земли.
     double moonRelEarth[6];
-    if (!baseItem(resType, jed, 9, moonRelEarth))
+    if (!baseItem(I_MOON, jed, resType, moonRelEarth))
         return false;
 
     // Количество компонент.
@@ -654,15 +670,15 @@ bool dph::DevelopmentEphemeris::ssbaryEarth(int resType, double jed,
 }
 
 // Луна относительно барицентра Солнечной Системы.
-bool dph::DevelopmentEphemeris::ssbaryMoon(int resType, double jed, double* res)
+bool dph::DevelopmentEphemeris::ssbaryMoon(double jed, int resType, double* res)
 {
     // Барицентр сиситемы Земля-Луна относительно барицентра Солнечной Системы.
-    if (!baseItem(resType, jed, 2, res))
+    if (!baseItem(I_EMBARY, jed, resType, res))
         return false;
 
     // Луна относитльно Земли.
     double moonRelEarth[6];
-    if (!baseItem(resType, jed, 9, moonRelEarth))
+    if (!baseItem(I_MOON, jed, resType, moonRelEarth))
         return false;
 
     // Количество компонент.

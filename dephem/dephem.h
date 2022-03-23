@@ -15,7 +15,6 @@ namespace dph {
 
 /**
  * @brief Индексы небесных тел.
- *
  * @see
  *  DevelopmentEphemeris::bodyPosition
  *  DevelopmentEphemeris::bodyState
@@ -39,7 +38,6 @@ enum Body
 
 /**
  * @brief Индексы элементов.
- *
  * @see
  *  DevelopmentEphemeris::item
  */
@@ -63,7 +61,6 @@ enum Item {
 
 /**
  * @brief Представление бинарного файла эфемерид.
- *
  * Позволяет получить доступ к данным, хранимым в файле.
  */
 class DevelopmentEphemeris
@@ -75,7 +72,6 @@ public:
 
     /**
      * Создаёт объект и открывает файл эфемерид по пути `filePath`.
-     *
      * Успешность открытия можно проверить методом isOpen().
      */
     DevelopmentEphemeris(const std::string& filePath);
@@ -86,17 +82,17 @@ public:
 
     /**
      * Открывает файл эфемерид по пути `filePath`.
-     *
      * @return `true`, при успешном открытии, иначе - `false`.
      */
     bool open(const std::string& filePath);
 
+    /// @details Закрывает файл эфемерид.
+    void close();
+
     /**
      * Положение тела `target` относительно `center` на момент времени `jed`.\n
      * Результат записывается в массив `pos` (x, y, z, км).
-     *
      * @return `true`, при успешном выполнении, иначе - `false`.
-     *
      * @note Чтобы не ошибиться с индексами тел, используйте dph::Body.
      */
     bool bodyPosition(int target, int center, double jed, double pos[3]);
@@ -105,22 +101,26 @@ public:
      * Положение и скорость тела `target` относительно `center` на момент
      * времени `jed`.\n
      * Результат записывается в массив `state` (x, y, z, vx, vy, vz, км, км/с).
-     *
      * @return `true`, при успешном выполнении, иначе - `false`.
-     *
      * @note Чтобы не ошибиться с индексами тел, используйте dph::Body.
      */
     bool bodyState(int target, int center, double jed, double state[6]);
 
     /**
      * Значение элемента `item` на момент времени `jed`.\n
-     * Результат записывается в массив `result`.
-     *
+     * Результат записывается в массив `res`.
      * @return `true`, при успешном выполнении, иначе - `false`.
-     *
      * @note Чтобы не ошибиться с индексом элемента, используйте dph::Item.
      */
-    bool item(int item, double jed, double* result);
+    bool itemBase(int item, double jed, double* res);
+
+    /**
+     * Значение элемента `item` на момент времени `jed`.\n
+     * Результат записывается в массив `res`.
+     * @return `true`, при успешном выполнении, иначе - `false`.
+     * @note Чтобы не ошибиться с индексом элемента, используйте dph::Item.
+     */
+    bool itemDerivative(int item, double jed, double* res);
 
     /// @return `true`, если файл эфемерид открыт, иначе - `false`.
     bool isOpen() const;
@@ -192,17 +192,16 @@ private:
     // Заполнение буффера "m_buffer" коэффициентами требуемого блока.
     bool fillBuffer(size_t blockNum);
 
-    bool body(int resType, double jed, int target, int center,
-        double* res);
+    bool body(int target, int center, double jed, int resType, double* res);
 
     // Базовый элемент.
-    bool baseItem(int resType, double jed, int baseItem, double* res);
+    bool baseItem(int baseItem, double jed, int resType, double* res);
 
     // Земля относительно барицентра Солнечной Системы.
-    bool ssbaryEarth(int resType, double jed, double* res);
+    bool ssbaryEarth(double jed, int resType, double* res);
 
     // Луна относительно барицентра Солнечной Системы.
-    bool ssbaryMoon(int resType, double jed, double* res);
+    bool ssbaryMoon(double jed, int resType, double* res);
 
 }; // class EphemerisRelease
 

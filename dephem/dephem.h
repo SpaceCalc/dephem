@@ -6,8 +6,6 @@
 #endif
 
 #include <fstream>
-#include <cstring>
-#include <stdint.h>
 #include <string>
 #include <map>
 #include <vector>
@@ -73,28 +71,24 @@ class DevelopmentEphemeris
 {
 public:
 
-    /// @details Создаёт неинициализированный объет эфемерид.
+    /// @details Создаёт пустой объет.
     DevelopmentEphemeris();
 
     /**
-     * Создаёт объект эфемерид по файлу `filePath`.
+     * Создаёт объект и открывает файл эфемерид по пути `filePath`.
      *
      * Успешность открытия можно проверить методом isOpen().
      */
     DevelopmentEphemeris(const std::string& filePath);
 
-    /// @details Конструктор копирования.
     DevelopmentEphemeris(const DevelopmentEphemeris& other);
 
-    /// @details Оператор копирования.
     DevelopmentEphemeris& operator=(const DevelopmentEphemeris& other);
 
     /**
-     * Инициализирует объект эфемерид файлом `filePath`.
+     * Открывает файл эфемерид по пути `filePath`.
      *
      * @return `true`, при успешном открытии, иначе - `false`.
-     *
-     * @see isOpen()
      */
     bool open(const std::string& filePath);
 
@@ -104,18 +98,7 @@ public:
      *
      * @return `true`, при успешном выполнении, иначе - `false`.
      *
-     * @code{.cpp}
-     *  using namespace dph;
-     *  DevelopmentEphemeris ephem("path/to/file");
-     *  double moon[3];
-     *  bool ok = ephem.bodyPosition(B_MOON, B_EARTH, 2451544.5, moon);
-     * @endcode
-     *
-     * @note
-     *  Чтобы не ошибиться с индексами тел используйте dph::Body.
-     *
-     * @see
-     *  dph::Body
+     * @note Чтобы не ошибиться с индексами тел, используйте dph::Body.
      */
     bool bodyPosition(int target, int center, double jed, double pos[3]) const;
 
@@ -126,18 +109,7 @@ public:
      *
      * @return `true`, при успешном выполнении, иначе - `false`.
      *
-     * @code{.cpp}
-     *  using namespace dph;
-     *  DevelopmentEphemeris ephem("path/to/file");
-     *  double moon[6];
-     *  bool ok = ephem.bodyState(B_MOON, B_EARTH, 2451544.5, moon);
-     * @endcode
-     *
-     * @note
-     *  Чтобы не ошибиться с индексами тел используйте dph::Body.
-     *
-     * @see
-     *  dph::Body
+     * @note Чтобы не ошибиться с индексами тел, используйте dph::Body.
      */
     bool bodyState(int target, int center, double jed, double state[6]) const;
 
@@ -147,31 +119,20 @@ public:
      *
      * @return `true`, при успешном выполнении, иначе - `false`.
      *
-     * @code{.cpp}
-     *  using namespace dph;
-     *  DevelopmentEphemeris ephem("path/to/file");
-     *  double earthNutations[2];
-     *  bool ok = ephem.item(I_EN, 2451544.5, earthNutations);
-     * @endcode
-     *
-     * @note
-     *  Чтобы не ошибиться с индексом элемента используйте dph::Item.
-     *
-     * @see
-     *  dph::Item
+     * @note Чтобы не ошибиться с индексом элемента, используйте dph::Item.
      */
     bool item(int item, double jed, double* result) const;
 
-    /// @return `true`, если эфемериды открыты успешно, иначе - `false`.
+    /// @return `true`, если файл эфемерид открыт, иначе - `false`.
     bool isOpen() const;
 
-    /// @return начало интервала, доступного для расчёта.
+    /// @return начало доступного интервала.
     double beginJed() const;
 
-    /// @return конец интервала, доступного для расчёта.
+    /// @return конец доступного интервала.
     double endJed() const;
 
-    /// @return индекс выпуска эфемерид.
+    /// @return номер выпуска эфемерид.
     int index() const;
 
     /// @return подпись выпуска эфемерид.
@@ -180,7 +141,7 @@ public:
     /// @return значение константы `name`.
     double constant(const std::string& name, bool* ok = nullptr) const;
 
-    /// @return путь к файлу эфемерид.
+    /// @return путь к открытому файлу эфемерид.
     std::string filePath() const;
 
     /**

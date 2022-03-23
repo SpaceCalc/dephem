@@ -1,6 +1,7 @@
 #include "dephem.h"
 
 #include <cmath>
+#include <cstring>
 
 dph::DevelopmentEphemeris::DevelopmentEphemeris()
 {

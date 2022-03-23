@@ -1179,15 +1179,15 @@ div.fragment .line:first-child .lineno {
  author: Maksim Philippov
  */
 
-dl.return {
+dl.return, dl.see {
     overflow: hidden;
 }
 
-dl.return dt {
+dl.return dt, dl.see dt {
     float: left;
 }
 
-dl.return dd {
+dl.return dd, dl.see dd {
     float: left;
     padding-left: 6px;
 }

@@ -62,7 +62,6 @@ enum Item {
 };
 
 /**
- *
  * @brief Представление бинарного файла эфемерид.
  *
  * Позволяет получить доступ к данным, хранимым в файле.
@@ -100,7 +99,7 @@ public:
      *
      * @note Чтобы не ошибиться с индексами тел, используйте dph::Body.
      */
-    bool bodyPosition(int target, int center, double jed, double pos[3]) const;
+    bool bodyPosition(int target, int center, double jed, double pos[3]);
 
     /**
      * Положение и скорость тела `target` относительно `center` на момент
@@ -111,7 +110,7 @@ public:
      *
      * @note Чтобы не ошибиться с индексами тел, используйте dph::Body.
      */
-    bool bodyState(int target, int center, double jed, double state[6]) const;
+    bool bodyState(int target, int center, double jed, double state[6]);
 
     /**
      * Значение элемента `item` на момент времени `jed`.\n
@@ -121,7 +120,7 @@ public:
      *
      * @note Чтобы не ошибиться с индексом элемента, используйте dph::Item.
      */
-    bool item(int item, double jed, double* result) const;
+    bool item(int item, double jed, double* result);
 
     /// @return `true`, если файл эфемерид открыт, иначе - `false`.
     bool isOpen() const;
@@ -160,9 +159,9 @@ private:
     static const size_t MAX_POLY_SIZE = 15;    // Макс. размер полиномов.
 
     // Работа с файлом
-    std::string m_filePath;        // Путь к файлу эфемерид.
-    mutable std::ifstream m_file;  // Поток чтения файла.
-    mutable std::vector<double> m_buffer; // Буффер блока с коэффициентами.
+    std::string m_filePath;       // Путь к файлу эфемерид.
+    std::ifstream m_file;         // Поток чтения файла.
+    std::vector<double> m_buffer; // Буффер блока с коэффициентами.
 
     // Параметры эфемерид.
     std::string m_label; // Строковая информация о выпуске.
@@ -191,19 +190,19 @@ private:
     bool read();
 
     // Заполнение буффера "m_buffer" коэффициентами требуемого блока.
-    bool fillBuffer(size_t blockNum) const;
+    bool fillBuffer(size_t blockNum);
 
     bool body(int resType, double jed, int target, int center,
-        double* res) const;
+        double* res);
 
     // Базовый элемент.
-    bool baseItem(int resType, double jed, int baseItem, double* res) const;
+    bool baseItem(int resType, double jed, int baseItem, double* res);
 
     // Земля относительно барицентра Солнечной Системы.
-    bool ssbaryEarth(int resType, double jed, double* res) const;
+    bool ssbaryEarth(int resType, double jed, double* res);
 
     // Луна относительно барицентра Солнечной Системы.
-    bool ssbaryMoon(int resType, double jed, double* res) const;
+    bool ssbaryMoon(int resType, double jed, double* res);
 
 }; // class EphemerisRelease
 

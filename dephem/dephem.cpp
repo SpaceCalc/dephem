@@ -47,20 +47,20 @@ bool dph::DevelopmentEphemeris::open(const std::string& filePath)
 
 // Положение target относительно center на момент времени jed.
 bool dph::DevelopmentEphemeris::bodyPosition(int target, int center, double jed,
-    double pos[3]) const
+    double pos[3])
 {
     return body(0, jed, target, center, pos);
 }
 
 // Положение и скорость target относительно center на момент времени jed.
 bool dph::DevelopmentEphemeris::bodyState(int target, int center, double jed,
-    double state[6]) const
+    double state[6])
 {
     return body(1, jed, target, center, state);
 }
 
 // Значение отдельного элемента item на момент времени jed.
-bool dph::DevelopmentEphemeris::item(int item, double jed, double* result) const
+bool dph::DevelopmentEphemeris::item(int item, double jed, double* result)
 {
     if (item < 0 || item > 14)
         return false;
@@ -72,7 +72,7 @@ bool dph::DevelopmentEphemeris::item(int item, double jed, double* result) const
 
 
 bool dph::DevelopmentEphemeris::body(int resType, double jed,
-    int target, int center, double* res) const
+    int target, int center, double* res)
 {
     // Допустимые значения параметров:
     // -------------------------------
@@ -474,7 +474,7 @@ bool dph::DevelopmentEphemeris::read()
     return true;
 }
 
-bool dph::DevelopmentEphemeris::fillBuffer(size_t blockNum) const
+bool dph::DevelopmentEphemeris::fillBuffer(size_t blockNum)
 {
     size_t blockSize = m_ncoeff * 8;
     size_t adress = (2 + blockNum) * blockSize;
@@ -490,7 +490,7 @@ bool dph::DevelopmentEphemeris::fillBuffer(size_t blockNum) const
 
 // Базовый элемент.
 bool dph::DevelopmentEphemeris::baseItem(int resType, double jed, int baseItem,
-    double* res) const
+    double* res)
 {
     // Допустимые значения переданных параметров:
     // [1] baseItem - Индекс базового элемента выпуска (от нуля).
@@ -632,7 +632,7 @@ bool dph::DevelopmentEphemeris::baseItem(int resType, double jed, int baseItem,
 
 // Земля относительно барицентра Солнечной Системы.
 bool dph::DevelopmentEphemeris::ssbaryEarth(int resType, double jed,
-    double* res) const
+    double* res)
 {
     // Барицентр сиситемы Земля-Луна относительно барицентра Солнечной Системы.
     if (!baseItem(resType, jed, 2, res))
@@ -654,7 +654,7 @@ bool dph::DevelopmentEphemeris::ssbaryEarth(int resType, double jed,
 }
 
 // Луна относительно барицентра Солнечной Системы.
-bool dph::DevelopmentEphemeris::ssbaryMoon(int resType, double jed, double* res) const
+bool dph::DevelopmentEphemeris::ssbaryMoon(int resType, double jed, double* res)
 {
     // Барицентр сиситемы Земля-Луна относительно барицентра Солнечной Системы.
     if (!baseItem(resType, jed, 2, res))

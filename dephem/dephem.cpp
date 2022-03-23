@@ -3,6 +3,11 @@
 #include <cmath>
 #include <cstring>
 
+bool dph::DevelopmentEphemeris::ItemKey::empty() const
+{
+    return cpec == 0 && span == 0;
+}
+
 dph::DevelopmentEphemeris::DevelopmentEphemeris()
 {
     clear();
@@ -89,41 +94,6 @@ bool dph::DevelopmentEphemeris::itemDerivative(int item, double jed,
 bool dph::DevelopmentEphemeris::body(int target, int center, double jed,
     int resType, double* res)
 {
-    // Допустимые значения параметров:
-    // -------------------------------
-    // - resType:
-    //   0 - Получить значение радиус-вектора,
-    //   1 - Получить значение вектора состояния
-    //   Примечание: используй значения из dph::Calculate.
-    //
-    // - jed:
-    //   jed должен принадлежать промежутку: [m_startDate : m_endDate].
-    //
-    // - target, center:
-    //   ------------------------------------
-    //   Индекс Название
-    //   ------------------------------------
-    //   1      Меркурий
-    //   2      Венера
-    //   3      Земля
-    //   4      Марс
-    //   5      Юпитер
-    //   6      Сатурн
-    //   7      Уран
-    //   8      Нептун
-    //   9      Плутон
-    //   10     Луна
-    //   11     Солнце
-    //   12     Барицентр Солнечной Системы
-    //   13     Барицентр системы Земля-Луна
-    //   ------------------------------------
-    //   Примечание: используй значения из dph::Body.
-    //
-    // - res:
-    //   От пользователя требуется знать, каков минимальный размер массива
-    //   для выбранного результата вычислений. Не должен быть нулевым
-    //   указателем.
-
     if (resType > 1)
     {
         return false;
@@ -285,7 +255,7 @@ std::vector<dph::Item> dph::DevelopmentEphemeris::itemList() const
     std::vector<dph::Item> itemList;
 
     for (int i = 0; i < 15; ++i)
-        if (m_keys[i][1] != 0)
+        if (!m_keys[i].empty())
             itemList.push_back(Item(i));
 
     return itemList;
@@ -440,8 +410,11 @@ bool dph::DevelopmentEphemeris::read()
         return false;
 
     for (int i = 0; i < 15; ++i)
-        for (int j = 0; j < 3; ++j)
-            m_keys[i][j] = static_cast<int>(keys[i][j]);
+    {
+        m_keys[i].offset = keys[i][0];
+        m_keys[i].cpec = keys[i][1];
+        m_keys[i].span = keys[i][2];
+    }
 
     // Количество коэффициентов в блоке.
     m_ncoeff = 2;
@@ -449,7 +422,7 @@ bool dph::DevelopmentEphemeris::read()
     {
         // Количество компонент для выбранного элемента.
         int comp = i == 11 ? 2 : i == 14 ? 1 : 3;
-        m_ncoeff += comp * m_keys[i][1] * m_keys[i][2];
+        m_ncoeff += comp * m_keys[i].cpec * m_keys[i].span;
     }
 
     if (m_ncoeff <= 0)
@@ -508,35 +481,6 @@ bool dph::DevelopmentEphemeris::fillBuffer(size_t blockNum)
 bool dph::DevelopmentEphemeris::baseItem(int baseItem, double jed, int resType,
     double* res)
 {
-    // Допустимые значения переданных параметров:
-    // [1] baseItem - Индекс базового элемента выпуска (от нуля).
-    //
-    //     Нумерация базовых элементов выпуска
-    //     -------------------------------------------------------------------
-    //     Индекс Наименование
-    //     -------------------------------------------------------------------
-    //     0      Mercury
-    //     1      Venus
-    //     2      Earth-Moon barycenter
-    //     3      Mars
-    //     4      Jupiter
-    //     5      Saturn
-    //     6      Uranus
-    //     7      Neptune
-    //     8      Pluto
-    //     9      Moon (geocentric)
-    //     10     Sun
-    //     11     Earth Nutations in longitude and obliquity (IAU 1980 model)
-    //     12     Lunar mantle libration
-    //     13     Lunar mantle angular velocity
-    //     14     TT-TDB (at geocenter)
-    //     -------------------------------------------------------------------
-    // [2] jed - момент времени на который требуется получить требуемые
-    //           значения.
-    // [3] resType - индекс результата вычисления (см. dph::Calculate).
-    // [4] res - указатель на массив для результата вычислений.
-
-    // Внимание!
     // В ходе выполнения функции смысл переменных "normalizedTime" и "offset"
     // будет меняться.
 
@@ -545,7 +489,7 @@ bool dph::DevelopmentEphemeris::baseItem(int baseItem, double jed, int resType,
 
     // Порядковый номер блока, соотв. заданной дате jed (целая часть от
     // normalizedTime).
-    size_t offset = static_cast<size_t>(normalizedTime);
+    size_t offset = size_t(normalizedTime);
 
     // Заполнение буффера коэффициентами требуемого блока.
     // Если требуемый блок уже в кэше объекта, то он не заполняется повторно.
@@ -556,14 +500,17 @@ bool dph::DevelopmentEphemeris::baseItem(int baseItem, double jed, int resType,
         // Если JED равна последней доступоной дате для вычислений, то
         // заполняется последний блок.
         size_t blockNum = offset - (jed == m_endJed ? 1 : 0);
+
         if (!fillBuffer(blockNum))
             return false;
     }
 
+    const ItemKey& key = m_keys[baseItem];
+
     if (jed == m_endJed)
     {
         // Порядковый номер подблока (последний подблок).
-        offset = m_keys[baseItem][2] - 1;
+        offset = key.span - 1;
 
         // Норм. время относительно подблока (в диапазоне от -1 до 1).
         normalizedTime = 1;
@@ -571,7 +518,7 @@ bool dph::DevelopmentEphemeris::baseItem(int baseItem, double jed, int resType,
     else
     {
         // Норм. время относительно всех подблоков.
-        normalizedTime = (normalizedTime - offset) * m_keys[baseItem][2];
+        normalizedTime = (normalizedTime - offset) * key.span;
 
         // Порядковый номер подблока (целая часть от normalizedTime).
         offset = static_cast<size_t>(normalizedTime);
@@ -583,11 +530,8 @@ bool dph::DevelopmentEphemeris::baseItem(int baseItem, double jed, int resType,
     // Количество компонент для выбранного базового элемента.
     int componentsCount = baseItem == 11 ? 2 : baseItem == 14 ? 1 : 3;
 
-    // Кол-во коэффициентов на компоненту.
-    int cpec = m_keys[baseItem][1];
-
     // Порядковый номер первого коэффициента в блоке.
-    int coeff_pos = m_keys[baseItem][0] - 1 + componentsCount * offset * cpec;
+    int coeff_pos = key.offset - 1 + componentsCount * offset * key.cpec;
 
     // Указатель на массив коэффициентов.
     const double* coeffs = &m_buffer[coeff_pos];
@@ -609,13 +553,13 @@ bool dph::DevelopmentEphemeris::baseItem(int baseItem, double jed, int resType,
     poly[0] = 1;
     poly[1] = normalizedTime;
 
-    for (int i = 2; i < cpec; ++i)
+    for (int i = 2; i < key.cpec; ++i)
         poly[i] = 2 * normalizedTime * poly[i - 1] - poly[i - 2];
 
     // Массив с оригинальным значением.
     for (int i = 0; i < componentsCount; ++i)
-        for (int j = 0; j < cpec; ++j)
-            res[i] += poly[j] * coeffs[i * cpec + j];
+        for (int j = 0; j < key.cpec; ++j)
+            res[i] += poly[j] * coeffs[i * key.cpec + j];
 
     // 2. Первая производная элемента.
     if (resType == 1)
@@ -626,18 +570,18 @@ bool dph::DevelopmentEphemeris::baseItem(int baseItem, double jed, int resType,
         dpoly[2] = 4 * normalizedTime;
 
         // Заполнение полиномов.
-        for (int i = 3; i < cpec; ++i)
+        for (int i = 3; i < key.cpec; ++i)
             dpoly[i] = 2 * poly[i - 1] + 2 * normalizedTime * dpoly[i - 1] -
                 dpoly[i - 2];
 
         // Коэффициент размерности для 1-й производной.
-        double dunits = double(m_keys[baseItem][2]) / (43200 * m_blockSpan);
+        double dunits = double(key.span) / (43200 * m_blockSpan);
 
         // Вычисление координат.
         for (int i = 0; i < componentsCount; ++i)
         {
-            for (int j = 0; j < cpec; ++j)
-                res[i + componentsCount] += dpoly[j] * coeffs[i * cpec + j];
+            for (int j = 0; j < key.cpec; ++j)
+                res[i + componentsCount] += dpoly[j] * coeffs[i * key.cpec + j];
 
             res[i + componentsCount] *= dunits;
         }

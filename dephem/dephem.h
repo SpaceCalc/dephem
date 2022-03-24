@@ -156,6 +156,12 @@ public:
      */
     bool hasItem(int item) const;
 
+    /**
+     * @return количество оригинальных компонент для элемента `item`.
+     * @see dph::Item
+     */
+    int itemSize(int item) const;
+
 private:
     // Формат эфемерид.
     static const size_t LABELS_COUNT = 3;      // Строк в подписи.

@@ -269,6 +269,28 @@ bool dph::DevelopmentEphemeris::hasItem(int item) const
     return !m_keys[item].empty();
 }
 
+int dph::DevelopmentEphemeris::itemSize(int item) const
+{
+    if (item < 0 || item > 14)
+        return -1;
+
+    const ItemKey& key = m_keys[item];
+
+    if (key.empty())
+        return 0;
+
+    int nextOffset;
+
+    if (item == 14 || m_keys[item + 1].empty())
+        nextOffset = m_ncoeff + 1;
+    else
+        nextOffset = m_keys[item + 1].offset;
+
+    int count = (nextOffset - key.offset) / (key.cpec * key.span);
+
+    return count;
+}
+
 std::string dph::DevelopmentEphemeris::cutBackSpaces(const char* s, size_t size)
 {
     for (size_t i = size - 1; i > 0; --i)

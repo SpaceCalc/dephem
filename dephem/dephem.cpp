@@ -21,13 +21,13 @@ dph::DevelopmentEphemeris::DevelopmentEphemeris(const std::string& filePath)
 
 dph::DevelopmentEphemeris::DevelopmentEphemeris(const DevelopmentEphemeris& other)
 {
-    copyHere(other);
+    copy(other);
 }
 
 dph::DevelopmentEphemeris& dph::DevelopmentEphemeris::operator=(const
     DevelopmentEphemeris& other)
 {
-    copyHere(other);
+    copy(other);
     return *this;
 }
 
@@ -314,26 +314,22 @@ void dph::DevelopmentEphemeris::clear()
 
     m_label.clear();
     m_index = 0;
-    m_beginJed = 0.0;
-    m_endJed = 0.0;
-    m_blockSpan = 0.0;
+    m_beginJed = 0;
+    m_endJed = 0;
+    m_blockSpan = 0;
     std::memset(m_keys, 0, sizeof(m_keys));
-    m_au = 0.0;
-    m_emrat = 0.0;
+    m_au = 0;
+    m_emrat = 0;
     m_ncoeff = 0;
     m_constants.clear();
 }
 
-void dph::DevelopmentEphemeris::copyHere(const DevelopmentEphemeris& other)
+void dph::DevelopmentEphemeris::copy(const DevelopmentEphemeris& other)
 {
-    // Используется в:
-    // - Конструктор копирования.
-    // - Оператор копирования.
-
     m_filePath = other.m_filePath;
-
     m_file.close();
-    m_file.open(other.m_filePath.c_str(), std::ios::binary);
+    m_file.open(m_filePath, std::ios::binary);
+    m_buffer = other.m_buffer;
 
     m_label = other.m_label;
     m_index = other.m_index;
@@ -344,10 +340,7 @@ void dph::DevelopmentEphemeris::copyHere(const DevelopmentEphemeris& other)
     m_au = other.m_au;
     m_emrat = other.m_emrat;
     m_constants = other.m_constants;
-
     m_ncoeff = other.m_ncoeff;
-
-    m_buffer = other.m_buffer;
 }
 
 bool dph::DevelopmentEphemeris::read()

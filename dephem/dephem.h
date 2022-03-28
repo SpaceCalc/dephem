@@ -211,7 +211,7 @@ private:
     void clear();
 
     // Копирование информации из объекта "other" в текущий объект.
-    void copyHere(const DevelopmentEphemeris& other);
+    void copy(const DevelopmentEphemeris& other);
 
     // Чтение файла.
     bool read();

@@ -7,7 +7,6 @@
 
 #include <fstream>
 #include <string>
-#include <map>
 #include <vector>
 
 /// @brief Пространство имён библиотеки dephem.
@@ -141,6 +140,9 @@ public:
     /// @return значение константы `name`.
     double constant(const std::string& name, bool* ok = nullptr) const;
 
+    /// @return список констант выпуска эфемерид.
+    std::vector<std::pair<std::string, double>> constants() const;
+
     /// @return путь к открытому файлу эфемерид.
     std::string filePath() const;
 
@@ -198,7 +200,8 @@ private:
     double m_emrat;      // Отношение массы Земли к массе Луны.
     int m_ncoeff;        // Количество коэффициентов в блоке.
 
-    std::map<std::string, double> m_constants; // Константы выпуска.
+    // Константы выпуска в порядке их хранения в файле.
+    std::vector<std::pair<std::string, double>> m_constants;
 
     // Обрезать повторяющиеся пробелы (' ') с конца массива символов "s"
     // размера "arraySize".

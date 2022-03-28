@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <cstring>
+#include <algorithm>
 
 bool dph::DevelopmentEphemeris::ItemKey::empty() const
 {
@@ -229,20 +230,25 @@ std::string dph::DevelopmentEphemeris::label() const
 double dph::DevelopmentEphemeris::constant(const std::string& name,
     bool* ok) const
 {
-    auto found = m_constants.find(name);
+    for (auto it = m_constants.begin(); it != m_constants.end(); it++)
+    {
+        if (it->first == name)
+        {
+            if (ok)
+                *ok = true;
+            return it->second;
+        }
+    }
 
-    if (found != m_constants.end())
-    {
-        if (ok)
-            *ok = true;
-        return found->second;
-    }
-    else
-    {
-        if (ok)
-            *ok = false;
-        return 0;
-    }
+    if (ok)
+        *ok = false;
+    return 0;
+}
+
+std::vector<std::pair<std::string, double>>
+    dph::DevelopmentEphemeris::constants() const
+{
+    return m_constants;
 }
 
 std::string dph::DevelopmentEphemeris::filePath() const
@@ -304,6 +310,7 @@ void dph::DevelopmentEphemeris::clear()
 {
     m_filePath.clear();
     m_file.close();
+    m_buffer.clear();
 
     m_label.clear();
     m_index = 0;
@@ -313,11 +320,8 @@ void dph::DevelopmentEphemeris::clear()
     std::memset(m_keys, 0, sizeof(m_keys));
     m_au = 0.0;
     m_emrat = 0.0;
-    std::map<std::string, double>().swap(m_constants); // SWAP TRICK
-
     m_ncoeff = 0;
-
-    std::vector<double>().swap(m_buffer); // SWAP TRICK
+    m_constants.clear();
 }
 
 void dph::DevelopmentEphemeris::copyHere(const DevelopmentEphemeris& other)
@@ -479,10 +483,11 @@ bool dph::DevelopmentEphemeris::read()
     }
 
     // Заполнение контейнера m_constants именами и значениями констант.
+    m_constants.reserve(constCount);
     for (int i = 0; i < constCount; ++i)
     {
         std::string name = cutBackSpaces(constNames[i], CNAME_SIZE);
-        m_constants[name] = constValues[i];
+        m_constants.push_back({name, constValues[i]});
     }
 
     // --| Дополнительные вычисления |--------------------------------------- //

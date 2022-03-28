@@ -54,6 +54,7 @@ bool dph::DevelopmentEphemeris::open(const std::string& filePath)
 void dph::DevelopmentEphemeris::close()
 {
     m_file.close();
+    clear();
 }
 
 // Положение target относительно center на момент времени jed.

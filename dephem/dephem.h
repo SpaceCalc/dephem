@@ -76,8 +76,10 @@ public:
      */
     DevelopmentEphemeris(const std::string& filePath);
 
+    /// @details Создаёт копию объекта.
     DevelopmentEphemeris(const DevelopmentEphemeris& other);
 
+    /// @details Копирует объект.
     DevelopmentEphemeris& operator=(const DevelopmentEphemeris& other);
 
     /**

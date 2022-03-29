@@ -69,6 +69,11 @@ std::ostream& operator<<(std::ostream& out, Item item);
 class DevelopmentEphemeris
 {
 public:
+    /**
+     * @return количество оригинальных компонент для элемента `item`.
+     * @see dph::Item
+     */
+    static int itemSize(int item);
 
     /// @details Создаёт пустой объет.
     DevelopmentEphemeris();
@@ -162,12 +167,6 @@ public:
      * @see dph::Item
      */
     bool hasItem(int item) const;
-
-    /**
-     * @return количество оригинальных компонент для элемента `item`.
-     * @see dph::Item
-     */
-    int itemSize(int item) const;
 
 private:
     // Формат эфемерид.

@@ -28,6 +28,18 @@ std::ostream& dph::operator<<(std::ostream& out, Item item)
     return out;
 }
 
+int dph::DevelopmentEphemeris::itemSize(int item)
+{
+    if (item < 0 || item > 14)
+        return -1;
+
+    switch(item) {
+    case 14: return 1;
+    case 11: return 2;
+    default: return 3;
+    }
+}
+
 bool dph::DevelopmentEphemeris::ItemKey::empty() const
 {
     return cpec == 0 && span == 0;
@@ -298,18 +310,6 @@ bool dph::DevelopmentEphemeris::hasItem(int item) const
         return false;
 
     return !m_keys[item].empty();
-}
-
-int dph::DevelopmentEphemeris::itemSize(int item) const
-{
-    if (item < 0 || item > 14)
-        return -1;
-
-    switch(item) {
-    case 14: return 1;
-    case 11: return 2;
-    default: return 3;
-    }
 }
 
 std::string dph::DevelopmentEphemeris::cutBackSpaces(const char* s, size_t size)

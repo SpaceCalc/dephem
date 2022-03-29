@@ -33,11 +33,7 @@ int dph::DevelopmentEphemeris::itemSize(int item)
     if (item < 0 || item > 14)
         return -1;
 
-    switch(item) {
-    case 14: return 1;
-    case 11: return 2;
-    default: return 3;
-    }
+    return (item == 14) ? 1 : (item == 11) ? 2 : 3;
 }
 
 bool dph::DevelopmentEphemeris::ItemKey::empty() const
@@ -108,7 +104,7 @@ bool dph::DevelopmentEphemeris::bodyState(int target, int center, double jed,
 }
 
 // Значение отдельного элемента item на момент времени jed.
-bool dph::DevelopmentEphemeris::itemBase(int item, double jed, double* res)
+bool dph::DevelopmentEphemeris::item(int item, double jed, double* res)
 {
     if (item < 0 || item > 14)
         return false;
@@ -118,8 +114,7 @@ bool dph::DevelopmentEphemeris::itemBase(int item, double jed, double* res)
     return itemGeneral(item, jed, 0, res);
 }
 
-bool dph::DevelopmentEphemeris::itemDerivative(int item, double jed,
-    double* res)
+bool dph::DevelopmentEphemeris::item2(int item, double jed, double* res)
 {
     if (item < 0 || item > 14)
         return false;

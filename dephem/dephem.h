@@ -117,20 +117,20 @@ public:
     bool bodyState(int target, int center, double jed, double state[6]);
 
     /**
-     * Значение элемента `item` на момент времени `jed`.\n
+     * Значение `item` на момент времени `jed`.\n
      * Результат записывается в массив `res`.
      * @return `true`, при успешном выполнении, иначе - `false`.
      * @note Чтобы не ошибиться с индексом элемента, используйте dph::Item.
      */
-    bool itemBase(int item, double jed, double* res);
+    bool item(int item, double jed, double* res);
 
     /**
-     * Значение элемента `item` на момент времени `jed`.\n
+     * Значение `item` и его производной на момент времени `jed`.\n
      * Результат записывается в массив `res`.
      * @return `true`, при успешном выполнении, иначе - `false`.
      * @note Чтобы не ошибиться с индексом элемента, используйте dph::Item.
      */
-    bool itemDerivative(int item, double jed, double* res);
+    bool item2(int item, double jed, double* res);
 
     /// @return `true`, если файл эфемерид открыт, иначе - `false`.
     bool isOpen() const;

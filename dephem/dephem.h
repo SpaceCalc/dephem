@@ -103,34 +103,34 @@ public:
      * Положение тела `target` относительно `center` на момент времени `jed`.\n
      * Результат записывается в массив `pos` (x, y, z, км).
      * @return `true`, при успешном выполнении, иначе - `false`.
-     * @note Чтобы не ошибиться с индексами тел, используйте dph::Body.
+     * @see dph::Body.
      */
-    bool bodyPosition(int target, int center, double jed, double pos[3]);
+    bool bodyPosition(Body target, Body center, double jed, double pos[3]);
 
     /**
      * Положение и скорость тела `target` относительно `center` на момент
      * времени `jed`.\n
      * Результат записывается в массив `state` (x, y, z, vx, vy, vz, км, км/с).
      * @return `true`, при успешном выполнении, иначе - `false`.
-     * @note Чтобы не ошибиться с индексами тел, используйте dph::Body.
+     * @see dph::Body.
      */
-    bool bodyState(int target, int center, double jed, double state[6]);
+    bool bodyState(Body target, Body center, double jed, double state[6]);
 
     /**
      * Значение `item` на момент времени `jed`.\n
      * Результат записывается в массив `res`.
      * @return `true`, при успешном выполнении, иначе - `false`.
-     * @note Чтобы не ошибиться с индексом элемента, используйте dph::Item.
+     * @see dph::Item.
      */
-    bool item(int item, double jed, double* res);
+    bool item(Item item, double jed, double* res);
 
     /**
      * Значение `item` и его производной на момент времени `jed`.\n
      * Результат записывается в массив `res`.
      * @return `true`, при успешном выполнении, иначе - `false`.
-     * @note Чтобы не ошибиться с индексом элемента, используйте dph::Item.
+     * @see dph::Item.
      */
-    bool item2(int item, double jed, double* res);
+    bool item2(Item item, double jed, double* res);
 
     /// @return `true`, если файл эфемерид открыт, иначе - `false`.
     bool isOpen() const;
@@ -166,7 +166,7 @@ public:
      * @return `true`, если элемент есть в файле эфемерид, иначе - `false`.
      * @see dph::Item
      */
-    bool hasItem(int item) const;
+    bool hasItem(Item item) const;
 
 private:
     // Формат эфемерид.
@@ -223,7 +223,7 @@ private:
     // Заполнение буффера "m_buffer" коэффициентами требуемого блока.
     bool fillBuffer(size_t blockNum);
 
-    bool bodyGeneral(int target, int center, double jed, int resType,
+    bool bodyGeneral(Body target, Body center, double jed, int resType,
         double* res);
 
     // Базовый элемент.

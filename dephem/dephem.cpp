@@ -90,21 +90,21 @@ void dph::DevelopmentEphemeris::close()
 }
 
 // Положение target относительно center на момент времени jed.
-bool dph::DevelopmentEphemeris::bodyPosition(int target, int center, double jed,
-    double pos[3])
+bool dph::DevelopmentEphemeris::bodyPosition(Body target, Body center,
+    double jed, double pos[3])
 {
     return bodyGeneral(target, center, jed, 0, pos);
 }
 
 // Положение и скорость target относительно center на момент времени jed.
-bool dph::DevelopmentEphemeris::bodyState(int target, int center, double jed,
-    double state[6])
+bool dph::DevelopmentEphemeris::bodyState(Body target, Body center,
+    double jed, double state[6])
 {
     return bodyGeneral(target, center, jed, 1, state);
 }
 
 // Значение отдельного элемента item на момент времени jed.
-bool dph::DevelopmentEphemeris::item(int item, double jed, double* res)
+bool dph::DevelopmentEphemeris::item(Item item, double jed, double* res)
 {
     if (item < 0 || item > 14)
         return false;
@@ -114,7 +114,7 @@ bool dph::DevelopmentEphemeris::item(int item, double jed, double* res)
     return itemGeneral(item, jed, 0, res);
 }
 
-bool dph::DevelopmentEphemeris::item2(int item, double jed, double* res)
+bool dph::DevelopmentEphemeris::item2(Item item, double jed, double* res)
 {
     if (item < 0 || item > 14)
         return false;
@@ -124,8 +124,8 @@ bool dph::DevelopmentEphemeris::item2(int item, double jed, double* res)
     return itemGeneral(item, jed, 1, res);
 }
 
-bool dph::DevelopmentEphemeris::bodyGeneral(int target, int center, double jed,
-    int resType, double* res)
+bool dph::DevelopmentEphemeris::bodyGeneral(Body target, Body center,
+    double jed, int resType, double* res)
 {
     if (resType > 1)
     {
@@ -299,7 +299,7 @@ std::vector<dph::Item> dph::DevelopmentEphemeris::itemList() const
     return itemList;
 }
 
-bool dph::DevelopmentEphemeris::hasItem(int item) const
+bool dph::DevelopmentEphemeris::hasItem(Item item) const
 {
     if (item < 0 || item > 14)
         return false;

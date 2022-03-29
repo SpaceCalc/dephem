@@ -93,14 +93,14 @@ void dph::DevelopmentEphemeris::close()
 bool dph::DevelopmentEphemeris::bodyPosition(Body target, Body center,
     double jed, double pos[3])
 {
-    return bodyGeneral(target, center, jed, 0, pos);
+    return body(target, center, jed, 0, pos);
 }
 
 // Положение и скорость target относительно center на момент времени jed.
 bool dph::DevelopmentEphemeris::bodyState(Body target, Body center,
     double jed, double state[6])
 {
-    return bodyGeneral(target, center, jed, 1, state);
+    return body(target, center, jed, 1, state);
 }
 
 // Значение отдельного элемента item на момент времени jed.
@@ -111,7 +111,7 @@ bool dph::DevelopmentEphemeris::item(Item item, double jed, double* res)
     else if (jed < m_beginJed || jed > m_endJed)
         return false;
 
-    return itemGeneral(item, jed, 0, res);
+    return this->item(item, jed, 0, res);
 }
 
 bool dph::DevelopmentEphemeris::item2(Item item, double jed, double* res)
@@ -121,10 +121,10 @@ bool dph::DevelopmentEphemeris::item2(Item item, double jed, double* res)
     else if (jed < m_beginJed || jed > m_endJed)
         return false;
 
-    return itemGeneral(item, jed, 1, res);
+    return this->item(item, jed, 1, res);
 }
 
-bool dph::DevelopmentEphemeris::bodyGeneral(Body target, Body center,
+bool dph::DevelopmentEphemeris::body(Body target, Body center,
     double jed, int resType, double* res)
 {
     if (resType > 1)
@@ -167,8 +167,8 @@ bool dph::DevelopmentEphemeris::bodyGeneral(Body target, Body center,
         switch (notSSBARY) {
         case B_EARTH:  ok = ssbaryEarth(jed, resType, res); break;
         case B_MOON:   ok = ssbaryMoon(jed, resType, res); break;
-        case B_EMBARY: ok = itemGeneral(I_EMBARY, jed, resType, res); break;
-        default:       ok = itemGeneral(notSSBARY - 1, jed, resType, res);
+        case B_EMBARY: ok = item(I_EMBARY, jed, resType, res); break;
+        default:       ok = item(notSSBARY - 1, jed, resType, res);
         }
 
         if (!ok)
@@ -185,7 +185,7 @@ bool dph::DevelopmentEphemeris::bodyGeneral(Body target, Body center,
         // Случай 3: Искомым и центральным телами являетса Земля и Луна.
 
         // Луна относительно Земли.
-        if (!itemGeneral(I_MOON, jed, resType, res))
+        if (!item(I_MOON, jed, resType, res))
             return false;
 
         // Если искомым телом является Земля, то возвращается "зеркальный"
@@ -218,8 +218,8 @@ bool dph::DevelopmentEphemeris::bodyGeneral(Body target, Body center,
             switch (bodyIndex) {
             case B_EARTH:  ok = ssbaryEarth(jed, resType, arr); break;
             case B_MOON:   ok = ssbaryMoon(jed, resType, arr); break;
-            case B_EMBARY: ok = itemGeneral(I_EMBARY, jed, resType, arr); break;
-            default:       ok = itemGeneral(bodyIndex - 1, jed, resType, arr);
+            case B_EMBARY: ok = item(I_EMBARY, jed, resType, arr); break;
+            default:       ok = item(bodyIndex - 1, jed, resType, arr);
             }
 
             if (!ok)
@@ -512,7 +512,7 @@ bool dph::DevelopmentEphemeris::fillBuffer(size_t blockNum)
 }
 
 // Базовый элемент.
-bool dph::DevelopmentEphemeris::itemGeneral(int item, double jed, int resType,
+bool dph::DevelopmentEphemeris::item(int item, double jed, int resType,
     double* res)
 {
     // Cмысл переменных normalizedTime и offset будет меняться.
@@ -631,12 +631,12 @@ bool dph::DevelopmentEphemeris::ssbaryEarth(double jed, int resType,
     double* res)
 {
     // Барицентр сиситемы Земля-Луна относительно барицентра Солнечной Системы.
-    if (!itemGeneral(I_EMBARY, jed, resType, res))
+    if (!item(I_EMBARY, jed, resType, res))
         return false;
 
     // Луна относитльно Земли.
     double moonRelEarth[6];
-    if (!itemGeneral(I_MOON, jed, resType, moonRelEarth))
+    if (!item(I_MOON, jed, resType, moonRelEarth))
         return false;
 
     // Количество компонент.
@@ -653,12 +653,12 @@ bool dph::DevelopmentEphemeris::ssbaryEarth(double jed, int resType,
 bool dph::DevelopmentEphemeris::ssbaryMoon(double jed, int resType, double* res)
 {
     // Барицентр сиситемы Земля-Луна относительно барицентра Солнечной Системы.
-    if (!itemGeneral(I_EMBARY, jed, resType, res))
+    if (!item(I_EMBARY, jed, resType, res))
         return false;
 
     // Луна относитльно Земли.
     double moonRelEarth[6];
-    if (!itemGeneral(I_MOON, jed, resType, moonRelEarth))
+    if (!item(I_MOON, jed, resType, moonRelEarth))
         return false;
 
     // Количество компонент.

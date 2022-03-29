@@ -223,11 +223,11 @@ private:
     // Заполнение буффера "m_buffer" коэффициентами требуемого блока.
     bool fillBuffer(size_t blockNum);
 
-    bool bodyGeneral(Body target, Body center, double jed, int resType,
-        double* res);
+    // Положение/Состояние тела.
+    bool body(Body target, Body center, double jed, int resType, double* res);
 
-    // Базовый элемент.
-    bool itemGeneral(int item, double jed, int resType, double* res);
+    // Значение элемента.
+    bool item(int item, double jed, int resType, double* res);
 
     // Земля относительно барицентра Солнечной Системы.
     bool ssbaryEarth(double jed, int resType, double* res);

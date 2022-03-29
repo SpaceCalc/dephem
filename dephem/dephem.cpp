@@ -4,6 +4,30 @@
 #include <cstring>
 #include <algorithm>
 
+std::ostream& dph::operator<<(std::ostream& out, Item item)
+{
+    switch (item) {
+    case I_MERCURY: out << "I_MERCURY"; break;
+    case I_VENUS:   out << "I_VENUS  "; break;
+    case I_EMBARY:  out << "I_EMBARY "; break;
+    case I_MARS:    out << "I_MARS   "; break;
+    case I_JUPITER: out << "I_JUPITER"; break;
+    case I_SATURN:  out << "I_SATURN "; break;
+    case I_URANUS:  out << "I_URANUS "; break;
+    case I_NEPTUNE: out << "I_NEPTUNE"; break;
+    case I_PLUTO:   out << "I_PLUTO  "; break;
+    case I_MOON:    out << "I_MOON   "; break;
+    case I_SUN:     out << "I_SUN    "; break;
+    case I_EN:      out << "I_EN     "; break;
+    case I_LML:     out << "I_LML    "; break;
+    case I_LMAV:    out << "I_LMAV   "; break;
+    case I_TTMTDB:  out << "I_TTMTDB "; break;
+    default:        out << "unknown";
+    }
+
+    return out;
+}
+
 bool dph::DevelopmentEphemeris::ItemKey::empty() const
 {
     return cpec == 0 && span == 0;
@@ -281,21 +305,11 @@ int dph::DevelopmentEphemeris::itemSize(int item) const
     if (item < 0 || item > 14)
         return -1;
 
-    const ItemKey& key = m_keys[item];
-
-    if (key.empty())
-        return 0;
-
-    int nextOffset;
-
-    if (item == 14 || m_keys[item + 1].empty())
-        nextOffset = m_ncoeff + 1;
-    else
-        nextOffset = m_keys[item + 1].offset;
-
-    int count = (nextOffset - key.offset) / (key.cpec * key.span);
-
-    return count;
+    switch(item) {
+    case 14: return 1;
+    case 11: return 2;
+    default: return 3;
+    }
 }
 
 std::string dph::DevelopmentEphemeris::cutBackSpaces(const char* s, size_t size)
@@ -447,11 +461,7 @@ bool dph::DevelopmentEphemeris::read()
     // Количество коэффициентов в блоке.
     m_ncoeff = 2;
     for (int i = 0; i < 15; ++i)
-    {
-        // Количество компонент для выбранного элемента.
-        int comp = i == 11 ? 2 : i == 14 ? 1 : 3;
-        m_ncoeff += comp * m_keys[i].cpec * m_keys[i].span;
-    }
+        m_ncoeff += itemSize(i) * m_keys[i].cpec * m_keys[i].span;
 
     if (m_ncoeff <= 0)
         return false;
@@ -507,12 +517,12 @@ bool dph::DevelopmentEphemeris::fillBuffer(size_t blockNum)
 }
 
 // Базовый элемент.
-bool dph::DevelopmentEphemeris::itemGeneral(int baseItem, double jed,
-    int resType, double* res)
+bool dph::DevelopmentEphemeris::itemGeneral(int item, double jed, int resType,
+    double* res)
 {
     // Cмысл переменных normalizedTime и offset будет меняться.
 
-    const ItemKey& key = m_keys[baseItem];
+    const ItemKey& key = m_keys[item];
 
     if (key.empty())
         return false;
@@ -559,7 +569,7 @@ bool dph::DevelopmentEphemeris::itemGeneral(int baseItem, double jed,
     }
 
     // Количество компонент для выбранного базового элемента.
-    int componentsCount = baseItem == 11 ? 2 : baseItem == 14 ? 1 : 3;
+    int componentsCount = itemSize(item);
 
     // Порядковый номер первого коэффициента в блоке.
     int coeff_pos = key.offset - 1 + componentsCount * offset * key.cpec;

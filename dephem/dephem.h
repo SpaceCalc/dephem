@@ -59,6 +59,9 @@ enum Item {
     I_TTMTDB  = 14  ///< TT-TDB (в геоцентре)
 };
 
+/// @brief Оператор вывода обозначения `Item` в поток.
+std::ostream& operator<<(std::ostream& out, Item item);
+
 /**
  * @brief Представление бинарного файла эфемерид.
  * @details Позволяет получить доступ к данным, хранимым в файле.
@@ -225,7 +228,7 @@ private:
         double* res);
 
     // Базовый элемент.
-    bool itemGeneral(int baseItem, double jed, int resType, double* res);
+    bool itemGeneral(int item, double jed, int resType, double* res);
 
     // Земля относительно барицентра Солнечной Системы.
     bool ssbaryEarth(double jed, int resType, double* res);

@@ -90,7 +90,7 @@ void dph::DevelopmentEphemeris::close()
 }
 
 // Положение target относительно center на момент времени jed.
-bool dph::DevelopmentEphemeris::bodyPosition(Body target, Body center,
+bool dph::DevelopmentEphemeris::bodyPos(Body target, Body center,
     double jed, double pos[3])
 {
     return body(target, center, jed, 0, pos);

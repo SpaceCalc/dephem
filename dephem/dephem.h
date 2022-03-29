@@ -105,7 +105,7 @@ public:
      * @return `true`, при успешном выполнении, иначе - `false`.
      * @see dph::Body.
      */
-    bool bodyPosition(Body target, Body center, double jed, double pos[3]);
+    bool bodyPos(Body target, Body center, double jed, double pos[3]);
 
     /**
      * Положение и скорость тела `target` относительно `center` на момент

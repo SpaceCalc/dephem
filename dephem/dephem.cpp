@@ -28,7 +28,7 @@ std::ostream& dph::operator<<(std::ostream& out, Item item)
     return out;
 }
 
-int dph::DevelopmentEphemeris::itemSize(int item)
+int dph::DevelopmentEphemeris::itemSize(Item item)
 {
     if (item < 0 || item > 14)
         return -1;
@@ -456,7 +456,7 @@ bool dph::DevelopmentEphemeris::read()
     // Количество коэффициентов в блоке.
     m_ncoeff = 2;
     for (int i = 0; i < 15; ++i)
-        m_ncoeff += itemSize(i) * m_keys[i].cpec * m_keys[i].span;
+        m_ncoeff += itemSize(Item(i)) * m_keys[i].cpec * m_keys[i].span;
 
     if (m_ncoeff <= 0)
         return false;
@@ -564,7 +564,7 @@ bool dph::DevelopmentEphemeris::item(int item, double jed, int resType,
     }
 
     // Количество компонент для выбранного базового элемента.
-    int componentsCount = itemSize(item);
+    int componentsCount = itemSize(Item(item));
 
     // Порядковый номер первого коэффициента в блоке.
     int coeff_pos = key.offset - 1 + componentsCount * offset * key.cpec;

@@ -73,7 +73,7 @@ public:
      * @return количество оригинальных компонент для элемента `item`.
      * @see dph::Item
      */
-    static int itemSize(int item);
+    static int itemSize(Item item);
 
     /// @details Создаёт пустой объет.
     DevelopmentEphemeris();

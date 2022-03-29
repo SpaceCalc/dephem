@@ -288,7 +288,7 @@ std::string dph::DevelopmentEphemeris::filePath() const
     return m_filePath;
 }
 
-std::vector<dph::Item> dph::DevelopmentEphemeris::itemList() const
+std::vector<dph::Item> dph::DevelopmentEphemeris::items() const
 {
     std::vector<dph::Item> itemList;
 

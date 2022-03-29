@@ -160,7 +160,7 @@ public:
      * @return список доступных элементов.
      * @see dph::Item
      */
-    std::vector<Item> itemList() const;
+    std::vector<Item> items() const;
 
     /**
      * @return `true`, если элемент есть в файле эфемерид, иначе - `false`.

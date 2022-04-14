@@ -62,6 +62,9 @@ enum Item {
 /// @brief Оператор вывода обозначения `Item` в поток.
 std::ostream& operator<<(std::ostream& out, Item item);
 
+/// @brief Оператор вывода массива `Item` в поток.
+std::ostream& operator<<(std::ostream& out, const std::vector<Item>& items);
+
 /**
  * @brief Представление бинарного файла эфемерид.
  * @details Позволяет получить доступ к данным, хранимым в файле.
@@ -244,6 +247,14 @@ private:
     bool ssbaryMoon(double jed, int resType, double* res);
 
 }; // class EphemerisRelease
+
+/// @brief Оператор вывода константы в поток.
+std::ostream& operator<<(std::ostream& out,
+    const DevelopmentEphemeris::Constant& c);
+
+/// @brief Оператор вывода списка констант в поток.
+std::ostream& operator<<(std::ostream& out,
+    const std::vector<DevelopmentEphemeris::Constant>& constants);
 
 } // namespace dph
 

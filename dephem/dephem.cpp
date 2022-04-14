@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstring>
 #include <algorithm>
+#include <iomanip>
 
 std::ostream& dph::operator<<(std::ostream& out, Item item)
 {
@@ -23,6 +24,44 @@ std::ostream& dph::operator<<(std::ostream& out, Item item)
     case I_LMAV:    out << "I_LMAV   "; break;
     case I_TTMTDB:  out << "I_TTMTDB "; break;
     default:        out << "unknown";
+    }
+
+    return out;
+}
+
+std::ostream& dph::operator<<(std::ostream& out, const std::vector<Item>& items)
+{
+    if (items.empty())
+    {
+        out << "warning: item list is empty" << std::endl;
+    }
+    else
+    {
+        for (auto& item : items)
+            out << item << std::endl;
+    }
+
+    return out;
+}
+
+std::ostream& dph::operator<<(std::ostream& out,
+    const dph::DevelopmentEphemeris::Constant& c)
+{
+    out << std::setw(8) << std::left << c.name + ": " << c.value;
+    return out;
+}
+
+std::ostream& dph::operator<<(std::ostream& out,
+    const std::vector<DevelopmentEphemeris::Constant>& constants)
+{
+    if (constants.empty())
+    {
+        out << "warning: constant list is empty" << std::endl;
+    }
+    else
+    {
+        for (auto& c : constants)
+            out << c << std::endl;
     }
 
     return out;

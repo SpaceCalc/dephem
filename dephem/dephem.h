@@ -69,6 +69,14 @@ std::ostream& operator<<(std::ostream& out, Item item);
 class DevelopmentEphemeris
 {
 public:
+
+    /// @brief Обёртка для хранения константы.
+    struct Constant
+    {
+        std::string name;
+        double value = 0;
+    };
+
     /**
      * @return количество оригинальных компонент для элемента `item`.
      * @see dph::Item
@@ -151,7 +159,7 @@ public:
     double constant(const std::string& name, bool* ok = nullptr) const;
 
     /// @return список констант выпуска эфемерид.
-    std::vector<std::pair<std::string, double>> constants() const;
+    std::vector<Constant> constants() const;
 
     /// @return путь к открытому файлу эфемерид.
     std::string filePath() const;
@@ -205,7 +213,7 @@ private:
     int m_ncoeff;        // Количество коэффициентов в блоке.
 
     // Константы выпуска в порядке их хранения в файле.
-    std::vector<std::pair<std::string, double>> m_constants;
+    std::vector<Constant> m_constants;
 
     // Обрезать повторяющиеся пробелы (' ') с конца массива символов "s"
     // размера "arraySize".

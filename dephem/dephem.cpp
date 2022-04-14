@@ -262,22 +262,26 @@ std::string dph::DevelopmentEphemeris::label() const
 double dph::DevelopmentEphemeris::constant(const std::string& name,
     bool* ok) const
 {
-    for (auto it = m_constants.begin(); it != m_constants.end(); it++)
-    {
-        if (it->first == name)
-        {
-            if (ok)
-                *ok = true;
-            return it->second;
-        }
-    }
+    auto found = std::find_if(m_constants.begin(), m_constants.end(),
+        [&](const Constant& c) { return c.name == name; });
 
-    if (ok)
-        *ok = false;
-    return 0;
+    if (found != m_constants.end())
+    {
+        if (ok)
+            *ok = true;
+
+        return found->value;
+    }
+    else
+    {
+        if (ok)
+            *ok = false;
+
+        return 0;
+    }
 }
 
-std::vector<std::pair<std::string, double>>
+std::vector<dph::DevelopmentEphemeris::Constant>
     dph::DevelopmentEphemeris::constants() const
 {
     return m_constants;
@@ -485,8 +489,10 @@ bool dph::DevelopmentEphemeris::read()
     m_constants.reserve(constCount);
     for (int i = 0; i < constCount; ++i)
     {
-        std::string name = cutBackSpaces(constNames[i], CNAME_SIZE);
-        m_constants.push_back({name, constValues[i]});
+        Constant c;
+        c.name = cutBackSpaces(constNames[i], CNAME_SIZE);
+        c.value = constValues[i];
+        m_constants.push_back(c);
     }
 
     // --| Дополнительные вычисления |--------------------------------------- //

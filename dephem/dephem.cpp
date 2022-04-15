@@ -715,3 +715,77 @@ bool dph::DevelopmentEphemeris::ssbaryMoon(double jed, int resType, double* res)
 
     return true;
 }
+
+int dph::DevelopmentEphemeris::makeBinary(double beginJed, double endJed,
+    const std::string& filePath)
+{
+    if (!isOpen())
+        return 1;
+
+    if (beginJed < m_beginJed || endJed > m_endJed)
+        return 2;
+
+    std::ofstream file(filePath, std::ios::out | std::ios::binary);
+
+    if (!file.is_open())
+        return 3;
+
+    size_t blockSize = m_ncoeff * 8;
+    std::vector<char> buff(blockSize);
+
+    if (!m_file.seekg(0, std::ios::beg))
+        return 4;
+
+    for (int i = 0; i < 2; ++i)
+    {
+        if (!m_file.read(buff.data(), blockSize))
+            return 4;
+
+        if (!file.write(buff.data(), blockSize))
+            return 5;
+    }
+
+    size_t firstBlock = (beginJed - m_beginJed) / m_blockSpan;
+    size_t lastBlock = (endJed - m_beginJed) / m_blockSpan;
+
+    if (!m_file.seekg((2 + firstBlock) * blockSize), std::ios::beg)
+        return 4;
+
+    size_t blocksCount = lastBlock - firstBlock + 1;
+
+    double realBeginJed = 0;
+    double realEndJed = 0;
+
+    for (size_t i = 0; i < blocksCount; ++i)
+    {
+        if (!m_file.read(buff.data(), blockSize))
+            return 4;
+
+        if (!file.write(buff.data(), blockSize))
+            return 5;
+
+        if (i == 0)
+        {
+            memcpy((char*)&realBeginJed, buff.data(), sizeof(double));
+        }
+
+        else if (i == blocksCount - 1)
+        {
+            memcpy((char*)&realEndJed, buff.data() + sizeof(double),
+                   sizeof(double));
+        }
+    }
+
+    // Вернуться и переписать даты начала и конца.
+    size_t address = LABELS_COUNT * LABEL_SIZE + CNAME_SIZE * CCOUNT_MAX_OLD;
+    if (!file.seekp(address, std::ios::beg))
+        return 5;
+
+    if (!file.write((char*)&realBeginJed, sizeof(double)))
+        return 4;
+
+    if (!file.write((char*)&realEndJed, sizeof(double)))
+        return 4;
+
+    return 0;
+}

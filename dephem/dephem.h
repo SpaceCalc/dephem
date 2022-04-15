@@ -179,7 +179,13 @@ public:
      */
     bool hasItem(Item item) const;
 
-private:
+    /**
+     * Создаёт бинарный файл эфемерид с интервалом [`beginJed`, `endJed`] по
+     * пути `filePath`.
+     * @return `0`, при успешной записи, иначе - код ошибки.
+     */
+    int makeBinary(double beginJed, double endJed, const std::string& filePath);
+
     // Формат эфемерид.
     static const size_t LABELS_COUNT = 3;      // Строк в подписи.
     static const size_t LABEL_SIZE = 84;       // Символов в строке подписи.

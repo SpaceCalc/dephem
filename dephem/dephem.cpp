@@ -617,16 +617,6 @@ bool dph::DevelopmentEphemeris::item(int item, double jed, int resType,
     // Указатель на массив коэффициентов.
     const double* coeffs = &m_buffer[coeff_pos];
 
-    // Обнуление массива результата вычислений.
-    if (resType == 0)
-    {
-        memset(res, 0, sizeof(double) * componentsCount);
-    }
-    else
-    {
-        memset(res, 0, sizeof(double) * componentsCount * 2);
-    }
-
     // 1. Оригинальное значение элемента.
 
     // Заполнение полиномов.
@@ -639,8 +629,14 @@ bool dph::DevelopmentEphemeris::item(int item, double jed, int resType,
 
     // Массив с оригинальным значением.
     for (int i = 0; i < componentsCount; ++i)
-        for (int j = 0; j < key.cpec; ++j)
-            res[i] += poly[j] * coeffs[i * key.cpec + j];
+    {
+        double sum = 0;
+
+        for (int j = key.cpec - 1; j != -1 ; --j)
+            sum += poly[j] * coeffs[i * key.cpec + j];
+
+        res[i] = sum;
+    }
 
     // 2. Первая производная элемента.
     if (resType == 1)
@@ -661,10 +657,12 @@ bool dph::DevelopmentEphemeris::item(int item, double jed, int resType,
         // Вычисление координат.
         for (int i = 0; i < componentsCount; ++i)
         {
-            for (int j = 0; j < key.cpec; ++j)
-                res[i + componentsCount] += dpoly[j] * coeffs[i * key.cpec + j];
+            double sum = 0;
 
-            res[i + componentsCount] *= dunits;
+            for (int j = key.cpec - 1; j != -1; j--)
+                sum += dpoly[j] * coeffs[i * key.cpec + j];
+
+            res[i + componentsCount] = sum * dunits;
         }
     }
 

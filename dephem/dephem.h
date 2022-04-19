@@ -12,6 +12,9 @@
 /// @brief Пространство имён библиотеки dephem.
 namespace dph {
 
+// forward
+class TestpoReport;
+
 /**
  * @brief Индексы небесных тел.
  * @see
@@ -64,6 +67,8 @@ std::ostream& operator<<(std::ostream& out, Item item);
 
 /// @brief Оператор вывода массива `Item` в поток.
 std::ostream& operator<<(std::ostream& out, const std::vector<Item>& items);
+
+
 
 /**
  * @brief Представление бинарного файла эфемерид.
@@ -179,7 +184,19 @@ public:
      */
     bool hasItem(Item item) const;
 
-private:
+    /**
+     * @return отчёт обработки testpo-файла `testpoFilePath`.
+     * @see dph::TestpoReport
+     */
+    TestpoReport testpoReport(const std::string& testpoFilePath);
+
+    /**
+     * Создаёт бинарный файл эфемерид с интервалом [`beginJed`, `endJed`] по
+     * пути `filePath`.
+     * @return `0`, при успешной записи, иначе - код ошибки.
+     */
+    int makeBinary(double beginJed, double endJed, const std::string& filePath);
+
     // Формат эфемерид.
     static const size_t LABELS_COUNT = 3;      // Строк в подписи.
     static const size_t LABEL_SIZE = 84;       // Символов в строке подписи.
@@ -246,6 +263,16 @@ private:
     // Луна относительно барицентра Солнечной Системы.
     bool ssbaryMoon(double jed, int resType, double* res);
 
+    // /**
+    //  * Значение по тестовому случаю из testpo-файла.
+    //  * @return `0` при успешном вычислении, `1` - несоответствие `jed`
+    //  * интервалу эфемерид, `2` - неверное `t`, `3` - неверное `c`,
+    //  * `4` - неверное `x`, `5` - прочая ошибка вычисления.
+    //  * @note Зачастую интервал эфемерид меньше, чем интервал testpo-файлов,
+    //  * поэтому при возвращении `1` тестовый случай можно проигнорировать.
+    //  */
+    int testpoCase(double jed, int t, int c, int x, double& coordinate);
+
 }; // class EphemerisRelease
 
 /// @brief Оператор вывода константы в поток.
@@ -255,6 +282,51 @@ std::ostream& operator<<(std::ostream& out,
 /// @brief Оператор вывода списка констант в поток.
 std::ostream& operator<<(std::ostream& out,
     const std::vector<DevelopmentEphemeris::Constant>& constants);
+
+/**
+ * @brief Отчёт обработки testpo-файла объектом эфемерид.
+ * @details Содержит данные о каждом тестового случая.
+ */
+class TestpoReport
+{
+public:
+    struct TestCase
+    {
+        std::string line;
+        double jed = 0;
+        int t = 0;
+        int c = 0;
+        int x = 0;
+        double coordinate = 0;
+        double result = 0;
+        int caseCode = 0;
+
+        double error() const;
+    };
+
+    const std::vector<TestCase>& testCases() const;
+
+    std::vector<TestCase> warnings(double eps = 10E-13) const;
+
+    int write(std::ostream& os) const;
+
+    int write(const std::string& filePath) const;
+
+    bool ok() const;
+
+    std::string errmsg() const;
+
+private:
+    friend DevelopmentEphemeris;
+
+    std::string m_header;
+    std::vector<TestCase> m_testCases;
+    std::string m_errmsg;
+};
+
+/// @brief Оператор вывода тестового случая в поток.
+std::ostream& operator<<(std::ostream& out,
+    const TestpoReport::TestCase& _case);
 
 } // namespace dph
 

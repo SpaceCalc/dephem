@@ -4,6 +4,7 @@
 #include <cstring>
 #include <algorithm>
 #include <iomanip>
+#include <sstream>
 
 std::ostream& dph::operator<<(std::ostream& out, Item item)
 {
@@ -348,6 +349,158 @@ bool dph::DevelopmentEphemeris::hasItem(Item item) const
         return false;
 
     return !m_keys[item].empty();
+}
+
+dph::TestpoReport dph::DevelopmentEphemeris::testpoReport(
+        const std::string& testpoFilePath)
+{
+    dph::TestpoReport report;
+
+    if (!isOpen())
+    {
+        report.m_errmsg = "ephemeris object is not initialized";
+        return report;
+    }
+
+    std::ifstream testpoFile(testpoFilePath);
+
+    if (!testpoFile.is_open())
+    {
+        report.m_errmsg = "unable to open testpo file";
+        return report;
+    }
+
+    std::string line;
+    size_t lineCount = 0;
+
+    while (std::getline(testpoFile, line))
+    {
+        lineCount++;
+        report.m_header += line + "\n";
+
+        if (line.find("EOT") != std::string::npos)
+            break;
+    }
+
+    if (testpoFile.peek() == EOF)
+    {
+        report.m_errmsg = "unable to find EOT marker";
+        return report;
+    }
+
+    while (std::getline(testpoFile, line))
+    {
+        lineCount++;
+
+        int index;
+        std::string date;
+        double jed;
+        int t, c, x;
+        double coordinate;
+
+        std::istringstream ss(line);
+
+        if (ss >> index >> date >> jed >> t >> c >> x >> coordinate)
+        {
+            double result;
+            int caseCode = testpoCase(jed, t, c, x, result);
+
+            TestpoReport::TestCase _case;
+            _case.line = line;
+            _case.jed = jed;
+            _case.t = t;
+            _case.c = c;
+            _case.x = x;
+            _case.coordinate = coordinate;
+            _case.result = result;
+            _case.caseCode = caseCode;
+
+            report.m_testCases.push_back(_case);
+        }
+        else
+        {
+            report.m_errmsg = "invalid format at line " +
+                std::to_string(lineCount);
+
+            return report;
+        }
+    }
+
+    return report;
+}
+
+int dph::DevelopmentEphemeris::makeBinary(double beginJed, double endJed,
+    const std::string& filePath)
+{
+    if (!isOpen())
+        return 1;
+
+    if (beginJed < m_beginJed || endJed > m_endJed)
+        return 2;
+
+    std::ofstream file(filePath, std::ios::out | std::ios::binary);
+
+    if (!file.is_open())
+        return 3;
+
+    size_t blockSize = m_ncoeff * 8;
+    std::vector<char> buff(blockSize);
+
+    if (!m_file.seekg(0, std::ios::beg))
+        return 4;
+
+    for (int i = 0; i < 2; ++i)
+    {
+        if (!m_file.read(buff.data(), blockSize))
+            return 4;
+
+        if (!file.write(buff.data(), blockSize))
+            return 5;
+    }
+
+    size_t firstBlock = (beginJed - m_beginJed) / m_blockSpan;
+    size_t lastBlock = (endJed - m_beginJed) / m_blockSpan;
+
+    if (!m_file.seekg((2 + firstBlock) * blockSize), std::ios::beg)
+        return 4;
+
+    size_t blocksCount = lastBlock - firstBlock + 1;
+
+    double realBeginJed = 0;
+    double realEndJed = 0;
+
+    for (size_t i = 0; i < blocksCount; ++i)
+    {
+        if (!m_file.read(buff.data(), blockSize))
+            return 4;
+
+        if (!file.write(buff.data(), blockSize))
+            return 5;
+
+        if (i == 0)
+        {
+            memcpy((char*)&realBeginJed, buff.data(), sizeof(double));
+        }
+
+        else if (i == blocksCount - 1)
+        {
+            memcpy((char*)&realEndJed, buff.data() + sizeof(double),
+                   sizeof(double));
+        }
+    }
+
+    // Вернуться и переписать даты начала и конца.
+    size_t address = LABELS_COUNT * LABEL_SIZE + CNAME_SIZE * CCOUNT_MAX_OLD;
+    if (!file.seekp(address, std::ios::beg))
+        return 5;
+
+    if (!file.write((char*)&realBeginJed, sizeof(double)))
+        return 4;
+
+    if (!file.write((char*)&realEndJed, sizeof(double)))
+        return 4;
+
+    return 0;
 }
 
 std::string dph::DevelopmentEphemeris::cutBackSpaces(const char* s, size_t size)
@@ -714,76 +867,126 @@ bool dph::DevelopmentEphemeris::ssbaryMoon(double jed, int resType, double* res)
     return true;
 }
 
-int dph::DevelopmentEphemeris::makeBinary(double beginJed, double endJed,
-    const std::string& filePath)
+int dph::DevelopmentEphemeris::testpoCase(double jed, int t, int c, int x,
+    double& result)
 {
-    if (!isOpen())
+    if (jed < m_beginJed || jed > m_endJed)
         return 1;
 
-    if (beginJed < m_beginJed || endJed > m_endJed)
+    if (t < 1 || t > 17)
         return 2;
 
-    std::ofstream file(filePath, std::ios::out | std::ios::binary);
-
-    if (!file.is_open())
-        return 3;
-
-    size_t blockSize = m_ncoeff * 8;
-    std::vector<char> buff(blockSize);
-
-    if (!m_file.seekg(0, std::ios::beg))
-        return 4;
-
-    for (int i = 0; i < 2; ++i)
+    if (t <= 13)
     {
-        if (!m_file.read(buff.data(), blockSize))
+        if (c < 1 || c > 13)
+            return 3;
+
+        if (x < 1 || x > 6)
             return 4;
 
-        if (!file.write(buff.data(), blockSize))
+        double res[6];
+        if (!bodyState(Body(t), Body(c), jed, res))
             return 5;
+
+        result = res[x - 1] / m_au;
+
+        if (x > 3)
+            result *= 86400;
     }
-
-    size_t firstBlock = (beginJed - m_beginJed) / m_blockSpan;
-    size_t lastBlock = (endJed - m_beginJed) / m_blockSpan;
-
-    if (!m_file.seekg((2 + firstBlock) * blockSize), std::ios::beg)
-        return 4;
-
-    size_t blocksCount = lastBlock - firstBlock + 1;
-
-    double realBeginJed = 0;
-    double realEndJed = 0;
-
-    for (size_t i = 0; i < blocksCount; ++i)
+    else
     {
-        if (!m_file.read(buff.data(), blockSize))
+        if (c != 0)
+            return 3;
+
+        auto item = Item(t - 3);
+        int size = itemSize(item);
+
+        if (x - 1 >= size * 2)
             return 4;
 
-        if (!file.write(buff.data(), blockSize))
+        double res[6];
+        if (!item2(item, jed, res))
             return 5;
 
-        if (i == 0)
-        {
-            memcpy((char*)&realBeginJed, buff.data(), sizeof(double));
-        }
+        result = res[x - 1];
 
-        else if (i == blocksCount - 1)
-        {
-            memcpy((char*)&realEndJed, buff.data() + sizeof(double),
-                   sizeof(double));
-        }
+        if (x - 1 >= size)
+            result *= 86400;
     }
-
-    // Вернуться и переписать даты начала и конца.
-    size_t address = LABELS_COUNT * LABEL_SIZE + CNAME_SIZE * CCOUNT_MAX_OLD;
-    if (!file.seekp(address, std::ios::beg))
-        return 5;
-
-    if (!file.write((char*)&realBeginJed, sizeof(double)))
-        return 4;
-
-    if (!file.write((char*)&realEndJed, sizeof(double)))
-        return 4;
 
     return 0;
+}
+
+double dph::TestpoReport::TestCase::error() const
+{
+    if (caseCode == 0)
+        return fabs(coordinate - result);
+    else
+        return 0;
+}
+
+const std::vector<dph::TestpoReport::TestCase>&
+    dph::TestpoReport::testCases() const
+{
+    return m_testCases;
+}
+
+std::vector<dph::TestpoReport::TestCase>
+    dph::TestpoReport::warnings(double eps) const
+{
+    std::vector<TestCase> cases;
+
+    for (const auto& _case : m_testCases)
+        if (_case.error() > eps)
+            cases.push_back(_case);
+
+    return cases;
+}
+
+int dph::TestpoReport::write(std::ostream& os) const
+{
+    os << m_header;
+
+    for (const auto& _case : m_testCases)
+        os << _case << std::endl;
+
+    return 0;
+}
+
+int dph::TestpoReport::write(const std::string& filePath) const
+{
+    std::ofstream file(filePath);
+
+    if (!file.is_open())
+        return 1;
+
+    auto writeCode = write(file);
+
+    if (writeCode)
+        return writeCode + 1;
+
+    return 0;
+}
+
+bool dph::TestpoReport::ok() const
+{
+    return m_errmsg.empty();
+}
+
+std::string dph::TestpoReport::errmsg() const
+{
+    return m_errmsg;
+}
+
+std::ostream& dph::operator<<(std::ostream& out,
+    const dph::TestpoReport::TestCase& _case)
+{
+    using namespace std;
+
+    out << _case.line
+        << setw(30) << setprecision(20) << fixed      << _case.result
+        << setw(8) << setprecision(1)   << scientific << _case.error()
+        << " " << _case.caseCode;
+
+    return out;
 }

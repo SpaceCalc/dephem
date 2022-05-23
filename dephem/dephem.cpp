@@ -6,6 +6,28 @@
 #include <iomanip>
 #include <sstream>
 
+/// @brief Оператор вывода обозначения `Item` в поток.
+std::ostream& dph::operator<<(std::ostream& out, Body body)
+{
+    switch (body) {
+    case B_MERCURY: out << "B_MERCURY"; break;
+    case B_VENUS:   out << "B_VENUS";   break;
+    case B_EARTH:   out << "B_EARTH";   break;
+    case B_MARS:    out << "B_MARS";    break;
+    case B_JUPITER: out << "B_JUPITER"; break;
+    case B_SATURN:  out << "B_SATURN";  break;
+    case B_URANUS:  out << "B_URANUS";  break;
+    case B_NEPTUNE: out << "B_NEPTUNE"; break;
+    case B_PLUTO:   out << "B_PLUTO";   break;
+    case B_MOON:    out << "B_MOON";    break;
+    case B_SUN:     out << "B_SUN";     break;
+    case B_SSBARY:  out << "B_SSBARY";  break;
+    case B_EMBARY:  out << "B_EMBARY";  break;
+    }
+
+    return out;
+}
+
 std::ostream& dph::operator<<(std::ostream& out, Item item)
 {
     switch (item) {
@@ -427,6 +449,27 @@ dph::TestpoReport dph::DevelopmentEphemeris::testpoReport(
     }
 
     return report;
+}
+
+double dph::DevelopmentEphemeris::bodyGm(Body body, bool* ok)
+{
+    double c = m_au * m_au * m_au / 86400 / 86400 / 1000;
+
+    switch (body) {
+    case B_MERCURY: return constant("GM1", ok) * c;
+    case B_VENUS:   return constant("GM2", ok) * c;
+    case B_EMBARY:  return constant("GMB", ok) * c;
+    case B_MARS:    return constant("GM4", ok) * c;
+    case B_JUPITER: return constant("GM5", ok) * c;
+    case B_SATURN:  return constant("GM6", ok) * c;
+    case B_URANUS:  return constant("GM7", ok) * c;
+    case B_NEPTUNE: return constant("GM8", ok) * c;
+    case B_PLUTO:   return constant("GM9", ok) * c;
+    case B_SUN:     return constant("GMS", ok) * c;
+    case B_EARTH:   return constant("GMB", ok);
+    case B_MOON:    return constant("GMB", ok);
+    default: return 0;
+    }
 }
 
 int dph::DevelopmentEphemeris::makeBinary(double beginJed, double endJed,

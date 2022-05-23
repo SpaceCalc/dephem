@@ -38,6 +38,9 @@ enum Body
     B_EMBARY  = 13  ///< Барицентр системы Земля-Луна
 };
 
+/// @brief Оператор вывода обозначения `Item` в поток.
+std::ostream& operator<<(std::ostream& out, Body body);
+
 /**
  * @brief Индексы элементов.
  * @see
@@ -196,6 +199,13 @@ public:
      * @return `0`, при успешной записи, иначе - код ошибки.
      */
     int makeBinary(double beginJed, double endJed, const std::string& filePath);
+
+    /**
+     * Обёртка для dph::DevelopmentEphemeris::constant.
+     * @return гравитацонный параметр тела `body`.
+     * @see dph::Body.
+     */
+    double bodyGm(Body body, bool* ok = nullptr);
 
     // Формат эфемерид.
     static const size_t LABELS_COUNT = 3;      // Строк в подписи.

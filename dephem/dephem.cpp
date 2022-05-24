@@ -6,50 +6,67 @@
 #include <iomanip>
 #include <sstream>
 
+namespace {
+
+std::string __enum2str(dph::Body body)
+{
+    using namespace dph;
+
+    switch (body) {
+    case B_MERCURY: return "B_MERCURY";
+    case B_VENUS:   return "B_VENUS";
+    case B_EARTH:   return "B_EARTH";
+    case B_MARS:    return "B_MARS";
+    case B_JUPITER: return "B_JUPITER";
+    case B_SATURN:  return "B_SATURN";
+    case B_URANUS:  return "B_URANUS";
+    case B_NEPTUNE: return "B_NEPTUNE";
+    case B_PLUTO:   return "B_PLUTO";
+    case B_MOON:    return "B_MOON";
+    case B_SUN:     return "B_SUN";
+    case B_SSBARY:  return "B_SSBARY";
+    case B_EMBARY:  return "B_EMBARY";
+    }
+
+    return "unknown";
+}
+
+std::string __enum2str(dph::Item item)
+{
+    using namespace dph;
+
+    switch (item) {
+    case I_MERCURY: return "I_MERCURY";
+    case I_VENUS:   return "I_VENUS  ";
+    case I_EMBARY:  return "I_EMBARY ";
+    case I_MARS:    return "I_MARS   ";
+    case I_JUPITER: return "I_JUPITER";
+    case I_SATURN:  return "I_SATURN ";
+    case I_URANUS:  return "I_URANUS ";
+    case I_NEPTUNE: return "I_NEPTUNE";
+    case I_PLUTO:   return "I_PLUTO  ";
+    case I_MOON:    return "I_MOON   ";
+    case I_SUN:     return "I_SUN    ";
+    case I_EN:      return "I_EN     ";
+    case I_LML:     return "I_LML    ";
+    case I_LMAV:    return "I_LMAV   ";
+    case I_TTMTDB:  return "I_TTMTDB ";
+    }
+
+    return "unknown";
+}
+
+}
+
 /// @brief Оператор вывода обозначения `Item` в поток.
 std::ostream& dph::operator<<(std::ostream& out, Body body)
 {
-    switch (body) {
-    case B_MERCURY: out << "B_MERCURY"; break;
-    case B_VENUS:   out << "B_VENUS";   break;
-    case B_EARTH:   out << "B_EARTH";   break;
-    case B_MARS:    out << "B_MARS";    break;
-    case B_JUPITER: out << "B_JUPITER"; break;
-    case B_SATURN:  out << "B_SATURN";  break;
-    case B_URANUS:  out << "B_URANUS";  break;
-    case B_NEPTUNE: out << "B_NEPTUNE"; break;
-    case B_PLUTO:   out << "B_PLUTO";   break;
-    case B_MOON:    out << "B_MOON";    break;
-    case B_SUN:     out << "B_SUN";     break;
-    case B_SSBARY:  out << "B_SSBARY";  break;
-    case B_EMBARY:  out << "B_EMBARY";  break;
-    }
-
-    return out;
+    return out << __enum2str(body);
 }
 
 std::ostream& dph::operator<<(std::ostream& out, Item item)
 {
-    switch (item) {
-    case I_MERCURY: out << "I_MERCURY"; break;
-    case I_VENUS:   out << "I_VENUS  "; break;
-    case I_EMBARY:  out << "I_EMBARY "; break;
-    case I_MARS:    out << "I_MARS   "; break;
-    case I_JUPITER: out << "I_JUPITER"; break;
-    case I_SATURN:  out << "I_SATURN "; break;
-    case I_URANUS:  out << "I_URANUS "; break;
-    case I_NEPTUNE: out << "I_NEPTUNE"; break;
-    case I_PLUTO:   out << "I_PLUTO  "; break;
-    case I_MOON:    out << "I_MOON   "; break;
-    case I_SUN:     out << "I_SUN    "; break;
-    case I_EN:      out << "I_EN     "; break;
-    case I_LML:     out << "I_LML    "; break;
-    case I_LMAV:    out << "I_LMAV   "; break;
-    case I_TTMTDB:  out << "I_TTMTDB "; break;
-    default:        out << "unknown";
-    }
-
-    return out;
+    return out << __enum2str(item);
 }
 
 std::ostream& dph::operator<<(std::ostream& out, const std::vector<Item>& items)
@@ -453,7 +470,7 @@ dph::TestpoReport dph::DevelopmentEphemeris::testpoReport(
 
 double dph::DevelopmentEphemeris::bodyGm(Body body, bool* ok)
 {
-    double c = m_au * m_au * m_au / 86400 / 86400 / 1000;
+    double c = m_au * m_au * m_au / 86400 / 86400;
 
     switch (body) {
     case B_MERCURY: return constant("GM1", ok) * c;
@@ -466,10 +483,53 @@ double dph::DevelopmentEphemeris::bodyGm(Body body, bool* ok)
     case B_NEPTUNE: return constant("GM8", ok) * c;
     case B_PLUTO:   return constant("GM9", ok) * c;
     case B_SUN:     return constant("GMS", ok) * c;
-    case B_EARTH:   return constant("GMB", ok);
-    case B_MOON:    return constant("GMB", ok);
-    default: return 0;
+    default: break;
     }
+
+    if (body == B_MOON)
+    {
+        double embary = bodyGm(B_EMBARY, ok);
+
+        if (ok && !*ok)
+            return 0;
+
+        return embary / (1 + m_emrat);
+    }
+    else if (body == B_EARTH)
+    {
+        double embary = bodyGm(B_EMBARY, ok);
+
+        if (ok && !*ok)
+            return 0;
+
+        return (embary * m_emrat) / (1 + m_emrat);
+    }
+
+    if (ok)
+        *ok = false;
+
+    return 0;
+}
+
+std::vector<dph::DevelopmentEphemeris::Constant>
+    dph::DevelopmentEphemeris::bodyGms()
+{
+    std::vector<Constant> data;
+
+    auto bodies = { B_MERCURY, B_VENUS, B_EARTH, B_MARS, B_JUPITER, B_SATURN,
+        B_URANUS, B_NEPTUNE, B_PLUTO, B_MOON, B_SUN, B_EMBARY };
+
+    data.reserve(bodies.size());
+
+    for (auto body : bodies)
+    {
+        Constant c;
+        c.name = __enum2str(body);
+        c.value = bodyGm(body);
+        data.push_back(c);
+    }
+
+    return data;
 }
 
 int dph::DevelopmentEphemeris::makeBinary(double beginJed, double endJed,

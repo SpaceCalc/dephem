@@ -8,3 +8,4 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror")
 
 include_directories(..)
 add_executable(test main.cpp ../dephem/dephem.h ../dephem/dephem.cpp)
+add_executable(sandbox sandbox.cpp ../dephem/dephem.h ../dephem/dephem.cpp)

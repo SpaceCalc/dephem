@@ -207,6 +207,8 @@ public:
      */
     double bodyGm(Body body, bool* ok = nullptr);
 
+    std::vector<Constant> bodyGms();
+
     // Формат эфемерид.
     static const size_t LABELS_COUNT = 3;      // Строк в подписи.
     static const size_t LABEL_SIZE = 84;       // Символов в строке подписи.
